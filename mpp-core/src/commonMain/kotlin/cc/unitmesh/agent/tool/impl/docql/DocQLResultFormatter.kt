@@ -15,7 +15,7 @@ object DocQLResultFormatter {
     /**
      * Maximum number of items to show in the compact summary
      */
-    private const val COMPACT_MAX_ITEMS = 8
+    private const val COMPACT_MAX_ITEMS = 12
 
     /**
      * Format a compact summary for display to user/LLM.
@@ -135,23 +135,6 @@ object DocQLResultFormatter {
                 appendLine()
             }
         }
-    }
-
-    /**
-     * Legacy method - now redirects to formatDetailedResult for backward compatibility.
-     * @deprecated Use formatCompactSummary for display and formatDetailedResult for details.
-     */
-    fun formatSmartResult(
-        results: List<ScoredResult>,
-        keyword: String,
-        truncated: Boolean = false,
-        totalCount: Int = results.size
-    ): String {
-        return formatDetailedResult(results, keyword, truncated, totalCount)
-    }
-
-    fun formatDocQLResult(result: DocQLResult, maxResults: Int): String {
-        return result.formatDocQLResult(maxResults)
     }
 
     fun buildQuerySuggestion(query: String): String {

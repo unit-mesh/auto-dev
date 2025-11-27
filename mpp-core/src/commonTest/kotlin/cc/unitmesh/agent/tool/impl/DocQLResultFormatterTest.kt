@@ -47,11 +47,12 @@ class DocQLResultFormatterTest {
             filePath = "TestClass.kt"
         )
 
-        val formatted = DocQLResultFormatter.formatSmartResult(
-            results = listOf(scoredResult),
-            keyword = "Test",
-            truncated = false
-        )
+        val results = listOf(scoredResult)
+        val formatted =
+            DocQLResultFormatter.formatDetailedResult(
+                results = results, keyword = "Test",
+                truncated = false
+            )
 
         assertTrue(formatted.contains("**Smart Search Results for 'Test'**"))
         assertTrue(formatted.contains("Found 1 relevant items"))
@@ -76,7 +77,7 @@ class DocQLResultFormatterTest {
             filePath = "README.md"
         )
 
-        val formatted = DocQLResultFormatter.formatSmartResult(
+        val formatted = DocQLResultFormatter.formatDetailedResult(
             results = listOf(scoredResult),
             keyword = "intro",
             truncated = true,

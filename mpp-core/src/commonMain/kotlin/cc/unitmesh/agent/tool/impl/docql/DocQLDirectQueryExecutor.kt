@@ -37,7 +37,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
         )
 
         return ToolResult.Success(
-            DocQLResultFormatter.formatDocQLResult(result, maxResults),
+            result.formatDocQLResult(maxResults),
             stats.toMetadata()
         )
     }
@@ -69,7 +69,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             )
 
             ToolResult.Success(
-                DocQLResultFormatter.formatDocQLResult(result, maxResults),
+                result.formatDocQLResult(maxResults),
                 stats.toMetadata()
             )
         } else {
