@@ -11,6 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
@@ -19,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,9 +62,16 @@ fun CombinedToolItem(
     fullOutput: String? = null,
     executionTimeMs: Long? = null,
     docqlStats: DocQLSearchStats? = null,
-    onOpenFileViewer: ((String) -> Unit)? = null
+    onOpenFileViewer: ((String) -> Unit)? = null,
+    onExpand: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(success == false) } // Auto-expand on error
+
+    LaunchedEffect(expanded) {
+        if (expanded) {
+            onExpand()
+        }
+    }
     var showFullParams by remember { mutableStateOf(false) }
     var showFullOutput by remember { mutableStateOf(success == false) }
     var showFileViewerDialog by remember { mutableStateOf(false) }
@@ -127,6 +140,7 @@ fun CombinedToolItem(
                         }
                         if (query.isNotEmpty()) "\"$query\" - DocQL" else "DocQL"
                     }
+
                     else -> toolName
                 }
 
@@ -140,6 +154,7 @@ fun CombinedToolItem(
                 val displaySummary = when {
                     toolName.lowercase() == "docql" && docqlStats?.smartSummary != null ->
                         docqlStats.smartSummary?.take(16)
+
                     else -> summary
                 }
 
@@ -221,152 +236,164 @@ fun CombinedToolItem(
                 }
             }
 
-            if (expanded) {
-                if (displayParams != null) {
-                    Spacer(modifier = Modifier.Companion.height(8.dp))
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    if (displayParams != null) {
+                        Spacer(modifier = Modifier.Companion.height(8.dp))
 
-                    Row(
-                        modifier = Modifier.Companion.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Companion.Top
-                    ) {
-                        Column {
-                            Text(
-                                text = "Parameters:",
-                                fontWeight = FontWeight.Companion.Medium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-
-                            if (hasFullParams) {
-                                TextButton(
-                                    onClick = { showFullParams = !showFullParams },
-                                    modifier = Modifier.Companion.height(32.dp)
-                                ) {
-                                    Text(
-                                        text = if (showFullParams) "Show Formatted" else "Show Raw Params",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-
-                        IconButton(
-                            onClick = { clipboardManager.setText(AnnotatedString(displayParams)) },
-                            modifier = Modifier.Companion.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy parameters",
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                modifier = Modifier.Companion.size(16.dp)
-                            )
-                        }
-                    }
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(4.dp),
-                        modifier = Modifier.Companion.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = displayParams,
-                            modifier = Modifier.Companion.padding(8.dp),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontFamily = FontFamily.Companion.Monospace
-                        )
-                    }
-                }
-
-                if (displayOutput != null) {
-                    Spacer(modifier = Modifier.Companion.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.Companion.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Companion.Top
-                    ) {
                         Row(
-                            verticalAlignment = Alignment.Companion.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.Companion.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Companion.Top
                         ) {
-                            Text(
-                                text = "Output:",
-                                fontWeight = FontWeight.Companion.Medium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            Column {
+                                Text(
+                                    text = "Parameters:",
+                                    fontWeight = FontWeight.Companion.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
 
-                            if (hasFullOutput) {
-                                TextButton(
-                                    onClick = { showFullOutput = !showFullOutput },
-                                    modifier = Modifier.Companion.height(28.dp)
-                                ) {
-                                    Text(
-                                        text = if (showFullOutput) "Show Less" else "Show Full",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
+                                if (hasFullParams) {
+                                    TextButton(
+                                        onClick = { showFullParams = !showFullParams },
+                                        modifier = Modifier.Companion.height(32.dp)
+                                    ) {
+                                        Text(
+                                            text = if (showFullParams) "Show Formatted" else "Show Raw Params",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
                             }
 
-                            if (hasStats && docqlStats.detailedResults != null) {
-                                TextButton(
-                                    onClick = { showDetailDialog = true },
-                                    modifier = Modifier.Companion.height(28.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = AutoDevComposeIcons.OpenInNew,
-                                        contentDescription = "View All",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.Companion.size(14.dp)
-                                    )
-                                    Text(
-                                        text = "View All",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.Companion.padding(start = 4.dp)
-                                    )
-                                }
+                            IconButton(
+                                onClick = { clipboardManager.setText(AnnotatedString(displayParams)) },
+                                modifier = Modifier.Companion.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.ContentCopy,
+                                    contentDescription = "Copy parameters",
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                    modifier = Modifier.Companion.size(16.dp)
+                                )
                             }
                         }
 
-                        IconButton(
-                            onClick = { clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(displayOutput)) },
-                            modifier = Modifier.Companion.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy output",
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                modifier = Modifier.Companion.size(16.dp)
-                            )
-                        }
-                    }
-
-                    if (toolName.lowercase().contains("docql")) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.Companion.fillMaxWidth()
-                        ) {
-                            TextBlockRenderer(displayOutput)
-                        }
-                    } else {
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             shape = RoundedCornerShape(4.dp),
                             modifier = Modifier.Companion.fillMaxWidth()
                         ) {
                             Text(
-                                text = formatOutput(displayOutput),
+                                text = displayParams,
                                 modifier = Modifier.Companion.padding(8.dp),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontFamily = FontFamily.Companion.Monospace
                             )
+                        }
+                    }
+
+                    if (displayOutput != null) {
+                        Spacer(modifier = Modifier.Companion.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.Companion.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Companion.Top
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.Companion.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Output:",
+                                    fontWeight = FontWeight.Companion.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                if (hasFullOutput) {
+                                    TextButton(
+                                        onClick = { showFullOutput = !showFullOutput },
+                                        modifier = Modifier.Companion.height(28.dp)
+                                    ) {
+                                        Text(
+                                            text = if (showFullOutput) "Show Less" else "Show Full",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+
+                                if (hasStats && docqlStats.detailedResults != null) {
+                                    TextButton(
+                                        onClick = { showDetailDialog = true },
+                                        modifier = Modifier.Companion.height(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.OpenInNew,
+                                            contentDescription = "View All",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.Companion.size(14.dp)
+                                        )
+                                        Text(
+                                            text = "View All",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.Companion.padding(start = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.setText(
+                                        androidx.compose.ui.text.AnnotatedString(
+                                            displayOutput
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.Companion.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.ContentCopy,
+                                    contentDescription = "Copy output",
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                    modifier = Modifier.Companion.size(16.dp)
+                                )
+                            }
+                        }
+
+                        if (toolName.lowercase().contains("docql")) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(4.dp),
+                                modifier = Modifier.Companion.fillMaxWidth()
+                            ) {
+                                TextBlockRenderer(displayOutput)
+                            }
+                        } else {
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(4.dp),
+                                modifier = Modifier.Companion.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = formatOutput(displayOutput),
+                                    modifier = Modifier.Companion.padding(8.dp),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontFamily = FontFamily.Companion.Monospace
+                                )
+                            }
                         }
                     }
                 }
@@ -425,9 +452,16 @@ fun TerminalOutputItem(
     command: String,
     output: String,
     exitCode: Int,
-    executionTimeMs: Long
+    executionTimeMs: Long,
+    onExpand: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(exitCode != 0) } // Auto-expand on error
+
+    LaunchedEffect(expanded) {
+        if (expanded) {
+            onExpand()
+        }
+    }
     val isSuccess = exitCode == 0
 
     Surface(
@@ -478,7 +512,11 @@ fun TerminalOutputItem(
                 )
             }
 
-            if (expanded && output.isNotEmpty()) {
+            AnimatedVisibility(
+                visible = expanded && output.isNotEmpty(),
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
                 PlatformTerminalDisplay(
                     output = output,
                     modifier = Modifier.Companion.padding(8.dp)

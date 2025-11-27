@@ -66,7 +66,18 @@ fun AgentMessageList(
         verticalArrangement = Arrangement.spacedBy(6.dp) // Reduce spacing
     ) {
         items(renderer.timeline) { timelineItem ->
-            RenderMessageItem(timelineItem, onOpenFileViewer, renderer)
+            RenderMessageItem(
+                timelineItem = timelineItem,
+                onOpenFileViewer = onOpenFileViewer,
+                renderer = renderer,
+                onExpand = {
+                    coroutineScope.launch {
+                        // Scroll to the bottom when an item expands, to ensure visibility
+                        // This fixes the issue where expanding an item (like a tool result) doesn't trigger auto-scroll
+                        listState.animateScrollToItem(maxOf(0, listState.layoutInfo.totalItemsCount - 1))
+                    }
+                }
+            )
         }
 
         if (renderer.currentStreamingOutput.isNotEmpty()) {
@@ -87,7 +98,8 @@ fun AgentMessageList(
 fun RenderMessageItem(
     timelineItem: ComposeRenderer.TimelineItem,
     onOpenFileViewer: ((String) -> Unit)?,
-    renderer: ComposeRenderer
+    renderer: ComposeRenderer,
+    onExpand: () -> Unit = {}
 ) {
     when (timelineItem) {
         is ComposeRenderer.TimelineItem.MessageItem -> {
@@ -110,7 +122,8 @@ fun RenderMessageItem(
                 fullOutput = timelineItem.fullOutput,
                 executionTimeMs = timelineItem.executionTimeMs,
                 docqlStats = timelineItem.docqlStats,
-                onOpenFileViewer = onOpenFileViewer
+                onOpenFileViewer = onOpenFileViewer,
+                onExpand = onExpand
             )
         }
 
@@ -140,7 +153,8 @@ fun RenderMessageItem(
                 command = timelineItem.command,
                 output = timelineItem.output,
                 exitCode = timelineItem.exitCode,
-                executionTimeMs = timelineItem.executionTimeMs
+                executionTimeMs = timelineItem.executionTimeMs,
+                onExpand = onExpand
             )
         }
 

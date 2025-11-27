@@ -128,7 +128,6 @@ fun SuggestedFixesAgentView(
                 }
             }
 
-            // Content - Agent timeline (render items directly to avoid nested LazyColumn)
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
