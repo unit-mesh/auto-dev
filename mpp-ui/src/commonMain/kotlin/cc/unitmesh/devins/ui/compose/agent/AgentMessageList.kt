@@ -24,6 +24,7 @@ import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 
@@ -36,9 +37,40 @@ fun AgentMessageList(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(renderer.timeline.size, renderer.currentStreamingOutput) {
-        if (renderer.timeline.isNotEmpty() || renderer.currentStreamingOutput.isNotEmpty()) {
+    // Track if user manually scrolled away from bottom
+    var userScrolledAway by remember { mutableStateOf(false) }
+
+    // Track content updates from SketchRenderer for streaming content
+    var streamingBlockCount by remember { mutableIntStateOf(0) }
+
+    // Function to scroll to bottom
+    fun scrollToBottomIfNeeded() {
+        if (!userScrolledAway) {
             coroutineScope.launch {
+                // Delay to ensure layout is complete before scrolling
+                delay(50)
+                val lastIndex = maxOf(0, listState.layoutInfo.totalItemsCount - 1)
+                listState.scrollToItem(lastIndex)
+            }
+        }
+    }
+
+    // Monitor scroll state to detect user scrolling away
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            val lastVisibleIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalItems = listState.layoutInfo.totalItemsCount
+            // If user scrolled to a position not near the bottom, they want to view history
+            userScrolledAway = lastVisibleIndex < totalItems - 2
+        }
+    }
+
+    // Scroll when timeline changes (new messages, tool calls, etc.)
+    LaunchedEffect(renderer.timeline.size) {
+        if (renderer.timeline.isNotEmpty()) {
+            userScrolledAway = false
+            coroutineScope.launch {
+                delay(50)
                 listState.animateScrollToItem(
                     index = maxOf(0, listState.layoutInfo.totalItemsCount - 1)
                 )
@@ -46,13 +78,32 @@ fun AgentMessageList(
         }
     }
 
-    LaunchedEffect(renderer.currentStreamingOutput.length) {
+    // Scroll when streaming content changes
+    LaunchedEffect(renderer.currentStreamingOutput) {
         if (renderer.currentStreamingOutput.isNotEmpty()) {
-            coroutineScope.launch {
-                listState.scrollToItem(
-                    index = maxOf(0, listState.layoutInfo.totalItemsCount - 1)
-                )
-            }
+            // Calculate content signature based on line count and character chunks
+            val lineCount = renderer.currentStreamingOutput.count { it == '\n' }
+            val chunkIndex = renderer.currentStreamingOutput.length / 100
+            val contentSignature = lineCount + chunkIndex
+
+            // Delay to ensure Markdown layout is complete
+            delay(100)
+            scrollToBottomIfNeeded()
+        }
+    }
+
+    // Scroll when SketchRenderer reports new blocks rendered
+    LaunchedEffect(streamingBlockCount) {
+        if (streamingBlockCount > 0) {
+            delay(50)
+            scrollToBottomIfNeeded()
+        }
+    }
+
+    // Reset user scroll state when streaming starts
+    LaunchedEffect(renderer.isProcessing) {
+        if (renderer.isProcessing) {
+            userScrolledAway = false
         }
     }
 
@@ -62,8 +113,8 @@ fun AgentMessageList(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp), // Reduce padding
-        verticalArrangement = Arrangement.spacedBy(6.dp) // Reduce spacing
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items(renderer.timeline) { timelineItem ->
             RenderMessageItem(
@@ -72,8 +123,8 @@ fun AgentMessageList(
                 renderer = renderer,
                 onExpand = {
                     coroutineScope.launch {
-                        // Scroll to the bottom when an item expands, to ensure visibility
-                        // This fixes the issue where expanding an item (like a tool result) doesn't trigger auto-scroll
+                        // Scroll to the bottom when an item expands
+                        delay(50)
                         listState.animateScrollToItem(maxOf(0, listState.layoutInfo.totalItemsCount - 1))
                     }
                 }
@@ -81,8 +132,14 @@ fun AgentMessageList(
         }
 
         if (renderer.currentStreamingOutput.isNotEmpty()) {
-            item {
-                StreamingMessageItem(content = renderer.currentStreamingOutput)
+            item(key = "streaming") {
+                StreamingMessageItem(
+                    content = renderer.currentStreamingOutput,
+                    onContentUpdate = { blockCount ->
+                        // When SketchRenderer renders new blocks, trigger scroll
+                        streamingBlockCount = blockCount
+                    }
+                )
             }
         }
 
@@ -237,7 +294,10 @@ expect fun PlatformMessageTextContainer(
 )
 
 @Composable
-fun StreamingMessageItem(content: String) {
+fun StreamingMessageItem(
+    content: String,
+    onContentUpdate: (blockCount: Int) -> Unit = {}
+) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(4.dp)
@@ -246,9 +306,11 @@ fun StreamingMessageItem(content: String) {
             if (content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 // Use SketchRenderer to support thinking blocks in streaming content
+                // Pass onContentUpdate to trigger scroll when new blocks are rendered
                 SketchRenderer.RenderResponse(
                     content = content,
                     isComplete = false,
+                    onContentUpdate = onContentUpdate,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

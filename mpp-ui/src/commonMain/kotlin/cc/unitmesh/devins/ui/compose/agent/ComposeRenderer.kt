@@ -574,7 +574,7 @@ class ComposeRenderer : BaseRenderer() {
 
             else ->
                 ToolCallInfo(
-                    toolName = toolName,
+                    toolName = if (toolName == "docql") "DocQL" else toolName,
                     description = "tool execution",
                     details = paramsStr
                 )
