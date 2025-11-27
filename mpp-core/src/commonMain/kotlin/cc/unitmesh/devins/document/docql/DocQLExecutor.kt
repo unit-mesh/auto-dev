@@ -74,6 +74,7 @@ class DocQLExecutor(
                         "content" -> executeContentQuery(query.nodes.drop(2))
                         "code" -> executeCodeQuery(query.nodes.drop(2))
                         "files" -> DocQLResult.Error("$.files queries must be executed via DocumentRegistry.queryDocuments()")
+                        "structure" -> executeStructureQuery(query.nodes.drop(2))
                         else -> DocQLResult.Error("Unknown context '${contextNode.name}'")
                     }
                 }
@@ -175,22 +176,36 @@ class DocQLExecutor(
     
     /**
      * Execute content query ($.content.heading(...), $.content.h1(...), etc.)
+     * 
+     * Supports both function call syntax and property + array access syntax:
+     * - $.content.heading("keyword") - function call
+     * - $.content.codeblock[*] - property with array access
      */
     private suspend fun executeContentQuery(nodes: List<DocQLNode>): DocQLResult {
         if (nodes.isEmpty()) {
             return DocQLResult.Error("Content query requires function call (e.g., $.content.chunks() or $.content.heading(\"keyword\"))")
         }
         
+        // First check if we have a property node (for codeblock[*], table[*] syntax)
+        val firstNode = nodes.firstOrNull()
+        if (firstNode is DocQLNode.Property) {
+            when (firstNode.name) {
+                "codeblock" -> return executeCodeBlockQuery(nodes.drop(1))
+                "table" -> return executeTableQuery(nodes.drop(1))
+            }
+        }
+        
+        // Otherwise look for function calls
         val functionNode = nodes.firstOrNull { it is DocQLNode.FunctionCall } as? DocQLNode.FunctionCall
-            ?: return DocQLResult.Error("Content query requires function call (e.g., $.content.chunks() or $.content.heading(\"keyword\"))")
+            ?: return DocQLResult.Error("Content query requires function call (e.g., $.content.chunks() or $.content.heading(\"keyword\")) or property (e.g., $.content.codeblock[*])")
         
         return when (functionNode.name) {
             "heading" -> executeHeadingQuery(functionNode.argument)
             "chapter" -> executeChapterQuery(functionNode.argument)
             "h1", "h2", "h3", "h4", "h5", "h6" -> executeHeadingLevelQuery(functionNode.name, functionNode.argument)
             "grep" -> executeGrepQuery(functionNode.argument)
-            "codeblock" -> executeCodeBlockQuery(nodes)
-            "table" -> executeTableQuery(nodes)
+            "codeblock" -> executeCodeBlockQuery(nodes.drop(1))
+            "table" -> executeTableQuery(nodes.drop(1))
             "chunks" -> executeAllChunksQuery()
             "all" -> executeAllChunksQuery()
             else -> DocQLResult.Error("Unknown content function '${functionNode.name}'")
@@ -546,10 +561,254 @@ class DocQLExecutor(
     /**
      * Execute code block query: $.content.codeblock[*]
      * This is for extracting code blocks from markdown/documentation, NOT for querying source code structure.
+     * 
+     * Supports:
+     * - $.content.codeblock[*] - All code blocks
+     * - $.content.codeblock[0] - First code block
+     * - $.content.codeblock[?(@.language=="kotlin")] - Filter by language
+     * - $.content.codeblock[?(@.language~="java")] - Language contains "java"
      */
     private fun executeCodeBlockQuery(nodes: List<DocQLNode>): DocQLResult {
-        // TODO: Implement code block extraction from markdown
-        return DocQLResult.CodeBlocks(emptyMap())
+        if (documentFile == null || parserService == null) {
+            return DocQLResult.Error("No document loaded")
+        }
+        
+        val content = parserService.getDocumentContent()
+        if (content.isNullOrEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Extract code blocks from content using regex pattern for fenced code blocks
+        var codeBlocks = extractCodeBlocks(content)
+        
+        // Apply filters from nodes
+        for (node in nodes) {
+            when (node) {
+                is DocQLNode.ArrayAccess.All -> {
+                    // Return all code blocks - no filtering needed
+                }
+                is DocQLNode.ArrayAccess.Index -> {
+                    codeBlocks = if (node.index < codeBlocks.size) {
+                        listOf(codeBlocks[node.index])
+                    } else {
+                        emptyList()
+                    }
+                }
+                is DocQLNode.ArrayAccess.Filter -> {
+                    codeBlocks = filterCodeBlocks(codeBlocks, node.condition)
+                }
+                else -> {
+                    return DocQLResult.Error("Invalid operation for codeblock query")
+                }
+            }
+        }
+        
+        return if (codeBlocks.isNotEmpty()) {
+            DocQLResult.CodeBlocks(mapOf(documentFile.path to codeBlocks))
+        } else {
+            DocQLResult.Empty
+        }
+    }
+    
+    /**
+     * Extract code blocks from markdown content.
+     * Matches fenced code blocks: ```language\ncode\n```
+     */
+    private fun extractCodeBlocks(content: String): List<CodeBlock> {
+        val codeBlocks = mutableListOf<CodeBlock>()
+        val lines = content.lines()
+        var i = 0
+        var lineNumber = 1
+        
+        while (i < lines.size) {
+            val line = lines[i]
+            // Check for code block start: ``` or ```language
+            if (line.trimStart().startsWith("```")) {
+                val startLineNumber = lineNumber
+                val trimmedLine = line.trimStart()
+                val language = if (trimmedLine.length > 3) {
+                    trimmedLine.substring(3).trim().takeIf { it.isNotEmpty() }
+                } else null
+                
+                // Find the end of the code block
+                val codeLines = mutableListOf<String>()
+                i++
+                lineNumber++
+                
+                while (i < lines.size && !lines[i].trimStart().startsWith("```")) {
+                    codeLines.add(lines[i])
+                    i++
+                    lineNumber++
+                }
+                
+                val endLineNumber = lineNumber
+                
+                // Create the code block
+                codeBlocks.add(CodeBlock(
+                    language = language,
+                    code = codeLines.joinToString("\n"),
+                    location = Location(
+                        anchor = "#codeblock-$startLineNumber",
+                        line = startLineNumber
+                    )
+                ))
+                
+                // Skip the closing ```
+                if (i < lines.size) {
+                    i++
+                    lineNumber++
+                }
+            } else {
+                i++
+                lineNumber++
+            }
+        }
+        
+        return codeBlocks
+    }
+    
+    /**
+     * Filter code blocks by condition.
+     */
+    private fun filterCodeBlocks(blocks: List<CodeBlock>, condition: FilterCondition): List<CodeBlock> {
+        return blocks.filter { block ->
+            when (condition) {
+                is FilterCondition.Equals -> {
+                    when (condition.property) {
+                        "language" -> block.language == condition.value
+                        "code" -> block.code == condition.value
+                        else -> false
+                    }
+                }
+                is FilterCondition.NotEquals -> {
+                    when (condition.property) {
+                        "language" -> block.language != condition.value
+                        "code" -> block.code != condition.value
+                        else -> true
+                    }
+                }
+                is FilterCondition.Contains -> {
+                    when (condition.property) {
+                        "language" -> block.language?.contains(condition.value, ignoreCase = true) == true
+                        "code" -> block.code.contains(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                is FilterCondition.RegexMatch -> {
+                    when (condition.property) {
+                        "language" -> block.language?.let { matchesRegex(it, condition.pattern, condition.flags) } ?: false
+                        "code" -> matchesRegex(block.code, condition.pattern, condition.flags)
+                        else -> false
+                    }
+                }
+                is FilterCondition.StartsWith -> {
+                    when (condition.property) {
+                        "language" -> block.language?.startsWith(condition.value, ignoreCase = true) == true
+                        "code" -> block.code.startsWith(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                is FilterCondition.EndsWith -> {
+                    when (condition.property) {
+                        "language" -> block.language?.endsWith(condition.value, ignoreCase = true) == true
+                        "code" -> block.code.endsWith(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                is FilterCondition.GreaterThan, is FilterCondition.GreaterThanOrEquals,
+                is FilterCondition.LessThan, is FilterCondition.LessThanOrEquals -> false
+            }
+        }
+    }
+    
+    /**
+     * Execute structure query: $.structure, $.structure.tree(), $.structure.flat()
+     * Returns a file structure view from the current document context.
+     */
+    private fun executeStructureQuery(nodes: List<DocQLNode>): DocQLResult {
+        if (documentFile == null) {
+            return DocQLResult.Error("No document loaded. Use DocumentRegistry.queryDocuments() for $.structure queries across all documents.")
+        }
+        
+        // For single document, return its path structure
+        val paths = listOf(documentFile.path)
+        val tree = buildFileTree(paths)
+        
+        return DocQLResult.Structure(
+            tree = tree,
+            paths = paths,
+            directoryCount = countDirectories(paths),
+            fileCount = paths.size
+        )
+    }
+    
+    /**
+     * Build a tree-like string representation of file paths.
+     */
+    private fun buildFileTree(paths: List<String>): String {
+        if (paths.isEmpty()) return "No files found."
+        
+        // Build tree structure
+        data class TreeNode(
+            val name: String,
+            val children: MutableMap<String, TreeNode> = mutableMapOf(),
+            var isFile: Boolean = false
+        )
+        
+        val root = TreeNode("")
+        
+        for (path in paths.sorted()) {
+            val parts = path.split('/')
+            var current = root
+            
+            for ((index, part) in parts.withIndex()) {
+                if (part.isEmpty()) continue
+                val isLast = index == parts.size - 1
+                
+                if (!current.children.containsKey(part)) {
+                    current.children[part] = TreeNode(part)
+                }
+                current = current.children[part]!!
+                if (isLast) current.isFile = true
+            }
+        }
+        
+        // Render tree to string
+        fun renderNode(node: TreeNode, prefix: String, isLast: Boolean, isRoot: Boolean): String {
+            val sb = StringBuilder()
+            
+            if (!isRoot) {
+                val connector = if (isLast) "`-- " else "|-- "
+                val icon = if (node.isFile) "" else "/"
+                sb.appendLine("$prefix$connector${node.name}$icon")
+            }
+            
+            val childPrefix = if (isRoot) "" else prefix + (if (isLast) "    " else "|   ")
+            val sortedChildren = node.children.values.sortedWith(compareBy({ !it.children.any() }, { it.name }))
+            
+            for ((index, child) in sortedChildren.withIndex()) {
+                val childIsLast = index == sortedChildren.size - 1
+                sb.append(renderNode(child, childPrefix, childIsLast, false))
+            }
+            
+            return sb.toString()
+        }
+        
+        return renderNode(root, "", true, true).trimEnd()
+    }
+    
+    /**
+     * Count unique directories from file paths.
+     */
+    private fun countDirectories(paths: List<String>): Int {
+        val directories = mutableSetOf<String>()
+        for (path in paths) {
+            val parts = path.split('/')
+            for (i in 1 until parts.size) {
+                directories.add(parts.subList(0, i).joinToString("/"))
+            }
+        }
+        return directories.size
     }
     
     /**

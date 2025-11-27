@@ -36,27 +36,27 @@ object DocQLResultFormatter {
                     val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
                     when (val item = result.item) {
                         is Entity.ClassEntity -> {
-                            appendLine("  - Class: ${item.name}$scoreInfo")
-                            if (item.location.line != null) appendLine("    Line: ${item.location.line}")
+                            appendLine("- **Class**: ${item.name}$scoreInfo")
+                            if (item.location.line != null) appendLine("  Line: ${item.location.line}")
                         }
 
                         is Entity.FunctionEntity -> {
-                            appendLine("  - **Function**: ${item.name}$scoreInfo")
-                            if (item.signature != null) appendLine("    Sig: ${item.signature}")
-                            if (item.location.line != null) appendLine("    Line: ${item.location.line}")
+                            appendLine("- **Function**: ${item.name}$scoreInfo")
+                            if (item.signature != null) appendLine("  Sig: ${item.signature}")
+                            if (item.location.line != null) appendLine("  Line: ${item.location.line}")
                         }
 
                         is TOCItem -> {
-                            appendLine("  - ${item.title}$scoreInfo")
+                            appendLine("- **Section**: ${item.title}$scoreInfo")
                         }
 
                         is DocumentChunk -> {
-                            appendLine("  - ...${result.preview}...$scoreInfo")
+                            appendLine("- **Chunk**: ...${result.preview}...$scoreInfo")
                         }
 
                         is TextSegment -> {
                             val type = item.type
-                            appendLine("  - **${type.replaceFirstChar { it.uppercase() }}**: ${item.name.ifEmpty { result.preview }}$scoreInfo")
+                            appendLine("- **${type.replaceFirstChar { it.uppercase() }}**: ${item.name.ifEmpty { result.preview }}$scoreInfo")
                         }
                     }
                 }

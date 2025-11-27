@@ -537,6 +537,30 @@ private fun DocQLResultView(
                     }
                 }
             }
+
+            is DocQLResult.Structure -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "文件结构 (${result.directoryCount} 个目录, ${result.fileCount} 个文件)",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(
+                            text = result.tree,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }

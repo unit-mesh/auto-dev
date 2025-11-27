@@ -20,9 +20,18 @@ package cc.unitmesh.devins.document.docql
  * - `$.content.chapter("1.2")`     - Chapter 1.2 content
  * - `$.content.h1("介绍")`         - H1 heading matching "介绍"
  * - `$.content.h2("设计")`         - H2 heading matching "设计"
- * - `$.content.code[*]`            - All code blocks
+ * - `$.content.codeblock[*]`       - All code blocks from markdown
+ * - `$.content.codeblock[?(@.language=="kotlin")]` - Code blocks by language
  * - `$.content.table[*]`           - All tables
  * - `$.content.grep("关键词")`      - Grep search for "关键词"
+ * 
+ * File Structure Queries:
+ * - `$.files[*]`                   - List all registered files
+ * - `$.files[?(@.extension=="kt")]` - Files by extension
+ * - `$.files[?(@.path~="src/")]`   - Files containing path pattern
+ * - `$.structure`                  - Get file structure as tree
+ * - `$.structure.tree()`           - Get formatted tree structure
+ * - `$.structure.flat()`           - Get flat list of all paths
  * 
  * Filter Operators:
  * - `==`  Equality: `@.property == "value"` or `@.property == 'value'`

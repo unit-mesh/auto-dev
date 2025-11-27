@@ -72,7 +72,7 @@ object DocQLSchema : DeclarativeToolSchema(
         1. Search for Classes and Functions matching the keyword (High Priority)
         2. Search for Headings and Content matching the keyword (Medium Priority)
         3. Rerank results to show the most relevant code and documentation first.
-        4. 如果用户使用的语言搜索不到结果，可以从用户的语言编码方式来搜索，比如拼音搜索、拼音编写、英语等。
+        4. If user's language search yields no results, try alternative encodings (pinyin, English, etc.)
         
         **Example:** `{"query": "Auth"}` -> Finds `AuthService` class, `authenticate` function, and "Authentication" sections.
         
@@ -84,8 +84,11 @@ object DocQLSchema : DeclarativeToolSchema(
         **Examples:**
         - $.content.h1("keyword") - Find sections by heading level 1
         - $.content.h2("keyword") - Find sections by heading level 2
-        - $.content.headings("keyword") - Find sections by heading
+        - $.content.heading("keyword") - Find sections by heading
         - $.content.chunks() - Get all content chunks
+        - $.content.codeblock[*] - Get all code blocks from markdown
+        - $.content.codeblock[?(@.language=="kotlin")] - Filter code blocks by language
+        - $.content.codeblock[?(@.code~="println")] - Find code blocks containing text
         - $.toc[*] - Get table of contents
         
         ### 2. Code Queries ($.code.*)
@@ -97,6 +100,15 @@ object DocQLSchema : DeclarativeToolSchema(
         - $.code.classes[*] - List all classes
         - $.code.functions[*] - List all functions/methods
         
+        ### 3. File Structure Queries ($.files[*], $.structure)
+        **For:** Exploring file organization and finding files
+        **Examples:**
+        - $.files[*] - List all registered files with metadata
+        - $.files[?(@.extension=="kt")] - Filter files by extension
+        - $.files[?(@.path~="src/")] - Filter files by path pattern
+        - $.files[?(@.name~="Service")] - Filter files by name
+        - $.structure - Get tree view of all file paths
+        
         ## Parameters
         - **query** (required): The keyword (Smart Search) or DocQL query string (Advanced)
         - **documentPath** (optional): Target specific document by path
@@ -105,7 +117,7 @@ object DocQLSchema : DeclarativeToolSchema(
         
         ## Multi-Level Keyword Strategy
         The tool automatically expands keywords when needed:
-        - **Level 1**: Original query + phrase variations (e.g., "base64 encoding" → "base64 encoder")
+        - **Level 1**: Original query + phrase variations (e.g., "base64 encoding" -> "base64 encoder")
         - **Level 2**: Component words (e.g., "base64", "encoding")
         - **Level 3**: Stem variants (e.g., "encode", "encoded", "encoder")
         

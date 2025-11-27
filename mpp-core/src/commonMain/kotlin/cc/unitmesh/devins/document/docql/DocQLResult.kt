@@ -73,6 +73,17 @@ sealed class DocQLResult {
     data class Files(val items: List<FileInfo>) : DocQLResult()
 
     /**
+     * File structure result (for $.structure queries)
+     * Provides a tree view of files and directories
+     */
+    data class Structure(
+        val tree: String,
+        val paths: List<String>,
+        val directoryCount: Int,
+        val fileCount: Int
+    ) : DocQLResult()
+
+    /**
      * Empty result
      */
     object Empty : DocQLResult()
@@ -90,6 +101,7 @@ sealed class DocQLResult {
             is DocQLResult.CodeBlocks -> result.totalCount
             is DocQLResult.Tables -> result.totalCount
             is DocQLResult.Files -> result.items.size
+            is DocQLResult.Structure -> result.fileCount
             else -> 0
         }
     }
@@ -104,6 +116,7 @@ sealed class DocQLResult {
             is DocQLResult.CodeBlocks -> result.totalCount == 0
             is DocQLResult.Tables -> result.totalCount == 0
             is DocQLResult.Files -> result.items.isEmpty()
+            is DocQLResult.Structure -> result.paths.isEmpty()
             is DocQLResult.Error -> true
         }
     }
@@ -288,6 +301,17 @@ sealed class DocQLResult {
                         appendLine("💡 Too many results! Consider filtering by directory:")
                         appendLine("   \$.files[?(@.path contains \"your-directory\")]")
                     }
+                }
+            }
+
+            is DocQLResult.Structure -> {
+                buildString {
+                    appendLine("File Structure (${result.directoryCount} directories, ${result.fileCount} files):")
+                    appendLine()
+                    appendLine(result.tree)
+                    appendLine()
+                    appendLine("💡 Use \$.files[*] to get detailed file information")
+                    appendLine("   \$.files[?(@.extension==\"kt\")] to filter by extension")
                 }
             }
 

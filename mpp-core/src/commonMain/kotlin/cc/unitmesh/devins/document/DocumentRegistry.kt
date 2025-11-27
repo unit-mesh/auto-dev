@@ -189,6 +189,16 @@ object DocumentRegistry {
                 DocQLResult.Error(e.message ?: "Files query execution failed")
             }
         }
+        
+        // Special handling for $.structure queries - these work across all files
+        if (docqlQuery.trim().startsWith("\$.structure")) {
+            return try {
+                executeStructureQuery(pathsToQuery)
+            } catch (e: Exception) {
+                logger.debug { "Failed to execute structure query: $docqlQuery, Caused by: '${e.message}'" }
+                DocQLResult.Error(e.message ?: "Structure query execution failed")
+            }
+        }
 
         // Query each document and merge results
         val resultsByFile = mutableMapOf<String, DocQLResult>()
@@ -204,6 +214,96 @@ object DocumentRegistry {
         return mergeQueryResults(resultsByFile)
     }
 
+    /**
+     * Execute $.structure query across multiple documents
+     * Returns a tree-like view of all file paths
+     */
+    private fun executeStructureQuery(paths: List<String>): DocQLResult {
+        if (paths.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        val tree = buildStructureTree(paths)
+        val directoryCount = countDirectories(paths)
+        
+        return DocQLResult.Structure(
+            tree = tree,
+            paths = paths,
+            directoryCount = directoryCount,
+            fileCount = paths.size
+        )
+    }
+    
+    /**
+     * Build a tree-like string representation of file paths.
+     */
+    private fun buildStructureTree(paths: List<String>): String {
+        if (paths.isEmpty()) return "No files found."
+        
+        // Build tree structure
+        data class TreeNode(
+            val name: String,
+            val children: MutableMap<String, TreeNode> = mutableMapOf(),
+            var isFile: Boolean = false
+        )
+        
+        val root = TreeNode("")
+        
+        for (path in paths.sorted()) {
+            val parts = path.split('/')
+            var current = root
+            
+            for ((index, part) in parts.withIndex()) {
+                if (part.isEmpty()) continue
+                val isLast = index == parts.size - 1
+                
+                if (!current.children.containsKey(part)) {
+                    current.children[part] = TreeNode(part)
+                }
+                current = current.children[part]!!
+                if (isLast) current.isFile = true
+            }
+        }
+        
+        // Render tree to string
+        fun renderNode(node: TreeNode, prefix: String, isLast: Boolean, isRoot: Boolean): String {
+            val sb = StringBuilder()
+            
+            if (!isRoot) {
+                val connector = if (isLast) "`-- " else "|-- "
+                val icon = if (node.isFile) "" else "/"
+                sb.appendLine("$prefix$connector${node.name}$icon")
+            }
+            
+            val childPrefix = if (isRoot) "" else prefix + (if (isLast) "    " else "|   ")
+            // Sort: directories first, then files, both alphabetically
+            val sortedChildren = node.children.values.sortedWith(compareBy({ it.children.isEmpty() }, { it.name }))
+            
+            for ((index, child) in sortedChildren.withIndex()) {
+                val childIsLast = index == sortedChildren.size - 1
+                sb.append(renderNode(child, childPrefix, childIsLast, false))
+            }
+            
+            return sb.toString()
+        }
+        
+        return renderNode(root, "", true, true).trimEnd()
+    }
+    
+    /**
+     * Count unique directories from file paths.
+     */
+    private fun countDirectories(paths: List<String>): Int {
+        val directories = mutableSetOf<String>()
+        for (path in paths) {
+            val parts = path.split('/')
+            for (i in 1 until parts.size) {
+                directories.add(parts.subList(0, i).joinToString("/"))
+            }
+        }
+        return directories.size
+    }
+    
     /**
      * Execute $.files query across multiple documents
      */
