@@ -377,7 +377,6 @@ class DocQLInvocation(
             smartSummary = smartSummary
         )
 
-        // Return smart summary as main content (concise for LLM)
         return ToolResult.Success(smartSummary, stats.toMetadata())
     }
 

@@ -270,7 +270,7 @@ class DocumentAgentExecutor(
                 // Update the results list with the modified execution result
                 results[results.lastIndex] = Triple(toolName, params, finalExecutionResult)
 
-                renderer.renderToolResult(toolName, finalExecutionResult.isSuccess, finalExecutionResult.content, displayOutput)
+                renderer.renderToolResult(toolName, finalExecutionResult.isSuccess, finalExecutionResult.content, displayOutput, finalExecutionResult.metadata)
             } catch (e: Exception) {
                 logger.error(e) { "Tool execution failed: ${toolName}" }
                 renderer.renderError("Tool execution failed: ${e.message}")
