@@ -261,12 +261,12 @@ class CodeDocQLExecutor(
      * 
      * Supports wildcard: $.code.class("*") returns all classes (equivalent to $.code.classes[*])
      * 
-     * Matching priority:
-     * 1. Exact match: class name exactly equals the query (e.g., "CodingAgent" matches "class CodingAgent")
-     * 2. Partial match: class name contains the query (e.g., "Agent" matches "CodingAgent", "CodingAgentContext")
+     * Matching behavior:
+     * - Returns ONLY exact class name matches (e.g., "CodingAgent" matches "class CodingAgent" only)
+     * - Does NOT return partial matches (e.g., "CodingAgent" does NOT match "CodingAgentContext")
+     * - This is semantically correct: $.code.class("X") means "find the class named X", not "find classes containing X"
      * 
-     * When exact match is found, only exact matches are returned.
-     * This prevents returning unrelated classes like "CodingAgentContext" when searching for "CodingAgent".
+     * For partial/fuzzy matching, use $.code.classes[?(@.name contains "keyword")] instead.
      */
     private suspend fun executeCodeClassQuery(className: String): DocQLResult {
         if (documentFile == null) {
@@ -298,24 +298,19 @@ class CodeDocQLExecutor(
             return DocQLResult.Empty
         }
         
-        // Prioritize exact matches over partial matches
-        // Extract class name from title (e.g., "class CodingAgent" -> "CodingAgent", "class Foo<T>" -> "Foo")
+        // ONLY return exact matches - this is the correct semantic for $.code.class("Name")
+        // For partial matching, users should use $.code.classes[?(@.name contains "keyword")]
         val exactMatches = classChunks.filter { chunk ->
             val extractedName = extractClassNameFromTitle(chunk.chapterTitle ?: "")
             extractedName.equals(className, ignoreCase = true)
         }
         
         return if (exactMatches.isNotEmpty()) {
-            // Return only exact matches - this prevents returning CodingAgentContext when searching for CodingAgent
             DocQLResult.Chunks(mapOf(documentFile.path to exactMatches))
         } else {
-            // No exact match - return partial matches sorted by relevance
-            // Sort: shorter names (more specific) come first
-            val sortedChunks = classChunks.sortedBy { chunk ->
-                val extractedName = extractClassNameFromTitle(chunk.chapterTitle ?: "")
-                extractedName.length
-            }
-            DocQLResult.Chunks(mapOf(documentFile.path to sortedChunks))
+            // No exact match in this file - return Empty
+            // This prevents returning CodingAgentContext when searching for CodingAgent
+            DocQLResult.Empty
         }
     }
     
@@ -355,6 +350,8 @@ class CodeDocQLExecutor(
      * Execute $.code.function("functionName") - find specific function/method
      * 
      * Supports wildcard: $.code.function("*") returns all functions (equivalent to $.code.functions[*])
+     * 
+     * Returns ONLY exact function name matches. For partial matching, use $.code.query("keyword").
      */
     private suspend fun executeCodeFunctionQuery(functionName: String): DocQLResult {
         if (documentFile == null) {
@@ -366,7 +363,40 @@ class CodeDocQLExecutor(
             return executeCodeFunctionsQuery(emptyList())
         }
 
-        return executeCodeCustomQuery(functionName)
+        if (parserService == null) {
+            return DocQLResult.Error("No parser service available")
+        }
+
+        // Use heading query to find the function
+        val chunks = parserService.queryHeading(functionName)
+        
+        if (chunks.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Filter to function-level chunks and require EXACT name match
+        val exactMatches = chunks.filter { chunk ->
+            val title = chunk.chapterTitle ?: ""
+            // Must be a function (not a class)
+            val isFunction = title.contains("fun ") || 
+                           (!title.startsWith("class ") && 
+                            !title.startsWith("interface ") && 
+                            !title.startsWith("enum ") && 
+                            !title.startsWith("object ") &&
+                            title.contains("("))
+            
+            if (!isFunction) return@filter false
+            
+            val funcName = extractFunctionNameFromTitle(title)
+            funcName.equals(functionName, ignoreCase = true)
+        }
+        
+        return if (exactMatches.isNotEmpty()) {
+            DocQLResult.Chunks(mapOf(documentFile.path to exactMatches))
+        } else {
+            // No exact match - return Empty (for partial match, use $.code.query())
+            DocQLResult.Empty
+        }
     }
 
     /**
@@ -381,7 +411,8 @@ class CodeDocQLExecutor(
      * 
      * Supports wildcard: $.code.query("*") returns all code chunks
      * 
-     * For function queries, prioritizes exact name matches over partial matches.
+     * Unlike $.code.function("name") which requires exact match, $.code.query() is for flexible search
+     * and returns all matching code elements (functions, classes, etc.) sorted by relevance.
      */
     private suspend fun executeCodeCustomQuery(keyword: String): DocQLResult {
         if (parserService == null || documentFile == null) {
@@ -419,12 +450,13 @@ class CodeDocQLExecutor(
             return DocQLResult.Empty
         }
         
-        // Prioritize exact function name matches over partial matches
+        // For $.code.query(), prioritize exact matches but also include partial matches
+        // This is different from $.code.function("name") which is exact-match only
         val exactMatches = chunks.filter { chunk ->
             val title = chunk.chapterTitle ?: ""
-            // Extract function name from title (e.g., "fun execute()" -> "execute")
             val funcName = extractFunctionNameFromTitle(title)
-            funcName.equals(keyword, ignoreCase = true)
+            val className = extractClassNameFromTitle(title)
+            funcName.equals(keyword, ignoreCase = true) || className.equals(keyword, ignoreCase = true)
         }
         
         return if (exactMatches.isNotEmpty()) {
