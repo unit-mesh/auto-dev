@@ -167,6 +167,12 @@ fun MarkdownSuccess(
     }
 }
 
+fun safeSubstring(content: String, start: Int, end: Int): String {
+    val safeStart = start.coerceIn(0, content.length)
+    val safeEnd = end.coerceIn(safeStart, content.length)
+    return content.substring(safeStart, safeEnd)
+}
+
 /**
  * Custom MarkdownElement that handles file:// links with icons
  */
@@ -186,12 +192,11 @@ fun MarkdownElementWithFileLinks(
             it.type == org.intellij.markdown.MarkdownElementTypes.LINK_TEXT
         }
 
-        val url = linkDestination?.let { content.substring(it.startOffset, it.endOffset) } ?: ""
+        val url = linkDestination?.let { safeSubstring(content, it.startOffset, it.endOffset) } ?: ""
         val text = linkText?.let {
-            content.substring(it.startOffset, it.endOffset).removeSurrounding("[", "]")
+            safeSubstring(content, it.startOffset, it.endOffset).removeSurrounding("[", "]")
         } ?: url
 
-        // Check if this is a file:// link
         if (url.startsWith("file://")) {
             val filePath = url.removePrefix("file://")
 

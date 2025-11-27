@@ -113,7 +113,6 @@ fun DocQLDetailDialog(
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        // Copy button
                         IconButton(
                             onClick = {
                                 val content = stats.detailedResults ?: "No detailed results available"

@@ -35,6 +35,7 @@ import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
 import cc.unitmesh.devins.ui.compose.agent.codereview.FileViewerDialog
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.compose.sketch.TextBlockRenderer
 import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay
 
 /**
@@ -136,10 +137,9 @@ fun CombinedToolItem(
                     modifier = Modifier.Companion.weight(1f)
                 )
 
-                // For DocQL, show smart summary; for others, show regular summary
                 val displaySummary = when {
                     toolName.lowercase() == "docql" && docqlStats?.smartSummary != null ->
-                        docqlStats.smartSummary
+                        docqlStats.smartSummary?.take(16)
                     else -> summary
                 }
 
@@ -312,8 +312,7 @@ fun CombinedToolItem(
                                 }
                             }
 
-                            // View All button for DocQL detailed results
-                            if (hasStats && docqlStats?.detailedResults != null) {
+                            if (hasStats && docqlStats.detailedResults != null) {
                                 TextButton(
                                     onClick = { showDetailDialog = true },
                                     modifier = Modifier.Companion.height(28.dp)
@@ -353,12 +352,7 @@ fun CombinedToolItem(
                             shape = RoundedCornerShape(4.dp),
                             modifier = Modifier.Companion.fillMaxWidth()
                         ) {
-                            cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer.RenderMarkdown(
-                                markdown = displayOutput,
-                                isComplete = true,
-                                isDarkTheme = false, // Will be determined by system theme
-                                modifier = Modifier.Companion.padding(8.dp)
-                            )
+                            TextBlockRenderer(displayOutput)
                         }
                     } else {
                         Surface(
@@ -434,7 +428,6 @@ fun TerminalOutputItem(
     executionTimeMs: Long
 ) {
     var expanded by remember { mutableStateOf(exitCode != 0) } // Auto-expand on error
-    val clipboardManager = LocalClipboardManager.current
     val isSuccess = exitCode == 0
 
     Surface(
