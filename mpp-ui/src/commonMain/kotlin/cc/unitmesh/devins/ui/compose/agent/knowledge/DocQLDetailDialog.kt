@@ -42,6 +42,7 @@ import androidx.compose.ui.window.DialogProperties
 import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer
+import cc.unitmesh.devins.ui.compose.sketch.TextBlockRenderer
 
 /**
  * Dialog to display detailed DocQL search results.
@@ -225,13 +226,7 @@ private fun DetailedResultsTab(stats: DocQLSearchStats) {
                 }
             }
         } else {
-            // Render detailed results as markdown
-            MarkdownSketchRenderer.RenderMarkdown(
-                markdown = detailedResults,
-                isComplete = true,
-                isDarkTheme = false, // Will be determined by system theme
-                modifier = Modifier.fillMaxWidth()
-            )
+            TextBlockRenderer(detailedResults)
         }
     }
 }
