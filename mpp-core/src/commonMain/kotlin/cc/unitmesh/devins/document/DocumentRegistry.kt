@@ -233,30 +233,30 @@ object DocumentRegistry {
             fileCount = paths.size
         )
     }
-    
+
     /**
      * Build a tree-like string representation of file paths.
      */
-    private fun buildStructureTree(paths: List<String>): String {
+    fun buildStructureTree(paths: List<String>): String {
         if (paths.isEmpty()) return "No files found."
-        
+
         // Build tree structure
         data class TreeNode(
             val name: String,
             val children: MutableMap<String, TreeNode> = mutableMapOf(),
             var isFile: Boolean = false
         )
-        
+
         val root = TreeNode("")
-        
+
         for (path in paths.sorted()) {
             val parts = path.split('/')
             var current = root
-            
+
             for ((index, part) in parts.withIndex()) {
                 if (part.isEmpty()) continue
                 val isLast = index == parts.size - 1
-                
+
                 if (!current.children.containsKey(part)) {
                     current.children[part] = TreeNode(part)
                 }
@@ -264,36 +264,36 @@ object DocumentRegistry {
                 if (isLast) current.isFile = true
             }
         }
-        
+
         // Render tree to string
         fun renderNode(node: TreeNode, prefix: String, isLast: Boolean, isRoot: Boolean): String {
             val sb = StringBuilder()
-            
+
             if (!isRoot) {
                 val connector = if (isLast) "`-- " else "|-- "
                 val icon = if (node.isFile) "" else "/"
                 sb.appendLine("$prefix$connector${node.name}$icon")
             }
-            
+
             val childPrefix = if (isRoot) "" else prefix + (if (isLast) "    " else "|   ")
             // Sort: directories first, then files, both alphabetically
             val sortedChildren = node.children.values.sortedWith(compareBy({ it.children.isEmpty() }, { it.name }))
-            
+
             for ((index, child) in sortedChildren.withIndex()) {
                 val childIsLast = index == sortedChildren.size - 1
                 sb.append(renderNode(child, childPrefix, childIsLast, false))
             }
-            
+
             return sb.toString()
         }
-        
+
         return renderNode(root, "", true, true).trimEnd()
     }
-    
+
     /**
      * Count unique directories from file paths.
      */
-    private fun countDirectories(paths: List<String>): Int {
+    fun countDirectories(paths: List<String>): Int {
         val directories = mutableSetOf<String>()
         for (path in paths) {
             val parts = path.split('/')
@@ -303,7 +303,7 @@ object DocumentRegistry {
         }
         return directories.size
     }
-    
+
     /**
      * Execute $.files query across multiple documents
      */
