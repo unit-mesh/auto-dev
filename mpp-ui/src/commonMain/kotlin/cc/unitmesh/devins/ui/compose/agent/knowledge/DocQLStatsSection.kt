@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.ui.compose.agent
+package cc.unitmesh.devins.ui.compose.agent.knowledge
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

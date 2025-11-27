@@ -10,7 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
-import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
+import cc.unitmesh.devins.ui.base.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.agent.codereview.diff.CommitListView
 import cc.unitmesh.devins.ui.compose.agent.codereview.diff.DiffCenterView
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
@@ -166,7 +166,7 @@ private fun ThreeColumnLayout(
                             viewModel.refreshIssueForCommit(actualIndex)
                         }
                     }
-                    
+
                     DiffCenterView(
                         diffFiles = state.diffFiles,
                         selectedCommits = state.selectedCommitIndices.mapNotNull { state.commitHistory.getOrNull(it) },

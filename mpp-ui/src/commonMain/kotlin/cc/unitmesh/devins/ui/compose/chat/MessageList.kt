@@ -49,8 +49,11 @@ fun MessageList(
     fun scrollToBottomIfNeeded() {
         if (shouldAutoScroll) {
             coroutineScope.launch {
-                val lastIndex = messages.size
-                listState.scrollToItem(lastIndex)
+                // 使用 layoutInfo.totalItemsCount 获取实际的列表项数量，避免索引越界
+                val totalItems = listState.layoutInfo.totalItemsCount
+                if (totalItems > 0) {
+                    listState.scrollToItem(totalItems - 1)
+                }
             }
         }
     }

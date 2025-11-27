@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.ui.compose.agent
+package cc.unitmesh.devins.ui.base
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -13,38 +13,38 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * A high-performance resizable split pane that divides two composables horizontally
+ * A high-performance resizable split pane that divides two composables vertically
  * Optimized for smooth dragging and excellent visual feedback
  *
  * @param modifier The modifier to apply to this layout
- * @param initialSplitRatio The initial split ratio (0.0 to 1.0) for the first pane
- * @param minRatio The minimum split ratio for the first pane
- * @param maxRatio The maximum split ratio for the first pane
- * @param dividerWidth The width of the divider in dp
+ * @param initialSplitRatio The initial split ratio (0.0 to 1.0) for the top pane
+ * @param minRatio The minimum split ratio for the top pane
+ * @param maxRatio The maximum split ratio for the top pane
+ * @param dividerHeight The height of the divider in dp
  * @param saveKey Optional key for saving/restoring split ratio across app sessions. If null, state is not persisted.
- * @param first The first composable (left side)
- * @param second The second composable (right side)
+ * @param top The first composable (top side)
+ * @param bottom The second composable (bottom side)
  */
 @Composable
-fun ResizableSplitPane(
+fun VerticalResizableSplitPane(
     modifier: Modifier = Modifier,
     initialSplitRatio: Float = 0.5f,
     minRatio: Float = 0.2f,
     maxRatio: Float = 0.8f,
-    dividerWidth: Int = 8,
+    dividerHeight: Int = 8,
     saveKey: String? = null,
-    first: @Composable () -> Unit,
-    second: @Composable () -> Unit
+    top: @Composable () -> Unit,
+    bottom: @Composable () -> Unit
 ) {
     // Use rememberSaveable when saveKey is provided for persistent state
     var splitRatio by if (saveKey != null) {
@@ -53,12 +53,12 @@ fun ResizableSplitPane(
         remember { mutableStateOf(initialSplitRatio.coerceIn(minRatio, maxRatio)) }
     }
     var isDragging by remember { mutableStateOf(false) }
-    var containerWidth by remember { mutableStateOf(0) }
-    
+    var containerHeight by remember { mutableStateOf(0) }
+
     // Track hover state for smooth animations
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    
+
     // Smooth opacity animation for hover effect
     val dividerAlpha by animateFloatAsState(
         targetValue = when {
@@ -69,7 +69,7 @@ fun ResizableSplitPane(
         animationSpec = tween(durationMillis = 150),
         label = "dividerAlpha"
     )
-    
+
     // Smooth scale animation for better visual feedback
     val dividerScale by animateFloatAsState(
         targetValue = when {
@@ -84,16 +84,16 @@ fun ResizableSplitPane(
     Layout(
         modifier = modifier,
         content = {
-            // First pane
-            Box(modifier = Modifier.fillMaxHeight()) {
-                first()
+            // Top pane
+            Box(modifier = Modifier.fillMaxWidth()) {
+                top()
             }
 
             // Enhanced divider with visual feedback
             Box(
                 modifier = Modifier
-                    .width(dividerWidth.dp)
-                    .fillMaxHeight()
+                    .height(dividerHeight.dp)
+                    .fillMaxWidth()
                     .hoverable(interactionSource)
                     .pointerHoverIcon(PointerIcon.Crosshair) // Better cursor for resizing
             ) {
@@ -103,12 +103,12 @@ fun ResizableSplitPane(
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                 )
-                
+
                 // Highlighted center strip for grabbing
                 Spacer(
                     modifier = Modifier
-                        .width((dividerWidth * dividerScale).dp)
-                        .fillMaxHeight()
+                        .height((dividerHeight * dividerScale).dp)
+                        .fillMaxWidth()
                         .alpha(dividerAlpha)
                         .background(
                             when {
@@ -117,7 +117,7 @@ fun ResizableSplitPane(
                                 else -> MaterialTheme.colorScheme.outlineVariant
                             }
                         )
-                        .pointerInput(containerWidth) {
+                        .pointerInput(containerHeight) {
                             detectDragGestures(
                                 onDragStart = {
                                     isDragging = true
@@ -130,14 +130,14 @@ fun ResizableSplitPane(
                                 }
                             ) { change, dragAmount ->
                                 change.consume()
-                                
-                                // Calculate delta based on total container width for accurate dragging
-                                if (containerWidth > 0) {
-                                    val delta = dragAmount.x / containerWidth
-                                    
+
+                                // Calculate delta based on total container height for accurate dragging
+                                if (containerHeight > 0) {
+                                    val delta = dragAmount.y / containerHeight
+
                                     // Optimize: Only update if change is meaningful (reduces recomposition)
                                     val newRatio = (splitRatio + delta).coerceIn(minRatio, maxRatio)
-                                    if (kotlin.math.abs(newRatio - splitRatio) > 0.001f) {
+                                    if (abs(newRatio - splitRatio) > 0.001f) {
                                         splitRatio = newRatio
                                     }
                                 }
@@ -146,41 +146,41 @@ fun ResizableSplitPane(
                 )
             }
 
-            // Second pane
-            Box(modifier = Modifier.fillMaxHeight()) {
-                second()
+            // Bottom pane
+            Box(modifier = Modifier.fillMaxWidth()) {
+                bottom()
             }
         }
     ) { measurables, constraints ->
-        // Store container width for accurate drag calculations
-        containerWidth = constraints.maxWidth
-        
+        // Store container height for accurate drag calculations
+        containerHeight = constraints.maxHeight
+
         // Pre-calculate dimensions once for better performance
-        val dividerWidthPx = (dividerWidth.dp).roundToPx()
-        val availableWidth = constraints.maxWidth - dividerWidthPx
-        
-        // Calculate pane widths
-        val firstWidth = (availableWidth * splitRatio).roundToInt().coerceAtLeast(0)
-        val secondWidth = (availableWidth - firstWidth).coerceAtLeast(0)
+        val dividerHeightPx = (dividerHeight.dp).roundToPx()
+        val availableHeight = constraints.maxHeight - dividerHeightPx
+
+        // Calculate pane heights
+        val topHeight = (availableHeight * splitRatio).roundToInt().coerceAtLeast(0)
+        val bottomHeight = (availableHeight - topHeight).coerceAtLeast(0)
 
         // Measure all children with fixed constraints
-        val firstPlaceable = measurables[0].measure(
-            Constraints.fixed(firstWidth, constraints.maxHeight)
+        val topPlaceable = measurables[0].measure(
+            Constraints.fixed(constraints.maxWidth, topHeight)
         )
 
         val dividerPlaceable = measurables[1].measure(
-            Constraints.fixed(dividerWidthPx, constraints.maxHeight)
+            Constraints.fixed(constraints.maxWidth, dividerHeightPx)
         )
 
-        val secondPlaceable = measurables[2].measure(
-            Constraints.fixed(secondWidth, constraints.maxHeight)
+        val bottomPlaceable = measurables[2].measure(
+            Constraints.fixed(constraints.maxWidth, bottomHeight)
         )
 
         // Place children in layout
         layout(constraints.maxWidth, constraints.maxHeight) {
-            firstPlaceable.placeRelative(0, 0)
-            dividerPlaceable.placeRelative(firstWidth, 0)
-            secondPlaceable.placeRelative(firstWidth + dividerWidthPx, 0)
+            topPlaceable.placeRelative(0, 0)
+            dividerPlaceable.placeRelative(0, topHeight)
+            bottomPlaceable.placeRelative(0, topHeight + dividerHeightPx)
         }
     }
 }

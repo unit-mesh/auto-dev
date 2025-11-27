@@ -39,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
+import cc.unitmesh.devins.ui.compose.agent.knowledge.DocQLDetailDialog
+import cc.unitmesh.devins.ui.compose.agent.knowledge.DocQLStatsSection
 import cc.unitmesh.devins.ui.compose.agent.codereview.FileViewerDialog
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.sketch.TextBlockRenderer

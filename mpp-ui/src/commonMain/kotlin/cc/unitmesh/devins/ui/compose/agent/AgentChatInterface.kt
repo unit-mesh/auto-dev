@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.devins.ui.base.ResizableSplitPane
+import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.state.UIStateManager
 import cc.unitmesh.devins.workspace.WorkspaceManager
@@ -97,7 +99,7 @@ fun AgentChatInterface(
             first = {
                 Column(modifier = Modifier.fillMaxSize()) {
                     if (showTopBar) {
-                        cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
+                        TopBarMenu(
                             hasHistory = hasHistory,
                             hasDebugInfo = hasDebugInfo,
                             currentModelConfig = currentModelConfig,
@@ -193,11 +195,13 @@ fun AgentChatInterface(
                                         .padding(horizontal = 12.dp, vertical = 8.dp)
                             )
                         }
+
                         AgentType.CODE_REVIEW,
                         AgentType.KNOWLEDGE -> {
                             // CODE_REVIEW and DOCUMENT_READER have their own full-page interfaces
                             // They should not reach here - handled by AgentInterfaceRouter
                         }
+
                         AgentType.REMOTE -> {
                             // REMOTE type should not reach here - it's handled by AgentInterfaceRouter
                             // This is a fallback to prevent compilation errors

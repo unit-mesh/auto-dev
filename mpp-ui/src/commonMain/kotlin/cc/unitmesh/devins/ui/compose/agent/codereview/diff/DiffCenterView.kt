@@ -51,7 +51,7 @@ import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.TestFileInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.QualityReviewPanel
-import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
+import cc.unitmesh.devins.ui.base.VerticalResizableSplitPane
 import androidx.compose.foundation.lazy.items
 
 @Composable
@@ -124,7 +124,7 @@ fun DiffCenterView(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         InlineIssueChip(issueInfo = selectedCommit.issueInfo)
-                                        
+
                                         // Show cache indicator and refresh button if from cache
                                         if (selectedCommit.issueFromCache && selectedCommit.issueCacheAge != null) {
                                             Text(
@@ -133,7 +133,7 @@ fun DiffCenterView(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                                             )
                                         }
-                                        
+
                                         // Refresh button
                                         if (onRefreshIssue != null) {
                                             IconButton(
@@ -161,7 +161,7 @@ fun DiffCenterView(
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
                                         )
-                                        
+
                                         // Retry button
                                         if (onRefreshIssue != null) {
                                             IconButton(
@@ -176,7 +176,7 @@ fun DiffCenterView(
                                                 )
                                             }
                                         }
-                                        
+
                                         // Configure token button (only for auth errors)
                                         if (selectedCommit.issueLoadError.contains("Authentication", ignoreCase = true)) {
                                             Button(

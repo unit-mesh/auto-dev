@@ -12,12 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.devins.document.DocumentRegistry
 import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.devins.document.docql.executeDocQL
 import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBar
 import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBarActions
-import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
-import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
+import cc.unitmesh.devins.ui.base.ResizableSplitPane
+import cc.unitmesh.devins.ui.base.VerticalResizableSplitPane
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.WorkspaceManager
 
@@ -121,7 +122,7 @@ fun DocumentReaderPage(
                                     onDocQLQuery = { query ->
                                         // Global query across all indexed documents
                                         try {
-                                            cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
+                                            DocumentRegistry.queryDocuments(query)
                                         } catch (e: Exception) {
                                             DocQLResult.Error("全局查询失败: ${e.message}")
                                         }
@@ -166,7 +167,7 @@ fun DocumentReaderPage(
                                                 } else {
                                                     // 全局查询所有已索引的文档
                                                     try {
-                                                        cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
+                                                        DocumentRegistry.queryDocuments(query)
                                                     } catch (e: Exception) {
                                                         DocQLResult.Error("全局查询失败: ${e.message}")
                                                     }
