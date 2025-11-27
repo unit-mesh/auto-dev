@@ -20,14 +20,11 @@ import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.TOCItem
 import cc.unitmesh.llm.KoogLLMService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
-private const val initialMaxResults = 50
+const val initialMaxResults = 50
 
 @Serializable
 data class DocQLParams(
@@ -522,7 +519,7 @@ class DocQLInvocation(
         )
 
         return ToolResult.Success(
-            formatDocQLResult(result, documentPath, params.maxResults ?: initialMaxResults),
+            formatDocQLResult(result, params.maxResults ?: initialMaxResults),
             stats.toMetadata()
         )
     }
@@ -555,7 +552,7 @@ class DocQLInvocation(
             )
 
             ToolResult.Success(
-                formatDocQLResult(result, null, params.maxResults ?: initialMaxResults),
+                formatDocQLResult(result, params.maxResults ?: initialMaxResults),
                 stats.toMetadata()
             )
         } else {
@@ -603,15 +600,7 @@ class DocQLInvocation(
     }
 
     private fun getResultCount(result: DocQLResult): Int {
-        return when (result) {
-            is DocQLResult.Entities -> result.totalCount
-            is DocQLResult.TocItems -> result.totalCount
-            is DocQLResult.Chunks -> result.totalCount
-            is DocQLResult.CodeBlocks -> result.totalCount
-            is DocQLResult.Tables -> result.totalCount
-            is DocQLResult.Files -> result.items.size
-            else -> 0
-        }
+        return result.getResultCount()
     }
 
     private fun buildQuerySuggestion(query: String): String {
@@ -632,214 +621,12 @@ class DocQLInvocation(
         return suggestions.joinToString("\n")
     }
 
-    private fun formatDocQLResult(
-        result: DocQLResult,
-        documentPath: String?,
-        maxResults: Int = initialMaxResults
-    ): String {
-        return when (result) {
-            is DocQLResult.TocItems -> {
-                buildString {
-                    val totalItems = result.totalCount
-                    val truncated = totalItems > maxResults
-
-                    appendLine("Found $totalItems TOC items across ${result.itemsByFile.size} file(s):")
-                    if (truncated) {
-                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
-                    }
-                    appendLine()
-
-                    var count = 0
-                    for ((filePath, items) in result.itemsByFile) {
-                        if (count >= maxResults) break
-
-                        appendLine("## 📄 $filePath")
-                        for (item in items) {
-                            if (count >= maxResults) break
-                            appendLine("  ${"  ".repeat(item.level - 1)}${item.level}. ${item.title}")
-                            count++
-                        }
-                        appendLine()
-                    }
-
-                    if (truncated) {
-                        appendLine("💡 Tip: Query specific directories to get more focused results:")
-                        appendLine("   \$.content.h1()")
-                        appendLine("   \$.toc[?(@.title contains \"keyword\")]")
-                    }
-                }
-            }
-
-            is DocQLResult.Entities -> {
-                buildString {
-                    val totalItems = result.totalCount
-                    val truncated = totalItems > maxResults
-
-                    appendLine("Found $totalItems entities across ${result.itemsByFile.size} file(s):")
-                    if (truncated) {
-                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
-                    }
-                    appendLine()
-
-                    var count = 0
-                    for ((filePath, items) in result.itemsByFile) {
-                        if (count >= maxResults) break
-
-                        appendLine("## 📄 $filePath")
-                        for (entity in items) {
-                            if (count >= maxResults) break
-                            when (entity) {
-                                is Entity.ClassEntity -> {
-                                    val pkg =
-                                        if (!entity.packageName.isNullOrEmpty()) " (${entity.packageName})" else ""
-                                    appendLine("  📘 class ${entity.name}$pkg")
-                                    if (entity.location.line != null) {
-                                        appendLine("     └─ Line ${entity.location.line}")
-                                    }
-                                }
-
-                                is Entity.FunctionEntity -> {
-                                    val sig = entity.signature ?: entity.name
-                                    appendLine("  ⚡ $sig")
-                                    if (entity.location.line != null) {
-                                        appendLine("     └─ Line ${entity.location.line}")
-                                    }
-                                }
-
-                                is Entity.Term -> {
-                                    appendLine("  📝 ${entity.name}: ${entity.definition ?: ""}")
-                                }
-
-                                is Entity.API -> {
-                                    appendLine("  🔌 ${entity.name}: ${entity.signature ?: ""}")
-                                }
-                            }
-                            count++
-                        }
-                        appendLine()
-                    }
-
-                    if (truncated) {
-                        appendLine("💡 Tip: Use $.code.class(\"ClassName\") or $.code.function(\"functionName\") to get full source code")
-                    }
-                }
-            }
-
-            is DocQLResult.Chunks -> {
-                buildString {
-                    val totalItems = result.totalCount
-                    val truncated = totalItems > maxResults
-
-                    appendLine("Found $totalItems content chunks across ${result.itemsByFile.size} file(s):")
-                    if (truncated) {
-                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
-                        appendLine("💡 Tip: Narrow down your search to specific files or directories")
-                        appendLine("   Example: Query documents in a specific directory only")
-                    }
-                    appendLine()
-
-                    var count = 0
-                    for ((filePath, items) in result.itemsByFile) {
-                        if (count >= maxResults) break
-
-                        // Filter out empty or whitespace-only chunks
-                        val nonEmptyItems = items.filter { it.content.trim().isNotEmpty() }
-                        if (nonEmptyItems.isEmpty()) continue
-
-                        appendLine("## 📄 $filePath")
-                        appendLine()
-
-                        for (chunk in nonEmptyItems) {
-                            if (count >= maxResults) break
-
-                            val content = chunk.content.trim()
-                            if (content.isNotEmpty()) {
-                                appendLine(content)
-                                appendLine()
-                                appendLine("---")
-                                appendLine()
-                                count++
-                            }
-                        }
-                    }
-
-                    if (count == 0) {
-                        appendLine("No non-empty chunks found.")
-                    }
-                }
-            }
-
-            is DocQLResult.CodeBlocks -> {
-                buildString {
-                    appendLine("Found ${result.totalCount} code blocks across ${result.itemsByFile.size} file(s):")
-                    appendLine()
-                    for ((filePath, items) in result.itemsByFile) {
-                        appendLine("## 📄 $filePath")
-                        items.forEach { block ->
-                            appendLine("```${block.language ?: ""}")
-                            appendLine(block.code)
-                            appendLine("```")
-                            appendLine()
-                        }
-                    }
-                }
-            }
-
-            is DocQLResult.Tables -> {
-                buildString {
-                    appendLine("Found ${result.totalCount} tables across ${result.itemsByFile.size} file(s):")
-                    for ((filePath, items) in result.itemsByFile) {
-                        appendLine("## 📄 $filePath")
-                        appendLine("  ${items.size} table(s)")
-                    }
-                }
-            }
-
-            is DocQLResult.Files -> {
-                buildString {
-                    appendLine("Found ${result.items.size} files:")
-                    appendLine()
-                    result.items.forEach { file ->
-                        appendLine("📄 ${file.path}")
-                        if (file.directory.isNotEmpty()) {
-                            appendLine("   Directory: ${file.directory}")
-                        }
-                        if (file.extension.isNotEmpty()) {
-                            appendLine("   Type: ${file.extension}")
-                        }
-                        if (file.size > 0) {
-                            appendLine("   Size: ${file.size} characters")
-                        }
-                        appendLine()
-                    }
-                    if (result.items.size > 50) {
-                        appendLine("💡 Too many results! Consider filtering by directory:")
-                        appendLine("   \$.files[?(@.path contains \"your-directory\")]")
-                    }
-                }
-            }
-
-            is DocQLResult.Empty -> {
-                "No results found."
-            }
-
-            is DocQLResult.Error -> {
-                throw ToolException(result.message, ToolErrorType.COMMAND_FAILED)
-            }
-        }
+    private fun formatDocQLResult(result: DocQLResult, maxResults: Int = initialMaxResults): String {
+        return result.formatDocQLResult(maxResults)
     }
 
     private fun isEmptyResult(result: DocQLResult): Boolean {
-        return when (result) {
-            is DocQLResult.Empty -> true
-            is DocQLResult.TocItems -> result.totalCount == 0
-            is DocQLResult.Entities -> result.totalCount == 0
-            is DocQLResult.Chunks -> result.totalCount == 0
-            is DocQLResult.CodeBlocks -> result.totalCount == 0
-            is DocQLResult.Tables -> result.totalCount == 0
-            is DocQLResult.Files -> result.items.isEmpty()
-            is DocQLResult.Error -> true
-        }
+        return result.isEmptyResult()
     }
 
     /**
@@ -854,7 +641,7 @@ class DocQLInvocation(
         } else {
             val currentDecimals = str.length - dotIndex - 1
             when {
-                currentDecimals >= 2 -> str.substring(0, dotIndex + 3)
+                currentDecimals >= 2 -> str.take(dotIndex + 3)
                 currentDecimals == 1 -> str + "0"
                 else -> str + "00"
             }

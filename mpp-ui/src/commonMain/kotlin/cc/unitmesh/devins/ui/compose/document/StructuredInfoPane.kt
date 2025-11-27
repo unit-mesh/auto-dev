@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.TOCItem
+import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 
@@ -22,10 +23,10 @@ fun StructuredInfoPane(
     entities: List<Entity>,
     onTocSelected: (TOCItem) -> Unit,
     onEntitySelected: (Entity) -> Unit,
-    onDocQLQuery: suspend (String) -> cc.unitmesh.devins.document.docql.DocQLResult,
+    onDocQLQuery: suspend (String) -> DocQLResult,
     modifier: Modifier = Modifier
 ) {
-    var docqlResult by remember { mutableStateOf<cc.unitmesh.devins.document.docql.DocQLResult?>(null) }
+    var docqlResult by remember { mutableStateOf<DocQLResult?>(null) }
     var showDocQLResult by remember { mutableStateOf(false) }
     var tocExpanded by remember { mutableStateOf(true) }
     var entitiesExpanded by remember { mutableStateOf(false) }
@@ -306,7 +307,7 @@ private fun EntityItemRow(
  */
 @Composable
 private fun DocQLResultView(
-    result: cc.unitmesh.devins.document.docql.DocQLResult,
+    result: DocQLResult,
     onTocSelected: (TOCItem) -> Unit,
     onEntitySelected: (Entity) -> Unit,
     onClose: () -> Unit
@@ -339,7 +340,7 @@ private fun DocQLResultView(
 
         // 显示结果
         when (result) {
-            is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
+            is DocQLResult.TocItems -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "找到 ${result.totalCount} 个目录项来自 ${result.itemsByFile.size} 个文件",
@@ -368,7 +369,7 @@ private fun DocQLResultView(
                 }
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
+            is DocQLResult.Entities -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "找到 ${result.totalCount} 个实体来自 ${result.itemsByFile.size} 个文件",
@@ -397,7 +398,7 @@ private fun DocQLResultView(
                 }
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
+            is DocQLResult.Chunks -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "找到 ${result.totalCount} 个内容块来自 ${result.itemsByFile.size} 个文件",
@@ -426,11 +427,11 @@ private fun DocQLResultView(
                 }
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
+            is DocQLResult.Empty -> {
                 EmptyState("没有找到匹配的结果")
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.Error -> {
+            is DocQLResult.Error -> {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -446,7 +447,7 @@ private fun DocQLResultView(
                 }
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
+            is DocQLResult.CodeBlocks -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "找到 ${result.totalCount} 个代码块来自 ${result.itemsByFile.size} 个文件",
@@ -472,7 +473,7 @@ private fun DocQLResultView(
                 }
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
+            is DocQLResult.Tables -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "找到 ${result.totalCount} 个表格来自 ${result.itemsByFile.size} 个文件",
@@ -498,7 +499,7 @@ private fun DocQLResultView(
                 }
             }
 
-            is cc.unitmesh.devins.document.docql.DocQLResult.Files -> {
+            is DocQLResult.Files -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "找到 ${result.items.size} 个文件",

@@ -2,7 +2,6 @@ package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.scoring.DocumentReranker
 import cc.unitmesh.agent.scoring.TextSegment
-import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.DocumentRegistry
 import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.docql.DocQLResult

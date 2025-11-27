@@ -3,7 +3,6 @@ package cc.unitmesh.devins.document.docql
 import cc.unitmesh.devins.document.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**

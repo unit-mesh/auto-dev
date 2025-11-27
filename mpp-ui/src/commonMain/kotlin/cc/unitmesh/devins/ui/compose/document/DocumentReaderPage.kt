@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.devins.document.docql.executeDocQL
 import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBar
 import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBarActions
@@ -122,7 +123,7 @@ fun DocumentReaderPage(
                                         try {
                                             cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
                                         } catch (e: Exception) {
-                                            cc.unitmesh.devins.document.docql.DocQLResult.Error("全局查询失败: ${e.message}")
+                                            DocQLResult.Error("全局查询失败: ${e.message}")
                                         }
                                     }
                                 )
@@ -167,7 +168,7 @@ fun DocumentReaderPage(
                                                     try {
                                                         cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
                                                     } catch (e: Exception) {
-                                                        cc.unitmesh.devins.document.docql.DocQLResult.Error("全局查询失败: ${e.message}")
+                                                        DocQLResult.Error("全局查询失败: ${e.message}")
                                                     }
                                                 }
                                             }
