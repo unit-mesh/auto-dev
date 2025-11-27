@@ -41,21 +41,18 @@ object DocQLResultFormatter {
         }
 
         return buildString {
-            // Header with result count
             val countInfo = if (truncated) "$totalCount+" else "${results.size}"
             appendLine("Found $countInfo results for \"$keyword\":")
             appendLine()
 
-            // Show top items, limit to COMPACT_MAX_ITEMS
             val itemsToShow = results.take(COMPACT_MAX_ITEMS)
 
             itemsToShow.forEach { result ->
                 val (itemType, itemName) = extractItemInfo(result)
-                val fileInfo = result.filePath?.substringAfterLast('/')?.let { " in $it" } ?: ""
+                val fileInfo = result.filePath
                 appendLine("- $itemName ($itemType)$fileInfo")
             }
 
-            // Show "and N more" if there are more results
             val remainingCount = results.size - COMPACT_MAX_ITEMS
             if (remainingCount > 0) {
                 appendLine()
@@ -69,19 +66,30 @@ object DocQLResultFormatter {
      */
     private fun extractItemInfo(result: ScoredResult): Pair<String, String> {
         return when (val item = result.item) {
-            is Entity.ClassEntity -> "class" to item.name
-            is Entity.FunctionEntity -> "function" to item.name
-            is TOCItem -> "heading" to item.title
-            is DocumentChunk -> "content" to result.preview.take(40)
-            is TextSegment -> item.type to (item.name.ifEmpty { result.preview.take(40) })
+            is Entity.ClassEntity -> {
+                "class" to item.name
+            }
+
+            is Entity.FunctionEntity -> {
+                "function" to item.name
+            }
+
+            is TOCItem -> {
+                "heading" to item.title
+            }
+
+            is DocumentChunk -> {
+                "content" to result.preview.take(40)
+            }
+
+            is TextSegment -> {
+                item.type to (item.name.ifEmpty { result.preview.take(40) })
+            }
+
             else -> "item" to result.preview.take(40)
         }
     }
 
-    /**
-     * Format detailed results for storage in metadata.
-     * This is the full verbose format that can be shown in a dialog.
-     */
     fun formatDetailedResult(
         results: List<ScoredResult>,
         keyword: String,
