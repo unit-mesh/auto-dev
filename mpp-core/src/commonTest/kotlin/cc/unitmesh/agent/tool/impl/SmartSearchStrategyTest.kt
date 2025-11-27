@@ -5,10 +5,14 @@ import cc.unitmesh.agent.scoring.DocumentRerankerConfig
 import cc.unitmesh.agent.scoring.ExpandedKeywords
 import cc.unitmesh.agent.scoring.KeywordExpander
 import cc.unitmesh.agent.scoring.KeywordExpanderConfig
-import cc.unitmesh.agent.scoring.RerankResult
-import cc.unitmesh.agent.scoring.ScoredItem
 import cc.unitmesh.agent.scoring.TextSegment
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.impl.docql.ExpandStrategy
+import cc.unitmesh.agent.tool.impl.docql.FilterStrategy
+import cc.unitmesh.agent.tool.impl.docql.KeepStrategy
+import cc.unitmesh.agent.tool.impl.docql.SearchItem
+import cc.unitmesh.agent.tool.impl.docql.SearchLevelResult
+import cc.unitmesh.agent.tool.impl.docql.SmartSearchContext
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

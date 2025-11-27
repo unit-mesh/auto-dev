@@ -1,4 +1,4 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.docql
 
 import cc.unitmesh.agent.scoring.CompositeScorer
 import cc.unitmesh.agent.scoring.DocumentMetadataItem
@@ -6,9 +6,11 @@ import cc.unitmesh.agent.scoring.LLMMetadataReranker
 import cc.unitmesh.agent.scoring.LLMMetadataRerankerConfig
 import cc.unitmesh.agent.scoring.RerankerType
 import cc.unitmesh.agent.scoring.TextSegment
+import cc.unitmesh.devins.document.DocumentFile
 import cc.unitmesh.devins.document.DocumentRegistry
 import cc.unitmesh.llm.KoogLLMService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.datetime.Clock
 
 private val logger = KotlinLogging.logger {}
 
@@ -69,7 +71,7 @@ class DocQLResultReranker(
         query: String,
         maxResults: Int
     ): RerankResult {
-        val startTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+        val startTime = Clock.System.now().toEpochMilliseconds()
         
         return try {
             val llmReranker = LLMMetadataReranker(
@@ -101,7 +103,7 @@ class DocQLResultReranker(
             }
             
             val llmResult = llmReranker.rerank(metadataItems, query)
-            val endTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+            val endTime = Clock.System.now().toEpochMilliseconds()
             
             // Map LLM results back to scored results
             val idToItem = items.associateBy { it.segment.id ?: it.hashCode().toString() }
@@ -184,8 +186,8 @@ class DocQLResultReranker(
     private fun getH1FromPath(filePath: String): String? {
         return try {
             val docPair = DocumentRegistry.getDocument(filePath)
-            if (docPair?.first is cc.unitmesh.devins.document.DocumentFile) {
-                val docFile = docPair.first as cc.unitmesh.devins.document.DocumentFile
+            if (docPair?.first is DocumentFile) {
+                val docFile = docPair.first as DocumentFile
                 docFile.toc.firstOrNull { it.level == 1 }?.title
             } else null
         } catch (e: Exception) {

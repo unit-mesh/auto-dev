@@ -1,12 +1,11 @@
 package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.impl.docql.DocQLDirectQueryExecutor
 import cc.unitmesh.devins.document.DocumentRegistry
-import cc.unitmesh.devins.document.docql.DocQLResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
 class DocQLDirectQueryExecutorTest {
 

@@ -34,7 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.scoring.ScoringBreakdown
 import cc.unitmesh.agent.tool.ToolType
-import cc.unitmesh.agent.tool.impl.DocQLSearchStats
+import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
 import cc.unitmesh.devins.ui.compose.agent.codereview.FileViewerDialog
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay

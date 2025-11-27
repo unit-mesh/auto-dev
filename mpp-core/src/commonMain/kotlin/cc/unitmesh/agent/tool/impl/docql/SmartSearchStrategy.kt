@@ -1,11 +1,10 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.docql
 
 import cc.unitmesh.agent.scoring.DocumentReranker
 import cc.unitmesh.agent.scoring.DocumentRerankerConfig
 import cc.unitmesh.agent.scoring.ExpandedKeywords
 import cc.unitmesh.agent.scoring.KeywordExpander
 import cc.unitmesh.agent.tool.ToolResult
-import kotlinx.serialization.Serializable
 
 interface SmartSearchStrategy {
     suspend fun execute(context: SmartSearchContext): ToolResult

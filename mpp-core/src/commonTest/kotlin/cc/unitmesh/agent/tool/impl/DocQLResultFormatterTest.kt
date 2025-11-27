@@ -1,10 +1,10 @@
 package cc.unitmesh.agent.tool.impl
 
-import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.Location
 import cc.unitmesh.devins.document.TOCItem
-import cc.unitmesh.agent.scoring.TextSegment
+import cc.unitmesh.agent.tool.impl.docql.DocQLResultFormatter
+import cc.unitmesh.agent.tool.impl.docql.ScoredResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

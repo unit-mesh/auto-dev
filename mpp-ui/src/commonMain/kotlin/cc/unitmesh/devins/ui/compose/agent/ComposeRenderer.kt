@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent
 import androidx.compose.runtime.*
 import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
@@ -95,7 +96,7 @@ class ComposeRenderer : BaseRenderer() {
             val fullOutput: String? = null, // 完整的输出，用于折叠展示或错误诊断
             val executionTimeMs: Long? = null, // 执行时间
             // DocQL-specific search statistics
-            val docqlStats: cc.unitmesh.agent.tool.impl.DocQLSearchStats? = null,
+            val docqlStats: DocQLSearchStats? = null,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
         @Deprecated("Use CombinedToolItem instead")
@@ -352,9 +353,9 @@ class ComposeRenderer : BaseRenderer() {
 
                 // Add the complete item with result
                 val executionTime = metadata["execution_time_ms"]?.toLongOrNull()
-                
+
                 // Extract DocQL search stats if available
-                val docqlStats = cc.unitmesh.agent.tool.impl.DocQLSearchStats.fromMetadata(metadata)
+                val docqlStats = DocQLSearchStats.fromMetadata(metadata)
 
                 _timeline.add(
                     lastItem.copy(

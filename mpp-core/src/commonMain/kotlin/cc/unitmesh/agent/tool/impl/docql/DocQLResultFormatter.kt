@@ -1,4 +1,4 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.docql
 
 import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.Entity
