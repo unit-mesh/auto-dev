@@ -10,8 +10,18 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * Executor for direct DocQL queries (non-smart search).
+ * 
+ * @param maxResults Maximum number of results to return (ignored when returnAll is true)
+ * @param returnAll When true, return all results without truncation
  */
-class DocQLDirectQueryExecutor(private val maxResults: Int) {
+class DocQLDirectQueryExecutor(
+    private val maxResults: Int,
+    private val returnAll: Boolean = false
+) {
+    
+    /** Effective max results - use Int.MAX_VALUE when returnAll is true */
+    private val effectiveMaxResults: Int
+        get() = if (returnAll) Int.MAX_VALUE else maxResults
 
     suspend fun querySingleDocument(documentPath: String?, query: String): ToolResult {
         if (documentPath == null || documentPath == "null") {
@@ -25,15 +35,16 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
         }
 
         val fullResults = result.toString()
-        val detailedResults = DocQLResultFormatter.formatDocQLResult(result, maxResults)
+        val detailedResults = DocQLResultFormatter.formatDocQLResult(result, effectiveMaxResults)
+        val actualResultCount = result.getResultCount()
         val stats = DocQLSearchStats(
             searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
             query = query,
             channels = listOf(extractQueryType(query)),
             documentsSearched = 1,
-            totalRawResults = result.getResultCount(),
-            resultsAfterRerank = result.getResultCount().coerceAtMost(maxResults),
-            truncated = result.getResultCount() > maxResults,
+            totalRawResults = actualResultCount,
+            resultsAfterRerank = if (returnAll) actualResultCount else actualResultCount.coerceAtMost(maxResults),
+            truncated = !returnAll && actualResultCount > maxResults,
             usedFallback = false,
             rerankerConfig = null, // No reranker for direct queries
             scoringInfo = null,
@@ -59,15 +70,16 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             }
 
             val fullResults = result.toString()
-            val detailedResults = DocQLResultFormatter.formatDocQLResult(result, maxResults)
+            val detailedResults = DocQLResultFormatter.formatDocQLResult(result, effectiveMaxResults)
+            val actualResultCount = result.getResultCount()
             val stats = DocQLSearchStats(
                 query = query,
                 searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
                 channels = listOf(extractQueryType(query)),
                 documentsSearched = docsSearched,
-                totalRawResults = result.getResultCount(),
-                resultsAfterRerank = result.getResultCount().coerceAtMost(maxResults),
-                truncated = result.getResultCount() > maxResults,
+                totalRawResults = actualResultCount,
+                resultsAfterRerank = if (returnAll) actualResultCount else actualResultCount.coerceAtMost(maxResults),
+                truncated = !returnAll && actualResultCount > maxResults,
                 usedFallback = false,
                 rerankerConfig = null,
                 scoringInfo = null,

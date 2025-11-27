@@ -25,6 +25,7 @@ import cc.unitmesh.agent.tool.impl.docql.ScoringStats
 import cc.unitmesh.agent.tool.impl.docql.SearchLevelResult
 import cc.unitmesh.agent.tool.impl.docql.SmartSearchContext
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.ToolCategory
@@ -59,7 +60,15 @@ data class DocQLParams(
      * - "llm_metadata": LLM-based metadata reranking (slower, more intelligent)
      * - "hybrid": Heuristic pre-filter + LLM rerank
      */
-    val rerankerType: String? = null
+    val rerankerType: String? = null,
+    /**
+     * When true, return all results without truncation.
+     * Useful for queries like $.code.class("*") where you want to see all classes.
+     * 
+     * WARNING: May return very large results for big codebases.
+     * Default: false (results are truncated to maxResults)
+     */
+    val returnAll: Boolean? = false
 )
 
 object DocQLSchema : DeclarativeToolSchema(
@@ -113,6 +122,7 @@ object DocQLSchema : DeclarativeToolSchema(
         - **documentPath** (optional): Target specific document by path
         - **maxResults** (optional): Limit results (default: 20)
         - **secondaryKeyword** (optional): Additional keyword for filtering when results are too many
+        - **returnAll** (optional): When true, return all results without truncation (useful for $.code.class("*"))
         
         ## Multi-Level Keyword Strategy
         The tool automatically expands keywords when needed:
@@ -167,6 +177,16 @@ object DocQLSchema : DeclarativeToolSchema(
                 - "hybrid": Heuristic pre-filter + LLM rerank. Balance of speed and quality.
             """.trimIndent(),
             required = false
+        ),
+        "returnAll" to boolean(
+            description = """
+                When true, return all results without truncation.
+                Useful for queries like $.code.class("*") or $.code.classes[*] where you want to see all items.
+                
+                WARNING: May return very large results for big codebases. Use with caution.
+                Default: false (results are truncated to maxResults)
+            """.trimIndent(),
+            required = false
         )
     )
 ) {
@@ -202,7 +222,10 @@ class DocQLInvocation(
     private val keywordSearchExecutor = DocQLKeywordSearchExecutor()
 
     /** Direct query executor */
-    private val directQueryExecutor = DocQLDirectQueryExecutor(params.maxResults ?: initialMaxResults)
+    private val directQueryExecutor = DocQLDirectQueryExecutor(
+        maxResults = params.maxResults ?: initialMaxResults,
+        returnAll = params.returnAll ?: false
+    )
 
     override fun getDescription(): String = if (params.documentPath != null) {
         "Executing DocQL query: ${params.query} on ${params.documentPath}"
@@ -533,13 +556,20 @@ class DocQLTool(
             null -> null
             else -> null
         }
+        val returnAll = when (val ret = map["returnAll"]) {
+            is Boolean -> ret
+            is String -> ret.toBooleanStrictOrNull()
+            null -> null
+            else -> null
+        }
 
         return DocQLParams(
             query = query,
             documentPath = documentPath,
             maxResults = maxResults ?: initialMaxResults,
             secondaryKeyword = secondaryKeyword,
-            rerankerType = rerankerType
+            rerankerType = rerankerType,
+            returnAll = returnAll
         )
     }
 
