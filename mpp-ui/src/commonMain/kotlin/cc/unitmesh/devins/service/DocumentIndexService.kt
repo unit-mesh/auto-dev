@@ -144,8 +144,6 @@ class DocumentIndexService(
                     error = null,
                     indexedAt = Platform.getCurrentTimestamp()
                 ))
-
-                println("✓ Indexed: $path")
                 true
             } else {
                 false

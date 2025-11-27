@@ -56,10 +56,10 @@ class DocQLResultFormatterTest {
 
         assertTrue(formatted.contains("## Search Results for 'Test'"))
         assertTrue(formatted.contains("Found 1 relevant items"))
-        assertTrue(formatted.contains("## TestClass.kt"))
-        // New inline format: class name with line number inline
-        assertTrue(formatted.contains("- **Class**: `TestClass:20`"))
-        assertTrue(formatted.contains("(0.95)"))
+        assertTrue(formatted.contains("### TestClass.kt"))
+        // Class with line number and score
+        assertTrue(formatted.contains("#### Class: `TestClass:20`"))
+        assertTrue(formatted.contains("(score: 0.95)"))
     }
 
     @Test
@@ -87,9 +87,10 @@ class DocQLResultFormatterTest {
         )
 
         assertTrue(formatted.contains("Showing 1 of 10 results"))
-        assertTrue(formatted.contains("## README.md"))
-        // New compact format: scoreInfo is now (0.88) instead of (score: 0.88)
-        assertTrue(formatted.contains("- **Section**: Introduction (0.88)"))
+        assertTrue(formatted.contains("### README.md"))
+        // Section with score
+        assertTrue(formatted.contains("#### Section: Introduction"))
+        assertTrue(formatted.contains("(score: 0.88)"))
         assertTrue(formatted.contains("> This is the introduction content."))
     }
 
@@ -119,10 +120,10 @@ class DocQLResultFormatterTest {
 
         assertTrue(formatted.contains("## Search Results for 'UserService'"))
         assertTrue(formatted.contains("Found 1 relevant items"))
-        assertTrue(formatted.contains("## UserService.kt"))
+        assertTrue(formatted.contains("### UserService.kt"))
         // Constructor should be formatted with signature and line number
-        assertTrue(formatted.contains("- **Constructor**: `UserService(String name):15`"))
-        assertTrue(formatted.contains("(0.92)"))
+        assertTrue(formatted.contains("#### Constructor: `UserService(String name):15`"))
+        assertTrue(formatted.contains("(score: 0.92)"))
     }
     
     @Test
