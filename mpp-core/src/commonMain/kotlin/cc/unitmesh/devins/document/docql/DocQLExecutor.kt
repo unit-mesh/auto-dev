@@ -490,9 +490,20 @@ class DocQLExecutor(
 
     /**
      * Execute $.code.class("ClassName") - find specific class and its content
+     * 
+     * Supports wildcard: $.code.class("*") returns all classes (equivalent to $.code.classes[*])
      */
     private suspend fun executeCodeClassQuery(className: String): DocQLResult {
-        if (parserService == null || documentFile == null) {
+        if (documentFile == null) {
+            return DocQLResult.Error("No document loaded")
+        }
+
+        // Handle wildcard "*" - return all classes (equivalent to $.code.classes[*])
+        if (className == "*" || className.isEmpty()) {
+            return executeCodeClassesQuery(emptyList())
+        }
+
+        if (parserService == null) {
             return DocQLResult.Error("No parser service available")
         }
 
@@ -516,8 +527,19 @@ class DocQLExecutor(
 
     /**
      * Execute $.code.function("functionName") - find specific function/method
+     * 
+     * Supports wildcard: $.code.function("*") returns all functions (equivalent to $.code.functions[*])
      */
     private suspend fun executeCodeFunctionQuery(functionName: String): DocQLResult {
+        if (documentFile == null) {
+            return DocQLResult.Error("No document loaded")
+        }
+
+        // Handle wildcard "*" - return all functions (equivalent to $.code.functions[*])
+        if (functionName == "*" || functionName.isEmpty()) {
+            return executeCodeFunctionsQuery(emptyList())
+        }
+
         return executeCodeCustomQuery(functionName)
     }
 
@@ -537,10 +559,17 @@ class DocQLExecutor(
 
     /**
      * Execute $.code.query("keyword") - custom query for any code element
+     * 
+     * Supports wildcard: $.code.query("*") returns all code chunks
      */
     private suspend fun executeCodeCustomQuery(keyword: String): DocQLResult {
         if (parserService == null || documentFile == null) {
             return DocQLResult.Error("No parser service available")
+        }
+
+        // Handle wildcard "*" - return all code chunks
+        if (keyword == "*") {
+            return executeAllChunksQuery()
         }
 
         // Use heading query for flexible search

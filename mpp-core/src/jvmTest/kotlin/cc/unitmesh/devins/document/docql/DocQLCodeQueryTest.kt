@@ -289,5 +289,203 @@ class DocQLCodeQueryTest {
         assertTrue(entities.totalCount >= 3)
         println("✅ Found ${entities.totalCount} methods (using 'methods' alias)")
     }
+    
+    // ====== Wildcard Support Tests ======
+    
+    @Test
+    fun `should return all classes when using dollar code class with wildcard star`() = runBlocking {
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "DocQLExecutor.kt",
+            path = "test/DocQLExecutor.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedFile = parser.parse(file, sampleKotlinCode) as DocumentFile
+        
+        // Execute $.code.class("*") - should return all classes like $.code.classes[*]
+        val query = parseDocQL("$.code.class(\"*\")")
+        val executor = DocQLExecutor(parsedFile, parser)
+        val result = executor.execute(query)
+        
+        // Should return Entities result (same as $.code.classes[*])
+        assertTrue(result is DocQLResult.Entities, "Expected Entities result but got: $result")
+        val entities = result as DocQLResult.Entities
+        assertTrue(entities.totalCount >= 3, "Expected at least 3 classes, got ${entities.totalCount}")
+        println("✅ $.code.class(\"*\") found ${entities.totalCount} classes")
+        
+        entities.items.forEach { entity ->
+            println("  📘 ${entity.name}")
+        }
+    }
+    
+    @Test
+    fun `should return all functions when using dollar code function with wildcard star`() = runBlocking {
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "DocQLExecutor.kt",
+            path = "test/DocQLExecutor.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedFile = parser.parse(file, sampleKotlinCode) as DocumentFile
+        
+        // Execute $.code.function("*") - should return all functions like $.code.functions[*]
+        val query = parseDocQL("$.code.function(\"*\")")
+        val executor = DocQLExecutor(parsedFile, parser)
+        val result = executor.execute(query)
+        
+        // Should return Entities result (same as $.code.functions[*])
+        assertTrue(result is DocQLResult.Entities, "Expected Entities result but got: $result")
+        val entities = result as DocQLResult.Entities
+        assertTrue(entities.totalCount >= 3, "Expected at least 3 functions, got ${entities.totalCount}")
+        println("✅ $.code.function(\"*\") found ${entities.totalCount} functions")
+        
+        entities.items.forEach { entity ->
+            println("  ⚡ ${entity.name}")
+        }
+    }
+    
+    @Test
+    fun `should return all methods when using dollar code method with wildcard star`() = runBlocking {
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "DocQLExecutor.kt",
+            path = "test/DocQLExecutor.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedFile = parser.parse(file, sampleKotlinCode) as DocumentFile
+        
+        // Execute $.code.method("*") - should return all methods like $.code.methods[*]
+        val query = parseDocQL("$.code.method(\"*\")")
+        val executor = DocQLExecutor(parsedFile, parser)
+        val result = executor.execute(query)
+        
+        // Should return Entities result (same as $.code.methods[*])
+        assertTrue(result is DocQLResult.Entities, "Expected Entities result but got: $result")
+        val entities = result as DocQLResult.Entities
+        assertTrue(entities.totalCount >= 3, "Expected at least 3 methods, got ${entities.totalCount}")
+        println("✅ $.code.method(\"*\") found ${entities.totalCount} methods")
+    }
+    
+    @Test
+    fun `should return all chunks when using dollar code query with wildcard star`() = runBlocking {
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "DocQLExecutor.kt",
+            path = "test/DocQLExecutor.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedFile = parser.parse(file, sampleKotlinCode) as DocumentFile
+        
+        // Execute $.code.query("*") - should return all code chunks
+        val query = parseDocQL("$.code.query(\"*\")")
+        val executor = DocQLExecutor(parsedFile, parser)
+        val result = executor.execute(query)
+        
+        // Should return Chunks result or Empty (if no TOC items)
+        assertTrue(
+            result is DocQLResult.Chunks || result is DocQLResult.Empty,
+            "Expected Chunks or Empty result but got: $result"
+        )
+        
+        if (result is DocQLResult.Chunks) {
+            println("✅ $.code.query(\"*\") found ${result.totalCount} chunks")
+        } else {
+            println("✅ $.code.query(\"*\") returned Empty (expected for code without TOC)")
+        }
+    }
+    
+    @Test
+    fun `wildcard class query should have same result as classes array all`() = runBlocking {
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "DocQLExecutor.kt",
+            path = "test/DocQLExecutor.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedFile = parser.parse(file, sampleKotlinCode) as DocumentFile
+        
+        // Execute both queries
+        val wildcardQuery = parseDocQL("$.code.class(\"*\")")
+        val arrayQuery = parseDocQL("$.code.classes[*]")
+        
+        val executor = DocQLExecutor(parsedFile, parser)
+        val wildcardResult = executor.execute(wildcardQuery)
+        val arrayResult = executor.execute(arrayQuery)
+        
+        // Both should be Entities results with same count
+        assertTrue(wildcardResult is DocQLResult.Entities)
+        assertTrue(arrayResult is DocQLResult.Entities)
+        
+        val wildcardEntities = wildcardResult as DocQLResult.Entities
+        val arrayEntities = arrayResult as DocQLResult.Entities
+        
+        assertTrue(
+            wildcardEntities.totalCount == arrayEntities.totalCount,
+            "Expected same count: wildcard=${wildcardEntities.totalCount}, array=${arrayEntities.totalCount}"
+        )
+        println("✅ $.code.class(\"*\") and $.code.classes[*] return same ${arrayEntities.totalCount} classes")
+    }
+    
+    @Test
+    fun `wildcard function query should have same result as functions array all`() = runBlocking {
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "DocQLExecutor.kt",
+            path = "test/DocQLExecutor.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedFile = parser.parse(file, sampleKotlinCode) as DocumentFile
+        
+        // Execute both queries
+        val wildcardQuery = parseDocQL("$.code.function(\"*\")")
+        val arrayQuery = parseDocQL("$.code.functions[*]")
+        
+        val executor = DocQLExecutor(parsedFile, parser)
+        val wildcardResult = executor.execute(wildcardQuery)
+        val arrayResult = executor.execute(arrayQuery)
+        
+        // Both should be Entities results with same count
+        assertTrue(wildcardResult is DocQLResult.Entities)
+        assertTrue(arrayResult is DocQLResult.Entities)
+        
+        val wildcardEntities = wildcardResult as DocQLResult.Entities
+        val arrayEntities = arrayResult as DocQLResult.Entities
+        
+        assertTrue(
+            wildcardEntities.totalCount == arrayEntities.totalCount,
+            "Expected same count: wildcard=${wildcardEntities.totalCount}, array=${arrayEntities.totalCount}"
+        )
+        println("✅ $.code.function(\"*\") and $.code.functions[*] return same ${arrayEntities.totalCount} functions")
+    }
 }
 
