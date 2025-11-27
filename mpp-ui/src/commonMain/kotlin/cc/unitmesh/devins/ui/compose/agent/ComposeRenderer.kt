@@ -357,6 +357,17 @@ class ComposeRenderer : BaseRenderer() {
                 // Extract DocQL search stats if available
                 val docqlStats = DocQLSearchStats.fromMetadata(metadata)
 
+                // For DocQL, use detailedResults from stats as fullOutput if available
+                // output should be the compact summary, fullOutput should be the detailed results
+                val finalFullOutput = when {
+                    // If fullOutput is explicitly provided, use it
+                    !fullOutput.isNullOrBlank() -> fullOutput
+                    // For DocQL, use detailedResults from stats if available
+                    toolName.lowercase() == "docql" && docqlStats?.detailedResults != null -> docqlStats.detailedResults
+                    // Otherwise, use output as fallback
+                    else -> output
+                }
+
                 _timeline.add(
                     lastItem.copy(
                         success = success,
@@ -365,12 +376,14 @@ class ComposeRenderer : BaseRenderer() {
                             // For file search tools, keep full output; for others, limit to 2000 chars for direct display
                             when (toolName) {
                                 "glob", "grep" -> output
+                                // For DocQL, output is already the compact summary, so use it as-is
+                                "docql" -> output
                                 else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated - click to view full]"
                             }
                         } else {
                             null
                         },
-                        fullOutput = fullOutput,
+                        fullOutput = finalFullOutput,
                         executionTimeMs = executionTime,
                         docqlStats = docqlStats
                     )
@@ -664,17 +677,6 @@ class ComposeRenderer : BaseRenderer() {
                     executionTimeMs = item.executionTimeMs
                 )
             }
-//            is TimelineItem.ToolCallItem -> {
-//                cc.unitmesh.devins.llm.MessageMetadata(
-//                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_CALL,
-//                    toolName = item.toolName,
-//                    description = item.description,
-//                    details = item.details,
-//                    fullParams = item.fullParams,
-//                    filePath = item.filePath,
-//                    toolType = item.toolType?.name
-//                )
-//            }
             is TimelineItem.ToolResultItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_RESULT,

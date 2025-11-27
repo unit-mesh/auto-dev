@@ -222,11 +222,18 @@ class RemoteCodingAgentViewModel(
             }
 
             is RemoteAgentEvent.ToolResult -> {
+                // For DocQL, try to extract detailed results from output if available
+                // The output should be compact summary, and detailed results should be in metadata
+                // But since RemoteAgentEvent doesn't include metadata yet, we use output for both
+                // TODO: Update RemoteAgentEvent.ToolResult to include metadata
+                val output = event.output
+                val fullOutput = event.output // Will be updated when metadata is available
+                
                 renderer.renderToolResult(
                     toolName = event.toolName,
                     success = event.success,
-                    output = event.output,
-                    fullOutput = event.output,
+                    output = output,
+                    fullOutput = fullOutput,
                     metadata = emptyMap()
                 )
             }

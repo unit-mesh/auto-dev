@@ -118,9 +118,8 @@ fun CombinedToolItem(
                     modifier = Modifier.Companion.size(16.dp)
                 )
 
-                // Tool name
                 Text(
-                    text = toolName,
+                    text = if (toolName == "docql") "DocQL" else toolName,
                     fontWeight = FontWeight.Companion.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.Companion.weight(1f)
@@ -147,9 +146,7 @@ fun CombinedToolItem(
                     )
                 }
 
-                // Show stats and details buttons for DocQL
                 if (hasStats) {
-                    // Details button - opens full result dialog
                     IconButton(
                         onClick = { showDetailDialog = true },
                         modifier = Modifier.Companion.size(24.dp)
@@ -162,7 +159,6 @@ fun CombinedToolItem(
                         )
                     }
 
-                    // Stats button - toggles inline stats
                     IconButton(
                         onClick = { showStats = !showStats },
                         modifier = Modifier.Companion.size(24.dp)
@@ -362,186 +358,6 @@ fun CombinedToolItem(
             keyword = keyword,
             stats = docqlStats,
             onDismiss = { showDetailDialog = false }
-        )
-    }
-}
-
-@Composable
-fun ToolCallItem(
-    toolName: String,
-    description: String,
-    details: String?,
-    fullParams: String? = null,
-    filePath: String? = null,
-    toolType: ToolType? = null,
-    onOpenFileViewer: ((String) -> Unit)? = null
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var showFullParams by remember { mutableStateOf(false) }
-    var showFileViewerDialog by remember { mutableStateOf(false) }
-    val clipboardManager = LocalClipboardManager.current
-
-    val displayParams = if (showFullParams) fullParams else details
-    val hasFullParams = fullParams != null && fullParams != details
-
-    val isFileOperation =
-        toolType in
-            listOf(
-                ToolType.ReadFile,
-                ToolType.WriteFile
-            )
-
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(4.dp),
-        modifier = Modifier
-    ) {
-        Column(modifier = Modifier.Companion.padding(8.dp)) {
-            Row(
-                modifier = Modifier.Companion.fillMaxWidth()
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) { if (displayParams != null) expanded = !expanded },
-                verticalAlignment = Alignment.Companion.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.PlayArrow,
-                    contentDescription = "Tool Call",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.Companion.size(16.dp)
-                )
-                Text(
-                    text = toolName,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.Companion.weight(1f)
-                )
-
-                if (isFileOperation && !filePath.isNullOrEmpty()) {
-                    IconButton(
-                        onClick = {
-                            if (onOpenFileViewer != null) {
-                                onOpenFileViewer(filePath)
-                            } else {
-                                showFileViewerDialog = true
-                            }
-                        },
-                        modifier = Modifier.Companion.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.Visibility,
-                            contentDescription = "View File",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.Companion.size(18.dp)
-                        )
-                    }
-                }
-
-                Icon(
-                    imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
-                    contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    modifier = Modifier.Companion.size(20.dp)
-                )
-            }
-
-            if (expanded && displayParams != null) {
-                Spacer(modifier = Modifier.Companion.height(8.dp))
-
-                Row(
-                    modifier = Modifier.Companion.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Companion.Top
-                ) {
-                    Column {
-                        Text(
-                            text = "Parameters:",
-                            fontWeight = FontWeight.Companion.Medium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        // Show toggle button if there are full params different from formatted details
-                        if (hasFullParams) {
-                            TextButton(
-                                onClick = { showFullParams = !showFullParams },
-                                modifier = Modifier.Companion.height(32.dp)
-                            ) {
-                                Text(
-                                    text = if (showFullParams) "Show Formatted" else "Show Raw Params",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-
-                    Row {
-                        // Copy parameters button
-                        IconButton(
-                            onClick = {
-                                clipboardManager.setText(
-                                    androidx.compose.ui.text.AnnotatedString(
-                                        displayParams ?: ""
-                                    )
-                                )
-                            },
-                            modifier = Modifier.Companion.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy parameters",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                                modifier = Modifier.Companion.size(16.dp)
-                            )
-                        }
-
-                        // Copy entire block button (always copy full params if available)
-                        IconButton(
-                            onClick = {
-                                val blockText =
-                                    buildString {
-                                        appendLine("[Tool Call]: $toolName")
-                                        appendLine("Description: $description")
-                                        appendLine("Parameters: ${fullParams ?: details ?: ""}")
-                                    }
-                                clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(blockText))
-                            },
-                            modifier = Modifier.Companion.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy entire block",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.Companion.size(16.dp)
-                            )
-                        }
-                    }
-                }
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.Companion.fillMaxWidth()
-                ) {
-                    Text(
-                        text = displayParams ?: "",
-                        modifier = Modifier.Companion.padding(8.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = FontFamily.Companion.Monospace
-                    )
-                }
-            }
-        }
-    }
-
-    // Show file viewer dialog when onOpenFileViewer is null
-    if (showFileViewerDialog && !filePath.isNullOrEmpty()) {
-        FileViewerDialog(
-            filePath = filePath,
-            onClose = { showFileViewerDialog = false }
         )
     }
 }
