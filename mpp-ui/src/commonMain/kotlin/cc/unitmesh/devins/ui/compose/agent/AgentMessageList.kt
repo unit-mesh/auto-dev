@@ -118,7 +118,7 @@ fun AgentMessageList(
     ) {
         items(
             items = renderer.timeline,
-            key = { it.timestamp }
+            key = { "${it.timestamp}_${it.hashCode()}" }
         ) { timelineItem ->
             RenderMessageItem(
                 timelineItem = timelineItem,

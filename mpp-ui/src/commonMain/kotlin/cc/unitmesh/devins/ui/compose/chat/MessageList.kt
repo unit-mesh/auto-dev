@@ -119,7 +119,7 @@ fun MessageList(
             // 显示历史消息（不包含正在生成的）
             items(
                 items = messages,
-                key = { it.timestamp }
+                key = { "${it.timestamp}_${it.hashCode()}" }
             ) { message ->
                 MessageItem(message = message)
             }
