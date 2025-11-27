@@ -78,6 +78,7 @@ enum class CodeElementType {
     CLASS,
     INTERFACE,
     ENUM,
+    CONSTRUCTOR,
     METHOD,
     FUNCTION,
     FIELD,

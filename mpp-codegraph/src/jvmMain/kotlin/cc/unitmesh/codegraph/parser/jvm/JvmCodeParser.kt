@@ -125,6 +125,13 @@ class JvmCodeParser : CodeParser {
                     processNode(child, sourceCode, filePath, packageName, language, nodes, codeNode.name)
                 }
             }
+            // Java/Kotlin constructors
+            "constructor_declaration",
+            // Kotlin primary/secondary constructors
+            "primary_constructor", "secondary_constructor" -> {
+                val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
+                nodes.add(codeNode)
+            }
             // Java/Kotlin methods
             "method_declaration", "function_declaration",
             // JavaScript/TypeScript functions
@@ -208,6 +215,13 @@ class JvmCodeParser : CodeParser {
     }
     
     private fun extractName(node: TSNode, sourceCode: String): String {
+        // Handle constructors - they use special naming
+        when (node.type) {
+            "constructor_declaration" -> return "<init>"
+            "primary_constructor" -> return "<init>"
+            "secondary_constructor" -> return "<init>"
+        }
+        
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
             if (child.type == "identifier" || child.type == "type_identifier" || child.type == "simple_identifier") {
@@ -240,6 +254,8 @@ class JvmCodeParser : CodeParser {
             "class_declaration" -> CodeElementType.CLASS
             "interface_declaration" -> CodeElementType.INTERFACE
             "enum_declaration" -> CodeElementType.ENUM
+            // Java/Kotlin constructors
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> CodeElementType.CONSTRUCTOR
             "method_declaration", "function_declaration" -> CodeElementType.METHOD
             "field_declaration" -> CodeElementType.FIELD
             "property_declaration" -> CodeElementType.PROPERTY

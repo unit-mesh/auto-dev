@@ -918,6 +918,7 @@ class DocQLExecutor(
                                 is Entity.API -> "API"
                                 is Entity.ClassEntity -> "ClassEntity"
                                 is Entity.FunctionEntity -> "FunctionEntity"
+                                is Entity.ConstructorEntity -> "ConstructorEntity"
                             }
                             entityType == condition.value
                         }
@@ -935,6 +936,7 @@ class DocQLExecutor(
                                 is Entity.API -> "API"
                                 is Entity.ClassEntity -> "ClassEntity"
                                 is Entity.FunctionEntity -> "FunctionEntity"
+                                is Entity.ConstructorEntity -> "ConstructorEntity"
                             }
                             entityType != condition.value
                         }

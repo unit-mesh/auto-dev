@@ -58,6 +58,7 @@ object DocQLResultFormatter {
         return when (val item = result.item) {
             is Entity.ClassEntity -> item.name == "unknown" || item.name.isBlank()
             is Entity.FunctionEntity -> item.name == "unknown" || item.name.isBlank()
+            is Entity.ConstructorEntity -> item.name == "unknown" || item.name.isBlank()
             else -> false
         }
     }
@@ -76,6 +77,11 @@ object DocQLResultFormatter {
             is Entity.FunctionEntity -> {
                 val lineInfo = item.location.line?.let { ":$it" } ?: ""
                 "function" to "${item.name}$lineInfo"
+            }
+
+            is Entity.ConstructorEntity -> {
+                val lineInfo = item.location.line?.let { ":$it" } ?: ""
+                "constructor" to "${item.className}$lineInfo"
             }
 
             is TOCItem -> {
@@ -106,6 +112,7 @@ object DocQLResultFormatter {
             when (val item = result.item) {
                 is Entity.ClassEntity -> item.name != "unknown" && item.name.isNotBlank()
                 is Entity.FunctionEntity -> item.name != "unknown" && item.name.isNotBlank()
+                is Entity.ConstructorEntity -> item.name != "unknown" && item.name.isNotBlank()
                 else -> true
             }
         }
@@ -141,6 +148,12 @@ object DocQLResultFormatter {
                             val lineInfo = item.location.line?.let { ":$it" } ?: ""
                             val sig = item.signature ?: item.name
                             appendLine("- **Function**: `$sig$lineInfo`$scoreInfo")
+                        }
+
+                        is Entity.ConstructorEntity -> {
+                            val lineInfo = item.location.line?.let { ":$it" } ?: ""
+                            val sig = item.signature ?: "${item.className}()"
+                            appendLine("- **Constructor**: `$sig$lineInfo`$scoreInfo")
                         }
 
                         is TOCItem -> {
@@ -257,6 +270,7 @@ object DocQLResultFormatter {
 
                         // Group entities by type for better readability
                         val classes = items.filterIsInstance<Entity.ClassEntity>()
+                        val constructors = items.filterIsInstance<Entity.ConstructorEntity>()
                         val functions = items.filterIsInstance<Entity.FunctionEntity>()
                         val terms = items.filterIsInstance<Entity.Term>()
                         val apis = items.filterIsInstance<Entity.API>()
@@ -267,6 +281,15 @@ object DocQLResultFormatter {
                             val lineInfo = entity.location.line?.let { ":$it" } ?: ""
                             val pkg = if (!entity.packageName.isNullOrEmpty()) " (${entity.packageName})" else ""
                             appendLine("  class ${entity.name}$lineInfo$pkg")
+                            count++
+                        }
+
+                        // Format constructors - inline with line number
+                        for (entity in constructors) {
+                            if (count >= maxResults) break
+                            val lineInfo = entity.location.line?.let { ":$it" } ?: ""
+                            val sig = entity.signature ?: "${entity.className}()"
+                            appendLine("  constructor $sig$lineInfo")
                             count++
                         }
 

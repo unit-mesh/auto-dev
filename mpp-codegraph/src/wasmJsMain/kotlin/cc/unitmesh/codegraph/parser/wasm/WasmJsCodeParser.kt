@@ -171,6 +171,12 @@ class WasmJsCodeParser : CodeParser {
                 }
             }
 
+            // Java/Kotlin constructors
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> {
+                val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
+                nodes.add(codeNode)
+            }
+
             "method_declaration", "function_declaration", "function", "function_definition", "method_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
@@ -273,6 +279,11 @@ class WasmJsCodeParser : CodeParser {
     }
 
     private fun extractName(node: SyntaxNode, sourceCode: String): String {
+        // Handle constructors - they use special naming
+        when (node.type) {
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> return "<init>"
+        }
+        
         for (child in node.children.toArray()) {
             if (child.type == "identifier") {
                 return child.text
@@ -286,6 +297,8 @@ class WasmJsCodeParser : CodeParser {
             "class_declaration", "class_body", "object_declaration", "class", "class_definition" -> CodeElementType.CLASS
             "interface_declaration" -> CodeElementType.INTERFACE
             "enum_declaration" -> CodeElementType.ENUM
+            // Java/Kotlin constructors
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> CodeElementType.CONSTRUCTOR
             "method_declaration", "function_declaration", "function", "function_definition", "method_definition" -> CodeElementType.METHOD
             "field_declaration", "field_definition", "public_field_definition" -> CodeElementType.FIELD
             "property_declaration" -> CodeElementType.PROPERTY

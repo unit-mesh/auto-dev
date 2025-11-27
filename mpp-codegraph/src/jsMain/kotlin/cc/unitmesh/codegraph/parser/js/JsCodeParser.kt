@@ -203,6 +203,11 @@ class JsCodeParser : CodeParser {
                     }
                 }
             }
+            // Java/Kotlin constructors
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> {
+                val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
+                nodes.add(codeNode)
+            }
             "method_declaration", "function_declaration", "function" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
@@ -280,6 +285,13 @@ class JsCodeParser : CodeParser {
     }
     
     private fun extractName(node: dynamic, sourceCode: String): String {
+        val nodeType = node.type as String
+        
+        // Handle constructors - they use special naming
+        when (nodeType) {
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> return "<init>"
+        }
+        
         val childCount = node.childCount as Int
         for (i in 0 until childCount) {
             val child = node.child(i)
@@ -312,6 +324,8 @@ class JsCodeParser : CodeParser {
             "class_declaration", "class_body", "object_declaration" -> CodeElementType.CLASS
             "interface_declaration" -> CodeElementType.INTERFACE
             "enum_declaration" -> CodeElementType.ENUM
+            // Java/Kotlin constructors
+            "constructor_declaration", "primary_constructor", "secondary_constructor" -> CodeElementType.CONSTRUCTOR
             "method_declaration", "function_declaration", "function" -> CodeElementType.METHOD
             "field_declaration" -> CodeElementType.FIELD
             "property_declaration" -> CodeElementType.PROPERTY

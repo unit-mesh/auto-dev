@@ -111,6 +111,17 @@ sealed class Entity {
         val signature: String?,
         override val location: Location
     ) : Entity()
+    
+    /**
+     * 构造函数定义
+     * 用于表示类的构造器（Java/Kotlin: constructor, Python: __init__）
+     */
+    data class ConstructorEntity(
+        override val name: String,
+        val className: String,
+        val signature: String?,
+        override val location: Location
+    ) : Entity()
 }
 
 /**
