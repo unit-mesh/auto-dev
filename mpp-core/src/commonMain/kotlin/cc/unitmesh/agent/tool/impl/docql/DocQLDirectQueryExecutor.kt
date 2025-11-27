@@ -25,7 +25,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
         }
 
         val fullResults = result.toString()
-        val detailedResults = result.formatDocQLResult(maxResults)
+        val detailedResults = DocQLResultFormatter.formatDocQLResult(result, maxResults)
         val stats = DocQLSearchStats(
             searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
             channels = listOf(extractQueryType(query)),
@@ -58,7 +58,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             }
 
             val fullResults = result.toString()
-            val detailedResults = result.formatDocQLResult(maxResults)
+            val detailedResults = DocQLResultFormatter.formatDocQLResult(result, maxResults)
             val stats = DocQLSearchStats(
                 searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
                 channels = listOf(extractQueryType(query)),

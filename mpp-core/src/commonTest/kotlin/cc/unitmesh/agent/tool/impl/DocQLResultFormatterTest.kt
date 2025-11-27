@@ -49,7 +49,7 @@ class DocQLResultFormatterTest {
 
         val results = listOf(scoredResult)
         val formatted =
-            DocQLResultFormatter.formatDetailedResult(
+            DocQLResultFormatter.formatFallbackResult(
                 results = results, keyword = "Test",
                 truncated = false
             )
@@ -77,7 +77,7 @@ class DocQLResultFormatterTest {
             filePath = "README.md"
         )
 
-        val formatted = DocQLResultFormatter.formatDetailedResult(
+        val formatted = DocQLResultFormatter.formatFallbackResult(
             results = listOf(scoredResult),
             keyword = "intro",
             truncated = true,

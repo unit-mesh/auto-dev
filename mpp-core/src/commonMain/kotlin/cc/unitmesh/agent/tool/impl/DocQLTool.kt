@@ -343,7 +343,7 @@ class DocQLInvocation(
         }
 
         // Format detailed results for dialog
-        val detailedResults = DocQLResultFormatter.formatDetailedResult(
+        val detailedResults = DocQLResultFormatter.formatFallbackResult(
             scoredResults, keyword, result.truncated, result.totalCount
         )
 
@@ -426,12 +426,10 @@ class DocQLInvocation(
                     )
                 }
 
-                // Format detailed results
-                val detailedResults = DocQLResultFormatter.formatDetailedResult(
+                val detailedResults = DocQLResultFormatter.formatFallbackResult(
                     scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount
                 )
 
-                // Generate smart summary
                 val smartSummary = DocQLResultFormatter.formatSmartSummary(
                     scoredResults, rerankResult.totalCount, rerankResult.truncated
                 )

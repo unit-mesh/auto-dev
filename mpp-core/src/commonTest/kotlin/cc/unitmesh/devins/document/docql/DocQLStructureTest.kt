@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.document.docql
 
+import cc.unitmesh.agent.tool.impl.docql.DocQLResultFormatter
 import cc.unitmesh.devins.document.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
@@ -202,7 +203,7 @@ class DocQLStructureTest {
         assertIs<DocQLResult.Structure>(result)
         
         // Test the formatDocQLResult method
-        val formatted = result.formatDocQLResult()
+        val formatted = DocQLResultFormatter.formatDocQLResult(result)
         assertTrue(formatted.contains("File Structure"))
         assertTrue(formatted.contains("directories"))
         assertTrue(formatted.contains("files"))
