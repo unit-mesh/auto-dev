@@ -188,14 +188,14 @@ For each token:
 
 // explain why you write this DocQL
 
-```
 <devin>
 /docql
+```json
 {
   "query": "token"
 }
-</devin>
 ```
+</devin>
 
 ### When deeper lookup is needed:
 
@@ -245,14 +245,12 @@ ${context.documentPath?.let { "Target: $it" } ?: ""}
 ${AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toList())}
 
 ## Tool Format
-```
 <devin>
 /tool-name
 ```json
 {"param": "value"}
 ```
 </devin>
-```
 
 # 🛑 **Hard Rules**
 
