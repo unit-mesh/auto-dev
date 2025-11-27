@@ -67,7 +67,9 @@ object DocQLSchema : DeclarativeToolSchema(
         ### 1. Document Queries ($.content.*, $.toc[*])
         **For:** Markdown, text files, documentation (.md, .txt, README)
         **Examples:**
-        - $.content.heading("keyword") - Find sections by heading
+        - $.content.h1("keyword") - Find sections by heading level 1
+        - $.content.h2("keyword") - Find sections by heading level 2
+        - $.content.headings("keyword") - Find sections by heading
         - $.content.chunks() - Get all content chunks
         - $.toc[*] - Get table of contents
         

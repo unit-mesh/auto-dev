@@ -201,7 +201,7 @@ For each token:
 
 * Query class: `{"query": "$.code.class(\"ClassName\")"}`
 * Query function: `{"query": "$.code.function(\"parse\")"}`
-* Query docs heading:`{"query": "$.content.heading(\"Architecture\")"}`
+* Query docs heading: 1`{"query": "$.content.h1(\"Architecture\")"}`
 
 Only one tool call per message.
 
@@ -228,7 +228,7 @@ Use this decision tree for research:
 
 → search module name
 → search class names
-→ search docs headings
+→ search docs headings (h1, h2 first)
 
 ### **5. No result?**
 
