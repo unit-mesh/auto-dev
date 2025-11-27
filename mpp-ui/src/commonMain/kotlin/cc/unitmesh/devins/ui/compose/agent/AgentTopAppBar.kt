@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -36,55 +37,61 @@ fun AgentTopAppBar(
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (icon != null) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                    )
-                    if (subtitle != null) {
+    Column(modifier = modifier) {
+        TopAppBar(
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Column {
                         Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = if (icon != null) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                        )
+                        if (subtitle != null) {
+                            Text(
+                                text = subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            },
+            navigationIcon = {
+                if (Platform.isWasm && onBack != null) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
-            }
-        },
-        navigationIcon = {
-            if (Platform.isWasm && onBack != null) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        },
-        actions = actions,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        ),
-        modifier = modifier
-    )
+            },
+            actions = actions,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
+
+        Divider(
+            color = MaterialTheme.colorScheme.outlineVariant, // 更柔和的灰线
+            thickness = 1.dp
+        )
+    }
 }
 
 /**
