@@ -1,8 +1,8 @@
 ## Core Rules
 
-- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, JVM, Android
-- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, JVM, Android
-- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, JVM, Android
+- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, WASM, Desktop JVM, Android, iOS
+- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, WASM, Desktop JVM, Android, iOS
+- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, WASM, Desktop JVM, Android, iOS
 
 Rest:
 
@@ -42,3 +42,11 @@ Rest:
 
 1. Build MPP Core: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
 2. Build and run MPP CLI: `cd mpp-ui && npm run build && npm run start`
+
+## Release
+
+1. modify version in `gradle.properties`
+2. publish cli version: `cd mpp-ui && npm publish:remote`
+3. publish Desktop: `git tag compose-vVersion` (same in `gradle.properties`), `git push origin compose-vVersion`
+4. draft release in GitHub, run gh cli: `gh release create compose-vVersion --draft`
+
