@@ -30,13 +30,12 @@ import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.devins.document.DocumentRegistry
 import cc.unitmesh.devins.document.docql.DocQLResult
+import cc.unitmesh.devins.document.docql.initialMaxResults
 import cc.unitmesh.llm.KoogLLMService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
-
-const val initialMaxResults = 20
 
 @Serializable
 data class DocQLParams(

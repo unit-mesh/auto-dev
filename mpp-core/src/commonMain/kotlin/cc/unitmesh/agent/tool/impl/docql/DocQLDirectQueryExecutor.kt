@@ -24,6 +24,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             return queryAllDocuments(query)
         }
 
+        val fullResults = result.toString()
         val detailedResults = result.formatDocQLResult(maxResults)
         val stats = DocQLSearchStats(
             searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
@@ -35,7 +36,8 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             usedFallback = false,
             rerankerConfig = null, // No reranker for direct queries
             scoringInfo = null,
-            detailedResults = detailedResults
+            detailedResults = detailedResults,
+            fullResults = fullResults
         )
 
         return ToolResult.Success(detailedResults, stats.toMetadata())
@@ -55,6 +57,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
                 else -> 0
             }
 
+            val fullResults = result.toString()
             val detailedResults = result.formatDocQLResult(maxResults)
             val stats = DocQLSearchStats(
                 searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
@@ -66,7 +69,8 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
                 usedFallback = false,
                 rerankerConfig = null,
                 scoringInfo = null,
-                detailedResults = detailedResults
+                detailedResults = detailedResults,
+                fullResults = fullResults
             )
 
             ToolResult.Success(detailedResults, stats.toMetadata())

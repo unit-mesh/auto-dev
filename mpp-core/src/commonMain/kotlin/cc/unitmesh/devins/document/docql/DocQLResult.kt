@@ -2,10 +2,11 @@ package cc.unitmesh.devins.document.docql
 
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
-import cc.unitmesh.agent.tool.impl.initialMaxResults
 import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.TOCItem
+
+const val initialMaxResults = 20
 
 /**
  * DocQL query execution result - all results include source file information
@@ -325,3 +326,4 @@ sealed class DocQLResult {
         }
     }
 }
+

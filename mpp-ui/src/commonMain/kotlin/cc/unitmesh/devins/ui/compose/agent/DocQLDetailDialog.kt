@@ -57,7 +57,7 @@ fun DocQLDetailDialog(
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val clipboardManager = LocalClipboardManager.current
-    val tabs = listOf("Results", "Stats")
+    val tabs = listOf("Results", "Stats", "Full Results")
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -151,7 +151,12 @@ fun DocQLDetailDialog(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = if (index == 0) AutoDevComposeIcons.Description else AutoDevComposeIcons.Analytics,
+                                        imageVector = when (index) {
+                                            0 -> AutoDevComposeIcons.Description
+                                            1 -> AutoDevComposeIcons.Analytics
+                                            2 -> AutoDevComposeIcons.Code
+                                            else -> AutoDevComposeIcons.Description
+                                        },
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -168,6 +173,7 @@ fun DocQLDetailDialog(
                 when (selectedTab) {
                     0 -> DetailedResultsTab(stats)
                     1 -> StatsTab(stats)
+                    2 -> FullResultsTab(stats)
                 }
             }
         }
@@ -343,3 +349,65 @@ private fun StatsTab(stats: DocQLSearchStats) {
     }
 }
 
+@Composable
+private fun FullResultsTab(stats: DocQLSearchStats) {
+    val scrollState = rememberScrollState()
+    val fullResults = stats.fullResults
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(16.dp)
+    ) {
+        if (fullResults.isNullOrBlank()) {
+            // No full results available
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Code,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "No full results available",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "Full results are only captured for direct DocQL queries",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+            }
+        } else {
+            // Display full unformatted results
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                androidx.compose.foundation.text.selection.SelectionContainer {
+                    Text(
+                        text = fullResults,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+        }
+    }
+}

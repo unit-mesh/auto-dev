@@ -44,7 +44,13 @@ data class DocQLSearchStats(
      * Smart result summary - a concise one-line summary of the search results.
      * Used for display in the tool call header.
      */
-    val smartSummary: String? = null
+    val smartSummary: String? = null,
+    /**
+     * Full unformatted results for debugging.
+     * Contains the complete DocQLResult before formatting, useful for debugging
+     * the format algorithm and seeing all results without truncation.
+     */
+    val fullResults: String? = null
 ) {
     @Serializable
     enum class SearchType {
@@ -119,6 +125,9 @@ data class DocQLSearchStats(
 
         // Store detailed results for dialog display
         detailedResults?.let { put("docql_detailed_results", it) }
+        
+        // Store full unformatted results for debugging
+        fullResults?.let { put("docql_full_results", it) }
     }
 
     private fun formatDouble(value: Double, decimals: Int = 2): String {
@@ -149,7 +158,8 @@ data class DocQLSearchStats(
                 keywordExpansion = KeywordExpansionStats.fromMetadata(metadata),
                 llmRerankerInfo = LLMRerankerStats.fromMetadata(metadata),
                 detailedResults = metadata["docql_detailed_results"] ?: "",
-                smartSummary = metadata["docql_smart_summary"]
+                smartSummary = metadata["docql_smart_summary"],
+                fullResults = metadata["docql_full_results"]
             )
         }
     }
