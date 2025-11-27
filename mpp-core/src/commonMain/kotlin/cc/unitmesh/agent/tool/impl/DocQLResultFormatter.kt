@@ -36,7 +36,7 @@ object DocQLResultFormatter {
                     val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
                     when (val item = result.item) {
                         is Entity.ClassEntity -> {
-                            appendLine("  - **Class**: ${item.name}$scoreInfo")
+                            appendLine("  - Class: ${item.name}$scoreInfo")
                             if (item.location.line != null) appendLine("    Line: ${item.location.line}")
                         }
 
@@ -47,11 +47,11 @@ object DocQLResultFormatter {
                         }
 
                         is TOCItem -> {
-                            appendLine("  - **Section**: ${item.title}$scoreInfo")
+                            appendLine("  - ${item.title}$scoreInfo")
                         }
 
                         is DocumentChunk -> {
-                            appendLine("  - **Content**: ...${result.preview}...$scoreInfo")
+                            appendLine("  - ...${result.preview}...$scoreInfo")
                         }
 
                         is TextSegment -> {

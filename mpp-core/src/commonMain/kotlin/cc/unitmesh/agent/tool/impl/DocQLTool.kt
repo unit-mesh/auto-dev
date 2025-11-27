@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
-const val initialMaxResults = 50
+const val initialMaxResults = 20
 
 @Serializable
 data class DocQLParams(
@@ -119,7 +119,7 @@ object DocQLSchema : DeclarativeToolSchema(
         "secondaryKeyword" to string(
             description = """
                 Optional secondary keyword for multi-level filtering.
-                When the primary query returns too many results (>50), the secondary keyword
+                When the primary query returns too many results (>20), the secondary keyword
                 is used to filter and prioritize the most relevant results.
                 
                 Example: query="Auth", secondaryKeyword="Service" 
@@ -378,7 +378,7 @@ class DocQLInvocation(
                         item = chunk ?: scoredItem.item,
                         score = scoredItem.score,
                         uniqueId = scoredItem.item.id ?: index.toString(),
-                        preview = scoredItem.item.text.take(100).replace("\n", " "),
+                        preview = scoredItem.item.text.take(DEFAULT_CHAR_LENGTH).replace("\n", " "),
                         filePath = scoredItem.item.filePath
                     )
                 }

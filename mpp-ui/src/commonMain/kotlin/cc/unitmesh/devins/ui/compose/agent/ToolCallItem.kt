@@ -295,7 +295,6 @@ fun CombinedToolItem(
                         }
                     }
 
-                    // Render DocQL output as Markdown, other tools as plain text
                     if (toolName.lowercase().contains("docql")) {
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
@@ -327,7 +326,6 @@ fun CombinedToolItem(
                 }
             }
 
-            // DocQL Search Statistics Section
             if (showStats && docqlStats != null) {
                 Spacer(modifier = Modifier.Companion.height(8.dp))
                 DocQLStatsSection(stats = docqlStats)

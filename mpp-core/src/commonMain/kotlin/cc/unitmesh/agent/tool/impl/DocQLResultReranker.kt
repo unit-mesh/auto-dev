@@ -12,6 +12,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+const val DEFAULT_CHAR_LENGTH = 100
+
 /**
  * Handles reranking of DocQL search results using different strategies.
  * 
@@ -110,7 +112,7 @@ class DocQLResultReranker(
                     item = originalItem,
                     score = llmResult.scores[id] ?: 0.0,
                     uniqueId = id,
-                    preview = item.segment.text.take(100).replace("\n", " "),
+                    preview = item.segment.text.take(DEFAULT_CHAR_LENGTH).replace("\n", " "),
                     filePath = filePath
                 )
             }
@@ -164,7 +166,7 @@ class DocQLResultReranker(
                 item = originalItem,
                 score = 0.0, // Score already applied during reranking
                 uniqueId = item.segment.id ?: item.hashCode().toString(),
-                preview = item.segment.text.take(100).replace("\n", " "),
+                preview = item.segment.text.take(DEFAULT_CHAR_LENGTH).replace("\n", " "),
                 filePath = filePath
             )
         }

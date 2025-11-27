@@ -26,6 +26,7 @@ import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
+import kotlinx.coroutines.delay
 import org.intellij.markdown.ast.ASTNode
 
 

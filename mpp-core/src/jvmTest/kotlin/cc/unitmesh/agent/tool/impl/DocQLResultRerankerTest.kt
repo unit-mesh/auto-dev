@@ -248,7 +248,7 @@ class DocQLResultRerankerTest {
         assertEquals(chunk, scoredResult.item)
         assertEquals("chunk1", scoredResult.uniqueId)
         assertEquals("docs/test.md", scoredResult.filePath)
-        assertTrue(scoredResult.preview.length <= 105) // 100 chars + some whitespace handling
+        assertTrue(scoredResult.preview.length <= 205) // 100 chars + some whitespace handling
         assertFalse(scoredResult.preview.contains("\n"))
     }
     

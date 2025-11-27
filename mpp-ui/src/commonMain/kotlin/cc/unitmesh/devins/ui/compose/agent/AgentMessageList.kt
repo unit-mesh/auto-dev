@@ -46,7 +46,6 @@ fun AgentMessageList(
         }
     }
 
-    // Additional effect to handle streaming content growth within the same item
     LaunchedEffect(renderer.currentStreamingOutput.length) {
         if (renderer.currentStreamingOutput.isNotEmpty()) {
             coroutineScope.launch {

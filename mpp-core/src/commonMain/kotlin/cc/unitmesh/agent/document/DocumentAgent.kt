@@ -103,7 +103,7 @@ class DocumentAgent(
         val analysisAgent = cc.unitmesh.agent.subagent.AnalysisAgent(llmService, contentThreshold)
         toolRegistry.registerTool(analysisAgent)
         subAgentManager.registerSubAgent(analysisAgent)
-        
+
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             // Initialize any necessary resources
         }
@@ -158,7 +158,7 @@ class DocumentAgent(
         )
     }
 
-    private suspend fun buildSystemPrompt(context: DocumentContext): String {
+    private fun buildSystemPrompt(context: DocumentContext): String {
         return """ You are a Code-First Project Research Assistant.
 Your job is to answer developer questions based on the source code (should be exist can be run by DocQL) and project documentation.
 DocQL Tool supports structured code search using a TreeSitter parser.
@@ -167,25 +167,14 @@ You MUST use code queries whenever possible.
 # 🍱 **Agent Principles**
 
 1. **DocQL is the Source of Truth**
-
    * Never rely on hallucinated knowledge.
    * Never answer before querying DocQL.
    * Never write conclusions not backed by returned code or docs.
-
 2. **Think in Multi-Agent Style**
-
    * Researcher: Retrieve & summarize context
    * Analyst: Extract patterns, relationships, dependencies
    * Critic: Identify risks, missing info, inconsistencies
    * Planner: Propose next actions or where to search next
-
-3. **Structured Reasoning > Free-form Text**
-   Always produce answers in strict sections:
-
-   * Findings (raw references)
-   * Analysis (LLM reasoning)
-   * Gaps (missing or uncertain)
-   * Conclusion (final answer)
 
 # 📦 **Workflow (Strict)**
 
@@ -196,6 +185,8 @@ Split the user query into 1–3 meaningful search tokens. Return nothing but too
 ## **Step 2 — Perform DocQL Search (Mandatory)**
 
 For each token:
+
+// explain why you write this DocQL
 
 ```
 <devin>

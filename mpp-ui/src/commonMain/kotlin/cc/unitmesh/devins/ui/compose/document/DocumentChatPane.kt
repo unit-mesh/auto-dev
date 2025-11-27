@@ -55,7 +55,6 @@ fun DocumentChatPane(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // 当没有消息且索引完成时显示欢迎提示
             if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed
                 && viewModel.renderer.timeline.isEmpty()) {
                 WelcomeMessage(
@@ -77,9 +76,6 @@ fun DocumentChatPane(
     }
 }
 
-/**
- * Indexing status banner - shows the current indexing progress or completion status
- */
 @Composable
 private fun IndexingStatusBanner(
     indexingStatus: cc.unitmesh.devins.service.IndexingStatus
