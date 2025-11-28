@@ -185,7 +185,7 @@ class DomainDictAgent(
             // ============= Step 2: Generate Entries =============
             onProgress("\n## Step 2/3: Generating Entries")
 
-            val namesToProcess = newNames.take(3000)
+            val namesToProcess = newNames.take(1000)
             onProgress("   💭 Translating ${namesToProcess.size} terms (of ${newNames.size} total)...")
 
             val newEntries = generateEntries(namesToProcess, callbacks)
@@ -249,8 +249,9 @@ class DomainDictAgent(
     ): CodebaseInsightsResult? {
         onProgress("   🔍 Scanning Git history and code structure...")
 
+        // since git and full type slowly, we use improts only
         val params = CodebaseInsightsParams(
-            analysisType = "full",
+            analysisType = "imports",
             maxFiles = 3000,
             focusArea = focusArea
         )
@@ -273,24 +274,18 @@ class DomainDictAgent(
         return result
     }
 
-    /**
-     * Extract meaningful names from TWO sources:
-     * 1. Hot files (TreeSitter parsing) - core business logic
-     * 2. All domain concepts (480+ concepts from full codebase analysis)
-     */
-    private suspend fun extractMeaningfulNames(
+    suspend fun extractMeaningfulNames(
         insights: CodebaseInsightsResult,
         onProgress: (String) -> Unit
     ): List<String> {
         val hotFileNames = mutableSetOf<String>()
         val allConceptNames = mutableSetOf<String>()
-
-        // ========== Source 1: Hot Files (TreeSitter deep parsing) ==========
-        if (codeParser != null) {
-            onProgress("   🌲 Using TreeSitter to parse hot files...")
-            val hotFilesWithCode = parseHotFilesWithTreeSitter(insights.hotFiles, onProgress)
-            hotFileNames.addAll(hotFilesWithCode)
-        }
+// since it's lowly we just disable it
+//        if (codeParser != null) {
+//            onProgress("   🌲 Using TreeSitter to parse hot files...")
+//            val hotFilesWithCode = parseHotFilesWithTreeSitter(insights.hotFiles, onProgress)
+//            hotFileNames.addAll(hotFilesWithCode)
+//        }
 
         // Also extract from hot file names
         for (file in insights.hotFiles) {
@@ -310,16 +305,11 @@ class DomainDictAgent(
         }
 
         onProgress("   🔥 Hot files: ${hotFileNames.size} concepts")
-
-        // ========== Source 2: All Domain Concepts (from full codebase) ==========
         onProgress("   📚 Processing ${insights.domainConcepts.size} codebase concepts...")
-
-        // Sort by occurrences (more frequent = more important)
         val sortedConcepts = insights.domainConcepts.sortedByDescending { it.occurrences }
 
         for (concept in sortedConcepts) {
             val name = concept.name
-            // Less strict filter for domain concepts (they're already extracted from code)
             if (isValidDomainConceptName(name)) {
                 allConceptNames.add(name)
             }
@@ -327,7 +317,6 @@ class DomainDictAgent(
 
         onProgress("   📋 All concepts: ${allConceptNames.size} valid names")
 
-        // Merge: Hot files first (priority), then all concepts
         val result = mutableListOf<String>()
         result.addAll(hotFileNames.sorted())
         result.addAll(allConceptNames.filter { it !in hotFileNames }.sorted())
@@ -655,6 +644,7 @@ $namesList
         if (enableStreaming) {
             try {
                 llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+                    print(chunk)
                     response.append(chunk)
                     callbacks.onAIThinking(chunk)
                 }
