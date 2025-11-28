@@ -130,6 +130,111 @@ class JsCodeParser : CodeParser {
         )
     }
     
+    override suspend fun parseImports(
+        sourceCode: String,
+        filePath: String,
+        language: Language
+    ): List<ImportInfo> {
+        initialize()
+        
+        val parser = getOrCreateParser(language)
+        val tree = parser.parse(sourceCode)
+        val rootNode = tree.rootNode
+        
+        return extractImportsFromNode(rootNode, sourceCode, filePath, language)
+    }
+    
+    private fun extractImportsFromNode(
+        rootNode: dynamic,
+        sourceCode: String,
+        filePath: String,
+        language: Language
+    ): List<ImportInfo> {
+        val imports = mutableListOf<ImportInfo>()
+        
+        fun traverse(node: dynamic) {
+            val nodeType = node.type as String
+            val startLine = (node.startPosition.row as Int) + 1
+            val endLine = (node.endPosition.row as Int) + 1
+            
+            when (nodeType) {
+                // Java/Kotlin imports
+                "import_declaration" -> {
+                    val rawText = extractNodeText(node, sourceCode)
+                    val importText = rawText
+                        .removePrefix("import")
+                        .removeSuffix(";")
+                        .trim()
+                    
+                    val isStatic = importText.startsWith("static ")
+                    val cleanImport = if (isStatic) importText.removePrefix("static ").trim() else importText
+                    val isWildcard = cleanImport.endsWith(".*")
+                    
+                    imports.add(ImportInfo(
+                        path = cleanImport.removeSuffix(".*"),
+                        type = ImportType.MODULE,
+                        alias = null,
+                        isWildcard = isWildcard,
+                        isStatic = isStatic,
+                        filePath = filePath,
+                        startLine = startLine,
+                        endLine = endLine,
+                        rawText = rawText
+                    ))
+                }
+                // TypeScript/JavaScript imports
+                "import_statement" -> {
+                    val rawText = extractNodeText(node, sourceCode)
+                    val fromMatch = Regex("""from\s+['"]([^'"]+)['"]""").find(rawText)
+                    if (fromMatch != null) {
+                        val importPath = fromMatch.groupValues[1]
+                        val isRelative = importPath.startsWith(".")
+                        imports.add(ImportInfo(
+                            path = importPath,
+                            type = if (isRelative) ImportType.RELATIVE else ImportType.MODULE,
+                            alias = null,
+                            isWildcard = rawText.contains("* as"),
+                            filePath = filePath,
+                            startLine = startLine,
+                            endLine = endLine,
+                            rawText = rawText
+                        ))
+                    }
+                }
+                // Python imports
+                "import_from_statement" -> {
+                    val rawText = extractNodeText(node, sourceCode)
+                    val fromMatch = Regex("""from\s+([\w.]+)\s+import""").find(rawText)
+                    val path = fromMatch?.groupValues?.get(1) ?: ""
+                    if (path.isNotEmpty()) {
+                        imports.add(ImportInfo(
+                            path = path,
+                            type = ImportType.SELECTIVE,
+                            alias = null,
+                            isWildcard = rawText.contains("*"),
+                            filePath = filePath,
+                            startLine = startLine,
+                            endLine = endLine,
+                            rawText = rawText
+                        ))
+                    }
+                }
+            }
+            
+            // Traverse children
+            val childCount = node.childCount as Int
+            for (i in 0 until childCount) {
+                val child = node.child(i)
+                if (child != null) {
+                    traverse(child)
+                }
+            }
+        }
+        
+        traverse(rootNode)
+        return imports
+    }
+    
     private suspend fun getOrCreateParser(language: Language): dynamic {
         if (globalParsers.containsKey(language)) {
             return globalParsers[language]
