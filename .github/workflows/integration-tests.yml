@@ -12,9 +12,6 @@ on:
     paths:
       - 'mpp-core/**'
       - 'mpp-ui/**'
-  schedule:
-    # Run integration tests daily at 2 AM UTC
-    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       test_category:
