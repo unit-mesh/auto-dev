@@ -2,6 +2,7 @@ package cc.unitmesh.server.cli
 
 import cc.unitmesh.agent.subagent.DomainDictAgent
 import cc.unitmesh.agent.subagent.DomainDictContext
+import cc.unitmesh.codegraph.parser.jvm.JvmCodeParser
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.llm.KoogLLMService
@@ -98,12 +99,14 @@ object DomainDictCli {
                 println("Current dictionary entries: $currentEntryCount")
                 println()
                 
-                // Create agent
-                println("Creating DomainDictAgent...")
+                // Create agent with TreeSitter parser for deep code analysis
+                println("Creating DomainDictAgent with TreeSitter parser...")
+                val codeParser = JvmCodeParser()
                 val agent = DomainDictAgent(
                     llmService = llmService,
                     fileSystem = fileSystem,
                     domainDictService = domainDictService,
+                    codeParser = codeParser,
                     maxDefaultIterations = 7
                 )
                 

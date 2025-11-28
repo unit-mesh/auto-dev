@@ -13,6 +13,10 @@ import cc.unitmesh.agent.tool.impl.CodebaseInsightsTool
 import cc.unitmesh.agent.tool.impl.HotFileInfo
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.codegraph.model.CodeElementType
+import cc.unitmesh.codegraph.model.CodeNode
+import cc.unitmesh.codegraph.parser.CodeParser
+import cc.unitmesh.codegraph.parser.Language
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.parser.CodeFence
 import cc.unitmesh.indexer.DomainDictService
@@ -68,22 +72,25 @@ data class DomainDictCallbacks(
 )
 
 /**
- * DomainDictAgent - Simple, DDD-focused domain dictionary generator
+ * DomainDictAgent - DDD-focused domain dictionary generator
  * 
- * Design principles:
- * 1. Extract REAL data from codebase (class names, patterns)
- * 2. Filter and clean (remove generic terms, tests)
- * 3. Use AI ONLY for translation/description (with strict input)
+ * Design Principles (DDD perspective):
+ * 1. Extract REAL business entities from code (not technical infrastructure)
+ * 2. Focus on HOT FILES (frequently changed = core business logic)
+ * 3. Use TreeSitter to parse class/function names from important files
+ * 4. Filter out technical suffixes (Controller, Service, Repository, etc.)
+ * 5. AI only translates business concepts, NOT implementation details
  * 
  * 3-Step Process:
- * 1. Analyze: Scan codebase for meaningful class/concept names
- * 2. Generate: Use AI to translate names to Chinese with descriptions
+ * 1. Analyze: Scan Git history for hot files, use TreeSitter to extract class/function names
+ * 2. Generate: Use AI with DDD principles to translate business concepts
  * 3. Save: Merge with existing dictionary
  */
 class DomainDictAgent(
     private val llmService: KoogLLMService,
     private val fileSystem: ProjectFileSystem,
     private val domainDictService: DomainDictService,
+    private val codeParser: CodeParser? = null,
     maxDefaultIterations: Int = 1,
     private val enableStreaming: Boolean = true
 ) : SubAgent<DomainDictContext, ToolResult.AgentResult>(
@@ -271,28 +278,41 @@ class DomainDictAgent(
         return result
     }
     
-    private fun extractMeaningfulNames(
+    /**
+     * Extract meaningful names using TreeSitter parsing on hot files
+     * Priority: Hot files (frequently changed) contain core business logic
+     */
+    private suspend fun extractMeaningfulNames(
         insights: CodebaseInsightsResult,
         onProgress: (String) -> Unit
     ): List<String> {
         val names = mutableSetOf<String>()
         
-        // 1. Extract from hot file names (most important)
+        // 1. Use TreeSitter to parse hot files and extract class/function names
+        if (codeParser != null) {
+            onProgress("   🌲 Using TreeSitter to parse hot files...")
+            val hotFilesWithCode = parseHotFilesWithTreeSitter(insights.hotFiles, onProgress)
+            names.addAll(hotFilesWithCode)
+        }
+        
+        // 2. Fallback: Extract from file names
         for (file in insights.hotFiles) {
             val fileName = file.path.substringAfterLast("/").substringBeforeLast(".")
-            if (isValidDomainName(fileName)) {
-                names.add(fileName)
+            val domainName = extractDomainFromFileName(fileName)
+            if (domainName != null && isValidDomainName(domainName)) {
+                names.add(domainName)
             }
             
             // Extract class name if available
             file.className?.let { className ->
-                if (isValidDomainName(className)) {
-                    names.add(className)
+                val extracted = extractDomainFromClassName(className)
+                if (extracted != null && isValidDomainName(extracted)) {
+                    names.add(extracted)
                 }
             }
         }
         
-        // 2. Extract from domain concepts (filtered)
+        // 3. Extract from domain concepts (filtered)
         for (concept in insights.domainConcepts) {
             if (isValidDomainName(concept.name) && concept.occurrences >= 2) {
                 names.add(concept.name)
@@ -303,13 +323,148 @@ class DomainDictAgent(
     }
     
     /**
+     * Parse hot files using TreeSitter to extract class and function names
+     * These are the REAL important concepts in the codebase
+     */
+    private suspend fun parseHotFilesWithTreeSitter(
+        hotFiles: List<HotFileInfo>,
+        onProgress: (String) -> Unit
+    ): Set<String> {
+        val names = mutableSetOf<String>()
+        val parser = codeParser ?: return names
+        
+        // Take top 30 hot files for deep analysis
+        val topHotFiles = hotFiles.take(30)
+        var parsedCount = 0
+        
+        for (file in topHotFiles) {
+            val language = detectLanguage(file.path) ?: continue
+            
+            try {
+                val content = fileSystem.readFile(file.path) ?: continue
+                val nodes = parser.parseNodes(content, file.path, language)
+                
+                // Extract class names and function names
+                for (node in nodes) {
+                    when (node.type) {
+                        CodeElementType.CLASS, CodeElementType.INTERFACE, CodeElementType.ENUM -> {
+                            val domainName = extractDomainFromClassName(node.name)
+                            if (domainName != null && isValidDomainName(domainName)) {
+                                names.add(domainName)
+                            }
+                        }
+                        CodeElementType.METHOD, CodeElementType.FUNCTION -> {
+                            // Extract domain concepts from method names
+                            val methodDomain = extractDomainFromMethodName(node.name)
+                            if (methodDomain != null && isValidDomainName(methodDomain)) {
+                                names.add(methodDomain)
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+                parsedCount++
+            } catch (e: Exception) {
+                // Skip files that fail to parse
+            }
+        }
+        
+        if (parsedCount > 0) {
+            onProgress("   📦 Parsed $parsedCount hot files, found ${names.size} domain concepts")
+        }
+        
+        return names
+    }
+    
+    /**
+     * Detect programming language from file extension
+     */
+    private fun detectLanguage(filePath: String): Language? {
+        val ext = filePath.substringAfterLast(".", "").lowercase()
+        return when (ext) {
+            "java" -> Language.JAVA
+            "kt", "kts" -> Language.KOTLIN
+            "py" -> Language.PYTHON
+            "js", "jsx" -> Language.JAVASCRIPT
+            "ts", "tsx" -> Language.TYPESCRIPT
+            "go" -> Language.GO
+            "rs" -> Language.RUST
+            else -> null
+        }
+    }
+    
+    /**
+     * Extract domain concept from file name (remove technical suffixes)
+     * e.g., "DomainDictAgent" -> "DomainDict"
+     */
+    private fun extractDomainFromFileName(fileName: String): String? {
+        // Remove technical suffixes
+        val suffixes = listOf(
+            "Controller", "Service", "Repository", "Dao", "Mapper",
+            "Impl", "Helper", "Utils", "Util", "Factory", "Builder",
+            "Handler", "Listener", "Adapter", "Wrapper", "Provider",
+            "Agent", "Tool", "Config", "Configuration", "Settings",
+            "Test", "Spec", "Mock", "Fake", "Stub"
+        )
+        
+        var name = fileName
+        for (suffix in suffixes) {
+            if (name.endsWith(suffix) && name.length > suffix.length) {
+                name = name.removeSuffix(suffix)
+                break
+            }
+        }
+        
+        return if (name.length >= 3) name else null
+    }
+    
+    /**
+     * Extract domain concept from class name
+     */
+    private fun extractDomainFromClassName(className: String): String? {
+        return extractDomainFromFileName(className)
+    }
+    
+    /**
+     * Extract domain concept from method name
+     * e.g., "createBlogPost" -> "BlogPost"
+     * e.g., "validatePayment" -> "Payment"
+     */
+    private fun extractDomainFromMethodName(methodName: String): String? {
+        // Skip common prefixes
+        val prefixes = listOf(
+            "get", "set", "is", "has", "can", "should", "will",
+            "create", "update", "delete", "find", "fetch", "load",
+            "save", "add", "remove", "build", "parse", "validate",
+            "check", "process", "handle", "execute", "run", "init",
+            "on", "to", "from"
+        )
+        
+        var name = methodName
+        for (prefix in prefixes) {
+            if (name.startsWith(prefix) && name.length > prefix.length) {
+                val remainder = name.removePrefix(prefix)
+                if (remainder.isNotEmpty() && remainder[0].isUpperCase()) {
+                    name = remainder
+                    break
+                }
+            }
+        }
+        
+        return if (name.length >= 4 && name[0].isUpperCase()) name else null
+    }
+    
+    /**
      * Check if a name is a valid domain concept (not a generic term)
+     * Using DDD principles to filter out technical infrastructure
      */
     private fun isValidDomainName(name: String): Boolean {
         if (name.length < 4) return false  // Skip very short names
         if (name.length > 50) return false
         
-        // Skip generic/common terms
+        val lowerName = name.lowercase()
+        
+        // Skip generic/common terms (infrastructure, not domain)
         val skipTerms = setOf(
             // Testing
             "test", "tests", "spec", "mock", "stub", "fake",
@@ -335,24 +490,41 @@ class DomainDictAgent(
             "button", "text", "label", "field", "input", "output",
             "editor", "renderer", "painter", "drawer",
             "exception", "error", "warning", "message",
-            "checks", "diff", "check"
+            "checks", "diff", "check", "unknown"
         )
-        
-        val lowerName = name.lowercase()
         
         // Exact match skip
         if (lowerName in skipTerms) return false
         
-        // Skip IntelliJ platform concepts
+        // Skip IntelliJ platform concepts (infrastructure)
         val platformTerms = setOf(
             "anaction", "applicationmanager", "project", "psifile", "psielement",
             "virtualfile", "document", "editor", "intention", "inspection",
             "psiclass", "psimethod", "psifield", "psitype", "psivariable",
             "language", "filetype", "module", "facet", "artifact",
             "toolwindow", "notification", "progress", "indicator",
-            "runnable", "callable", "future", "promise", "deferred"
+            "runnable", "callable", "future", "promise", "deferred",
+            // JetBrains specific
+            "jbcolor", "jbinsets", "jbui", "jbpopup", "jblist",
+            // Java Swing/AWT
+            "jcomponent", "jpanel", "jbutton", "jlabel", "jframe",
+            "swing", "awt", "graphics"
         )
         if (platformTerms.any { lowerName.contains(it) }) return false
+        
+        // Skip technical suffixes that indicate infrastructure
+        val technicalSuffixes = setOf(
+            "controller", "service", "repository", "dao", "mapper",
+            "dto", "vo", "po", "entity", "request", "response",
+            "config", "configuration", "settings", "properties",
+            "handler", "listener", "callback", "adapter", "wrapper",
+            "factory", "builder", "provider", "manager", "registry",
+            "helper", "util", "utils", "tool", "tools",
+            "impl", "implementation", "abstract", "base", "default",
+            "exception", "error", "filter", "interceptor",
+            "capable", "aware", "enabled", "disabled"
+        )
+        if (technicalSuffixes.any { lowerName.endsWith(it) }) return false
         
         // Contains skip (for compound names like "TestHelper")
         val containsSkip = setOf("test", "spec", "mock", "fake", "stub", "factory", "util")
@@ -384,27 +556,48 @@ class DomainDictAgent(
         
         val namesList = names.joinToString("\n") { "- $it" }
 
+        // DDD-focused prompt, inspired by indexer.vm
         val prompt = """
-你是一个技术文档翻译专家。请将以下代码中的类名/概念名翻译成简洁的中文术语。
-            
-## 要翻译的名称:
+你是一个 DDD（领域驱动设计）专家，负责构建业务导向的中英文词典。请从以下代码名称中提取重要的业务概念。
+
+**提取原则：**
+
+✅ 应该提取的内容：
+- 核心业务实体（如：Blog、Comment、Payment、User 等名词）
+- 业务概念和领域模型（如：Member、Points、Order）
+- 难以理解的词汇或拼音缩写
+- 领域特定术语
+
+❌ 应该排除的内容：
+1. 技术词汇：Controller、Service、Repository、Mapper、DTO、VO、PO、Entity、Request、Response、Config 等
+2. 实现细节和数据传输对象：包含 "Request"、"Response"、"Dto"、"Entity" 后缀的条目
+3. 技术操作动词：validate、check、convert、deserialize、serialize、encode、decode 等
+4. 方法名中的技术操作：如 "checkIfVipAccount" 应只提取 "VIP Account"
+5. 通用库 API（如 Spring、OkHttp）和通用类名（如 List、Map）
+
+**处理规则：**
+1. 如果提取的条目包含技术后缀（如 "CreateCommentDto"），转换为纯业务概念（如 "Comment"）
+2. 如果方法名包含技术操作（如 "checkIfVipAccount"），提取业务含义（"VIP Account"）
+3. 如果类名包含技术词汇后缀，移除后缀再添加到词典
+
+## 要分析的名称:
 $namesList
-            
+
 ## 输出格式 (JSON):
-            ```json
-            {
-                "entries": [
-    {"chinese": "中文术语", "codeTranslation": "ClassName", "description": "一句话描述功能"}
-                ]
-            }
-            ```
-            
-## 规则:
-1. chinese: 简洁的中文术语(2-6个字)
-2. codeTranslation: 保持原始类名
-3. description: 一句话描述(不超过30字)
-4. 只翻译有意义的领域概念
-5. 跳过无法理解或太通用的名称
+```json
+{
+  "entries": [
+    {"chinese": "博客", "codeTranslation": "Blog", "description": "博客文章"}
+  ]
+}
+```
+
+## 输出规则:
+1. chinese: 简洁的中文术语（2-6个字）
+2. codeTranslation: 纯业务概念名（移除技术后缀）
+3. description: 一句话业务描述（不超过20字）
+4. 只输出有意义的业务概念，跳过技术实现细节
+5. 如果无法理解或太通用，直接跳过不输出
 
 请直接输出JSON，不要其他解释。
         """.trimIndent()
