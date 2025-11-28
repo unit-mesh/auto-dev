@@ -18,7 +18,6 @@ import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
-import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
 import cc.unitmesh.agent.subagent.AnalysisAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.tool.*
@@ -88,8 +87,6 @@ class CodingAgent(
 
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val analysisAgent = AnalysisAgent(llmService, contentThreshold = 5000)
-    private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
-    
     private val mcpToolsInitializer = McpToolsInitializer()
 
     // 执行器
@@ -115,11 +112,6 @@ class CodingAgent(
         registerTool(analysisAgent)
         toolRegistry.registerTool(analysisAgent)
         subAgentManager.registerSubAgent(analysisAgent)
-        
-        registerTool(codebaseInvestigatorAgent)
-        toolRegistry.registerTool(codebaseInvestigatorAgent)
-        subAgentManager.registerSubAgent(codebaseInvestigatorAgent)
-
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             initializeWorkspace(projectPath)
         }
