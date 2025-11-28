@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -50,11 +51,11 @@ sealed class DomainDictStatus {
     data class Generating(val progress: String = "", val lineCount: Int = 0) : DomainDictStatus()
     
     /**
-     * Deep Research status - shows current step and progress
+     * Deep Research status - shows current step and progress (3 steps)
      */
     data class DeepResearch(
         val currentStep: Int = 0,
-        val totalSteps: Int = 7,
+        val totalSteps: Int = 3,  // Simplified to 3 steps
         val stepName: String = "",
         val progress: String = "",
         val hotFiles: Int = 0,
@@ -131,6 +132,9 @@ fun DomainDictDialog(
     // Deep Research progress timeline
     val progressTimeline = remember { mutableStateListOf<ProgressItem>() }
     
+    // New entries added during generation (for real-time preview)
+    val newEntriesPreview = remember { mutableStateListOf<DictEntry>() }
+    
     // Job for cancellation support
     var currentJob by remember { mutableStateOf<Job?>(null) }
     var currentAgent by remember { mutableStateOf<DomainDictAgent?>(null) }
@@ -184,10 +188,22 @@ fun DomainDictDialog(
     }
 
     /**
-     * Extract step info from progress message
+     * Extract step info from progress message (7-step format, legacy)
      */
     fun extractStepInfo(message: String): Pair<Int, String>? {
         val stepMatch = Regex("## Step (\\d+)/7: (.+)").find(message)
+        return stepMatch?.let {
+            val step = it.groupValues[1].toIntOrNull() ?: 0
+            val name = it.groupValues[2]
+            step to name
+        }
+    }
+    
+    /**
+     * Extract step info from progress message (3-step format)
+     */
+    fun extractStepInfo3(message: String): Pair<Int, String>? {
+        val stepMatch = Regex("## Step (\\d+)/3: (.+)").find(message)
         return stepMatch?.let {
             val step = it.groupValues[1].toIntOrNull() ?: 0
             val name = it.groupValues[2]
@@ -213,10 +229,11 @@ fun DomainDictDialog(
     fun generateDeepResearch() {
         currentJob = scope.launch {
             progressTimeline.clear()
+            newEntriesPreview.clear()
             streamingContent = ""
             aiThinkingContent = ""
             isAiThinking = false
-            status = DomainDictStatus.DeepResearch(0, 7, "Initializing", "Starting Deep Research...")
+            status = DomainDictStatus.DeepResearch(0, 3, "Initializing", "Starting...")
             
             try {
                 val config = ConfigManager.load().getActiveModelConfig()
@@ -262,13 +279,13 @@ fun DomainDictDialog(
                         val type = parseProgressType(message)
                         progressTimeline.add(ProgressItem(message = message, type = type))
                         
-                        // Update status based on step headers
-                        extractStepInfo(message)?.let { (step, name) ->
+                        // Update status based on step headers (now 3 steps)
+                        extractStepInfo3(message)?.let { (step, name) ->
                             val currentStatus = status
                             if (currentStatus is DomainDictStatus.DeepResearch) {
                                 status = currentStatus.copy(currentStep = step, stepName = name, progress = message)
                             } else {
-                                status = DomainDictStatus.DeepResearch(step, 7, name, message)
+                                status = DomainDictStatus.DeepResearch(step, 3, name, message)
                             }
                         }
                         
@@ -308,10 +325,10 @@ fun DomainDictDialog(
                                 concepts = concepts
                             )
                         }
-                        progressTimeline.add(ProgressItem(
-                            message = "   📊 Codebase: $hotFiles hot files, $coChangePatterns patterns, $concepts concepts",
-                            type = ProgressType.INFO
-                        ))
+                    },
+                    onEntryAdded = { entry ->
+                        // Add to preview list for real-time display
+                        newEntriesPreview.add(DictEntry(entry.chinese, entry.codeTranslation, entry.description))
                     }
                 )
                 
@@ -369,7 +386,7 @@ fun DomainDictDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
-            modifier = Modifier.width(620.dp).heightIn(max = 600.dp),
+            modifier = Modifier.width(if (isGenerating) 900.dp else 620.dp).heightIn(max = 650.dp),
             shape = RoundedCornerShape(10.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 2.dp
@@ -388,6 +405,9 @@ fun DomainDictDialog(
                         Text("Domain Dictionary", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         if (hasChanges) Text("*", color = AutoDevColors.Amber.c500, fontWeight = FontWeight.Bold)
                         Text("(${entries.size})", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (newEntriesPreview.isNotEmpty()) {
+                            Text("+${newEntriesPreview.size}", fontSize = 11.sp, color = AutoDevColors.Green.c600, fontWeight = FontWeight.Bold)
+                        }
                     }
                     IconButton(onClick = { if (!isGenerating) onDismiss() }, Modifier.size(28.dp)) {
                         Icon(AutoDevComposeIcons.Close, "Close", Modifier.size(18.dp))
@@ -411,7 +431,7 @@ fun DomainDictDialog(
                                 ) {
                                     CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = AutoDevColors.Indigo.c500)
                                     Text(
-                                        "🔬 Step ${s.currentStep}/7: ${s.stepName}",
+                                        "🔬 Step ${s.currentStep}/3: ${s.stepName}",
                                         fontSize = 12.sp, color = AutoDevColors.Indigo.c700, fontWeight = FontWeight.Medium
                                     )
                                 }
@@ -440,6 +460,9 @@ fun DomainDictDialog(
                                     Text("📊 ${s.hotFiles} hot files", fontSize = 10.sp, color = AutoDevColors.Indigo.c600)
                                     Text("🔗 ${s.coChangePatterns} patterns", fontSize = 10.sp, color = AutoDevColors.Indigo.c600)
                                     Text("💡 ${s.concepts} concepts", fontSize = 10.sp, color = AutoDevColors.Indigo.c600)
+                                    if (newEntriesPreview.isNotEmpty()) {
+                                        Text("✅ +${newEntriesPreview.size} new", fontSize = 10.sp, color = AutoDevColors.Green.c600)
+                                    }
                                 }
                             }
                         }
@@ -484,20 +507,31 @@ fun DomainDictDialog(
                 // Content
                 Box(Modifier.weight(1f).fillMaxWidth().padding(8.dp)) {
                     when {
-                        // Deep Research progress timeline view with AI thinking
+                        // Deep Research progress timeline view with AI thinking + CSV preview
                         status is DomainDictStatus.DeepResearch && progressTimeline.isNotEmpty() -> {
-                            Column(Modifier.fillMaxSize()) {
-                                // Main progress view
-                                Box(Modifier.weight(1f)) {
-                                    DeepResearchProgressView(progressTimeline, progressListState)
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Left: Progress timeline
+                                Column(Modifier.weight(1f)) {
+                                    Box(Modifier.weight(1f)) {
+                                        DeepResearchProgressView(progressTimeline, progressListState)
+                                    }
+                                    // AI Thinking block
+                                    if (isAiThinking && aiThinkingContent.isNotEmpty()) {
+                                        AIThinkingBlock(
+                                            content = aiThinkingContent,
+                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                        )
+                                    }
                                 }
-                                // AI Thinking block (collapsible, shows streaming AI output)
-                                if (isAiThinking && aiThinkingContent.isNotEmpty()) {
-                                    AIThinkingBlock(
-                                        content = aiThinkingContent,
-                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                                    )
-                                }
+                                // Right: Real-time CSV preview
+                                NewEntriesPreview(
+                                    entries = entries,
+                                    newEntries = newEntriesPreview,
+                                    modifier = Modifier.width(280.dp)
+                                )
                             }
                         }
                         isGenerating && streamingContent.isNotEmpty() -> StreamingView(streamingContent)
@@ -565,6 +599,123 @@ fun DomainDictDialog(
 private fun LoadingView() {
     Box(Modifier.fillMaxSize(), Alignment.Center) {
         CircularProgressIndicator(Modifier.size(24.dp), color = AutoDevColors.Indigo.c500)
+    }
+}
+
+/**
+ * Real-time CSV preview showing existing + new entries
+ */
+@Composable
+private fun NewEntriesPreview(
+    entries: List<DictEntry>,
+    newEntries: List<DictEntry>,
+    modifier: Modifier = Modifier
+) {
+    val scrollState = rememberLazyListState()
+    
+    // Auto-scroll to new entries
+    LaunchedEffect(newEntries.size) {
+        if (newEntries.isNotEmpty()) {
+            // Scroll to first new entry
+            val firstNewIndex = entries.size
+            if (firstNewIndex > 0) {
+                scrollState.animateScrollToItem(maxOf(0, firstNewIndex - 2))
+            }
+        }
+    }
+    
+    Surface(
+        modifier = modifier.fillMaxHeight(),
+        shape = RoundedCornerShape(6.dp),
+        border = BorderStroke(1.dp, AutoDevColors.Indigo.c200),
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            // Header
+            Row(
+                Modifier.fillMaxWidth()
+                    .background(AutoDevColors.Indigo.c50)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("📋 domain.csv", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("${entries.size}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (newEntries.isNotEmpty()) {
+                        Text("+${newEntries.size}", fontSize = 10.sp, color = AutoDevColors.Green.c600, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            
+            HorizontalDivider(thickness = 1.dp, color = AutoDevColors.Indigo.c100)
+            
+            // CSV content
+            LazyColumn(
+                state = scrollState,
+                modifier = Modifier.fillMaxSize().padding(4.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
+            ) {
+                // Existing entries (dimmed)
+                items(entries.size) { index ->
+                    val entry = entries[index]
+                    CSVEntryRow(entry, isNew = false)
+                }
+                
+                // New entries (highlighted)
+                items(newEntries.size) { index ->
+                    val entry = newEntries[index]
+                    CSVEntryRow(entry, isNew = true)
+                }
+                
+                // Empty state
+                if (entries.isEmpty() && newEntries.isEmpty()) {
+                    item {
+                        Box(Modifier.fillMaxWidth().padding(16.dp), Alignment.Center) {
+                            Text("No entries yet", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CSVEntryRow(entry: DictEntry, isNew: Boolean) {
+    val bgColor = if (isNew) AutoDevColors.Green.c50.copy(0.6f) else Color.Transparent
+    val textColor = if (isNew) AutoDevColors.Green.c800 else MaterialTheme.colorScheme.onSurface.copy(0.7f)
+    
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(bgColor, RoundedCornerShape(2.dp))
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (isNew) {
+            Text("✨", fontSize = 9.sp)
+        }
+        Text(
+            text = entry.chinese,
+            fontSize = 10.sp,
+            color = textColor,
+            fontWeight = if (isNew) FontWeight.Medium else FontWeight.Normal,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.width(60.dp)
+        )
+        Text("→", fontSize = 9.sp, color = textColor.copy(0.5f))
+        Text(
+            text = entry.english.take(30),
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace,
+            color = if (isNew) AutoDevColors.Cyan.c700 else AutoDevColors.Cyan.c600.copy(0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
