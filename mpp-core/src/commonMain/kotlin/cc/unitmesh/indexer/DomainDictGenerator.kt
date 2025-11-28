@@ -5,7 +5,8 @@ import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 
 /**
  * Generator for domain dictionaries using LLM.
@@ -30,12 +31,12 @@ class DomainDictGenerator(
     
     /**
      * Generate domain dictionary and return as streaming response
+     * Uses flow {} to ensure prompt building happens inside the flow collector,
+     * avoiding blocking the caller before streaming starts.
      */
-    suspend fun generateStreaming(): Flow<String> {
+    fun generateStreaming(): Flow<String> = flow {
         val prompt = buildPrompt()
-        
-        return llmService.streamPrompt(prompt, compileDevIns = false)
-            .map { chunk -> chunk }
+        emitAll(llmService.streamPrompt(prompt, compileDevIns = false))
     }
     
     /**
