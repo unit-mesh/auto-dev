@@ -126,36 +126,41 @@ class DomainDictGenerator(
 
 ## What is "Code Translation"?
 
-"Code Translation" means the ACTUAL class names, method names, or variable names that exist in the codebase. It can be:
-- A single identifier: `Blog`, `Payment`, `UserService`
-- Multiple related identifiers: `Blog | BlogPost | BlogEntry` (use pipe separator)
+"Code Translation" means the ACTUAL class names, method names, or variable names that exist in the codebase.
+
+IMPORTANT RULES:
+1. Use COMPLETE identifiers as they appear in code - DO NOT split compound names
+   - ✅ Correct: `HttpClient` (single complete name)
+   - ❌ Wrong: `Http | Client` (incorrectly split)
+   - ✅ Correct: `WebFetch | WebFetcher`
+   - ❌ Wrong: `Web | Fetch`
+   - ✅ Correct: `SmartTask | SmartEditTask`
+   - ❌ Wrong: `Smart | Task`
+
+2. For multiplatform projects (KMP), only include the core concept, NOT platform variants:
+   - ✅ Correct: `Executor` or `ShellExecutor`
+   - ❌ Wrong: `Executor | Executor.jvm | Executor.js | Executor.android`
+   - ✅ Correct: `FileSystem | DefaultFileSystem`
+   - ❌ Wrong: `FileSystem | FileSystem.jvm | FileSystem.ios`
+   - Platform suffixes like `.jvm`, `.js`, `.wasm`, `.ios`, `.android` should be EXCLUDED
+
+3. Group only SEMANTICALLY related classes, not just similar prefixes:
+   - ✅ Correct: `Blog | BlogPost | BlogComment` (all about blog domain)
+   - ❌ Wrong: `Code | CodeReview | CodeFormatter` (different concerns)
 
 ## Extraction Principles
 
 ✅ Content to extract:
-- Core business entities and their code representations
-- Business concepts with actual class/method/variable names from code
-- Domain-specific terminology found in the codebase
-- Pinyin abbreviations and their meanings
+- Core business entities: User, Order, Payment, Product, Blog
+- Domain models with business meaning
+- Domain-specific terminology unique to this project
+- Compound names that represent business concepts: HttpClient, WebFetcher, TaskExecutor
 
 ❌ Content to exclude:
-1. Pure technical suffixes alone: Controller, Service, Repository, Mapper, DTO, VO, Entity, Request, Response, Config, Filter, Interceptor, Exception, Helper, Utils
-2. Technical operation verbs: validate, check, convert, deserialize, serialize, encode, decode
-3. Common library APIs and standard class names: List, Map, String, Object
-
-## Processing Rules
-
-1. Extract the BUSINESS CORE from code names:
-   - `BlogController` → Code Translation: `Blog | BlogController`, Business: "博客"
-   - `UserService` → Code Translation: `User | UserService`, Business: "用户"
-   - `PaymentRepository` → Code Translation: `Payment | PaymentRepository`, Business: "支付"
-
-2. Group related code identifiers:
-   - If `Blog`, `BlogPost`, `BlogEntry` all exist → "Blog | BlogPost | BlogEntry"
-   - If `Order`, `OrderItem`, `OrderStatus` all exist → "Order | OrderItem | OrderStatus"
-
-3. For method-derived concepts:
-   - `checkIfVipAccount()` → Code Translation: `VipAccount | checkIfVipAccount`, Business: "VIP账户"
+1. Technical infrastructure patterns alone: Controller, Service, Repository, Factory, Registry
+2. Platform-specific implementations: anything with `.jvm`, `.js`, `.wasm`, `.ios`, `.android` suffix
+3. Generic technical terms without business context: Parser, Executor, Handler, Manager
+4. Common library APIs: List, Map, String, Flow, Channel
 
 ## Project README
 
@@ -166,19 +171,25 @@ $readme
 CSV format with header: Chinese,Code Translation,Description
 
 Rules:
-- Chinese: Business term in Chinese
-- Code Translation: Actual code identifiers (use | to separate multiple), e.g., "Blog | BlogPost | BlogService"
-- Description: Brief description of the concept
-- Wrap fields containing commas in double quotes
+- Chinese: Business term in Chinese (should be a domain concept, not technical term)
+- Code Translation: Complete code identifiers (DO NOT split compound words), use | for related classes only
+- Description: Brief description focusing on BUSINESS purpose
 
-Example:
+Good Examples:
 ```
 Chinese,Code Translation,Description
-博客,Blog | BlogPost | BlogService,Blog post entity and related services
-评论,Comment | CommentItem,User comments on content
-支付,Payment | PaymentOrder | PaymentService,Payment transaction processing
-用户,User | UserProfile | UserAccount,System user and profile management
-草图,Sketch | SketchRenderer | CodeSketch,IDE canvas for visual interactions
+博客,Blog | BlogPost | BlogService,博客文章管理
+HTTP客户端,HttpClient | OkHttpClient,HTTP网络请求客户端
+代码审查,CodeReview | ReviewComment,代码审查和评论
+智能编辑,SmartEdit | SmartEditTask,AI辅助的智能代码编辑
+领域字典,DomainDict | DomainDictService,业务术语字典生成
+```
+
+Bad Examples (DO NOT generate like this):
+```
+HTTP客户端,Http | Client,... ← WRONG: split compound word
+执行器,Executor | Executor.jvm | Executor.js,... ← WRONG: platform variants
+策略,Strategy | Policy | Decision,... ← WRONG: unrelated concepts grouped
 ```
 
 ## Code Context
