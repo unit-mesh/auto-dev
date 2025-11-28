@@ -34,7 +34,7 @@ class DomainDictGenerator(
     suspend fun generateStreaming(): Flow<String> {
         val prompt = buildPrompt()
         
-        return llmService.streamPrompt(prompt)
+        return llmService.streamPrompt(prompt, compileDevIns = false)
             .map { chunk -> chunk }
     }
     
@@ -45,7 +45,7 @@ class DomainDictGenerator(
         val prompt = buildPrompt()
         
         val result = StringBuilder()
-        llmService.streamPrompt(prompt).collect { chunk ->
+        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
             result.append(chunk)
         }
         

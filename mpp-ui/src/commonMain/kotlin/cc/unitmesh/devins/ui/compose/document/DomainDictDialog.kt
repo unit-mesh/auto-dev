@@ -131,19 +131,18 @@ fun DomainDictDialog(
         status = DomainDictStatus.Loading
         try {
             val content = domainDictService.loadContent()
-            dictContent = content ?: getDefaultDictTemplate()
+            dictContent = content ?: ""
             entries = DictEntry.parseCSV(dictContent)
             status = DomainDictStatus.Idle
             println("[DomainDict] Loaded ${entries.size} entries")
         } catch (e: Exception) {
-            dictContent = getDefaultDictTemplate()
+            dictContent = ""
             entries = DictEntry.parseCSV(dictContent)
             status = DomainDictStatus.Error("Failed to load: ${e.message}")
             println("[DomainDict] Error loading: ${e.message}")
         }
     }
 
-    // Save dictionary function
     fun saveDict() {
         scope.launch {
             status = DomainDictStatus.Loading
@@ -178,12 +177,10 @@ fun DomainDictDialog(
                 val activeConfig = configWrapper.getActiveModelConfig()
 
                 if (activeConfig == null || !activeConfig.isValid()) {
-                    status =
-                        DomainDictStatus.Error("No valid LLM configuration. Please configure your model in Settings.")
+                    status = DomainDictStatus.Error("No valid LLM configuration. Please configure your model in Settings.")
                     return@launch
                 }
 
-                println("[DomainDict] Starting generation with model: ${activeConfig.modelName}")
                 status = DomainDictStatus.Generating("Analyzing project files...")
 
                 val generator = DomainDictGenerator(fileSystem, activeConfig)
@@ -988,19 +985,4 @@ private fun DictActionButtons(
             Text("Save", fontSize = 14.sp)
         }
     }
-}
-
-/**
- * Default dictionary template with example entries
- */
-private fun getDefaultDictTemplate(): String {
-    return """Chinese,Code Translation,Description
-User,User,System user entity
-Order,Order,E-commerce order
-Product,Product,Product or item
-ShoppingCart,ShoppingCart,User shopping cart
-Payment,Payment,Payment processing
-Login,Login,User authentication
-Register,Register,User registration
-""".trimIndent()
 }
