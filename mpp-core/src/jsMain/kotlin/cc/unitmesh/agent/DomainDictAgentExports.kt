@@ -159,14 +159,6 @@ class JsDomainDictAgent(
     }
 
     /**
-     * Reset agent state for a fresh research session
-     */
-    @JsName("reset")
-    fun reset() {
-        agent.reset()
-    }
-
-    /**
      * Ask a question about the completed research
      */
     @JsName("askQuestion")
