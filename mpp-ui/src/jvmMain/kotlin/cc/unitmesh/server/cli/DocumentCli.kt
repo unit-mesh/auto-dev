@@ -230,7 +230,7 @@ object DocumentCli {
                     llmService = llmService,
                     parserService = dummyParser,
                     renderer = renderer,
-                    fileSystem = null,
+                    fileSystem = cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem(projectPath),
                     shellExecutor = null,
                     mcpToolConfigService = mcpConfigService,
                     enableLLMStreaming = true

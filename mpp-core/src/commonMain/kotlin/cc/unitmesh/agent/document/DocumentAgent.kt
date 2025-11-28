@@ -248,7 +248,9 @@ ${AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toLis
 <devin>
 /tool-name
 ```json
-{"param": "value"}
+{
+  "param": "value"
+}
 ```
 </devin>
 
@@ -260,6 +262,7 @@ ${AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toLis
 4. NEVER combine multiple tool calls in a single message
 5. NEVER give high-level guessy answers
 6. ALWAYS cite file paths returned by DocQL
+7. ALWAYS use `json` for tool parameters. NEVER append extra text like `jsonui` or `json:task`.
 
         """.trimIndent()
     }
