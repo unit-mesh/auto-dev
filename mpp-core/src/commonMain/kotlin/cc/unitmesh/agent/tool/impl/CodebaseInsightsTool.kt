@@ -231,6 +231,11 @@ class CodebaseInsightsTool(
                 statistics = statistics
             )
             
+            logger.info { "Codebase analysis completed: ${result.domainConcepts.size} concepts, ${result.functionSignatures.size} files with signatures" }
+            if (result.domainConcepts.isNotEmpty()) {
+                logger.info { "Top concepts: ${result.domainConcepts.take(5).joinToString { it.name }}" }
+            }
+            
             cachedResult = result
             return result
             
