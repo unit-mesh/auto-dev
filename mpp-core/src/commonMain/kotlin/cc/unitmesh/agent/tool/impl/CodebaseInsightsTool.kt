@@ -11,6 +11,7 @@ import cc.unitmesh.codegraph.model.CodeNode
 import cc.unitmesh.codegraph.model.ImportInfo
 import cc.unitmesh.codegraph.parser.CodeParser
 import cc.unitmesh.codegraph.parser.Language
+import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.indexer.naming.CamelCaseSplitter
 import cc.unitmesh.indexer.naming.CommonSuffixRules
@@ -134,7 +135,7 @@ class CodebaseInsightsTool(
     private val codeParser: CodeParser = createCodeParser()
     
     // ProjectFileSystem adapter for file operations
-    private val projectFileSystem: ProjectFileSystem = createProjectFileSystemAdapter(fileSystem, projectPath)
+    private val projectFileSystem: ProjectFileSystem = DefaultFileSystem(projectPath)
     
     // Cached results for async analysis
     private var cachedResult: CodebaseInsightsResult? = null
@@ -588,67 +589,3 @@ class CodebaseInsightsTool(
     }
 }
 
-/**
- * Create ProjectFileSystem adapter from ToolFileSystem
- */
-private fun createProjectFileSystemAdapter(toolFS: ToolFileSystem, projectPath: String): ProjectFileSystem {
-    return object : ProjectFileSystem {
-        override fun getProjectPath() = projectPath
-        
-        // Note: readFile is not used in this adapter since we use fileSystem.readFile directly
-        override fun readFile(path: String): String? = null
-        
-        override fun readFileAsBytes(path: String): ByteArray? = null  // Not supported by ToolFileSystem
-        
-        override fun writeFile(path: String, content: String) = false  // Not needed for insights
-        
-        override fun exists(path: String) = toolFS.exists(path)
-        
-        override fun isDirectory(path: String) = toolFS.getFileInfo(path)?.isDirectory ?: false
-        
-        override fun listFiles(path: String, pattern: String?): List<String> {
-            return toolFS.listFiles(path)
-        }
-        
-        override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
-            val results = mutableListOf<String>()
-            val extensions = setOf("kt", "java", "py", "ts", "tsx", "js", "jsx", "go", "rs", "cs")
-            
-            fun searchRecursive(dir: String, depth: Int) {
-                if (depth > maxDepth || results.size >= maxResults) return
-                
-                try {
-                    val items = toolFS.listFiles(dir)
-                    for (item in items) {
-                        if (results.size >= maxResults) break
-                        
-                        val fileInfo = toolFS.getFileInfo(item)
-                        if (fileInfo?.isDirectory == true) {
-                            val dirName = item.substringAfterLast("/")
-                            if (dirName !in setOf("node_modules", ".git", "build", "target", ".gradle", "dist", "kcef-cache")) {
-                                searchRecursive(item, depth + 1)
-                            }
-                        } else {
-                            val ext = item.substringAfterLast(".").lowercase()
-                            if (ext in extensions) {
-                                val fileName = item.substringAfterLast("/")
-                                if (pattern == "*" || fileName.contains(pattern.removeSurrounding("*"), ignoreCase = true)) {
-                                    results.add(item)
-                                }
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    // Skip directories that can't be read
-                }
-            }
-            
-            searchRecursive(projectPath, 0)
-            return results
-        }
-        
-        override fun resolvePath(relativePath: String): String {
-            return if (relativePath.startsWith("/")) relativePath else "$projectPath/$relativePath"
-        }
-    }
-}
