@@ -6,6 +6,9 @@ import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.codegraph.model.ImportInfo
+import cc.unitmesh.codegraph.parser.CodeParser
+import cc.unitmesh.codegraph.parser.Language
 import cc.unitmesh.indexer.naming.CamelCaseSplitter
 import cc.unitmesh.indexer.naming.CommonSuffixRules
 import kotlinx.coroutines.*
@@ -96,6 +99,28 @@ data class DomainConcept(
  * Designed to be run asynchronously at agent startup and used
  * for domain dictionary enrichment.
  */
+/**
+ * Platform-specific factory for creating CodeParser instances
+ */
+expect fun createCodeParser(): CodeParser
+
+/**
+ * Map file extension to Language enum
+ */
+fun getLanguageFromExtension(extension: String): Language {
+    return when (extension.lowercase()) {
+        "kt" -> Language.KOTLIN
+        "java" -> Language.JAVA
+        "py" -> Language.PYTHON
+        "js", "jsx" -> Language.JAVASCRIPT
+        "ts", "tsx" -> Language.TYPESCRIPT
+        "go" -> Language.GO
+        "rs" -> Language.RUST
+        "cs" -> Language.CSHARP
+        else -> Language.UNKNOWN
+    }
+}
+
 class CodebaseInsightsTool(
     private val fileSystem: ToolFileSystem,
     private val projectPath: String
@@ -103,6 +128,7 @@ class CodebaseInsightsTool(
     private val logger = getLogger("CodebaseInsightsTool")
     private val suffixRules = CommonSuffixRules()
     private val gitOperations = GitOperations(projectPath)
+    private val codeParser: CodeParser = createCodeParser()
     
     // Cached results for async analysis
     private var cachedResult: CodebaseInsightsResult? = null
@@ -426,12 +452,31 @@ class CodebaseInsightsTool(
                 val content = fileSystem.readFile(filePath) ?: continue
                 val imports = extractImports(content, filePath)
                 
-                // Extract concepts from imports
-                for (importPath in imports) {
-                    val lastPart = importPath.substringAfterLast(".")
-                        .substringAfterLast("/")
+                // Extract concepts from imports using rich ImportInfo metadata
+                for (importInfo in imports) {
+                    // Extract from main import path
+                    val lastPart = importInfo.getSimpleName()
                     if (lastPart.length > 2 && !lastPart.all { it.isLowerCase() }) {
-                        addOrIncrementConcept(domainConcepts, lastPart, "import", 1, "Import: $importPath")
+                        addOrIncrementConcept(
+                            domainConcepts, 
+                            lastPart, 
+                            "import", 
+                            1, 
+                            "Import: ${importInfo.path}"
+                        )
+                    }
+                    
+                    // Extract from imported names (for selective imports)
+                    for (importedName in importInfo.importedNames) {
+                        if (importedName.length > 2 && !importedName.all { it.isLowerCase() }) {
+                            addOrIncrementConcept(
+                                domainConcepts, 
+                                importedName, 
+                                "import", 
+                                1, 
+                                "Import: ${importInfo.path}.${importedName}"
+                            )
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -461,50 +506,23 @@ class CodebaseInsightsTool(
     }
     
     /**
-     * Extract imports from file content
+     * Extract imports from file content using TreeSitter AST parsing
      */
-    private fun extractImports(content: String, filePath: String): List<String> {
+    private suspend fun extractImports(content: String, filePath: String): List<ImportInfo> {
         val extension = filePath.substringAfterLast(".").lowercase()
-        val imports = mutableListOf<String>()
+        val language = getLanguageFromExtension(extension)
         
-        when (extension) {
-            "kt", "java" -> {
-                val importRegex = Regex("""import\s+(static\s+)?([a-zA-Z_][\w.]*[\w*])""")
-                importRegex.findAll(content).forEach { match ->
-                    imports.add(match.groupValues[2].removeSuffix(".*"))
-                }
-            }
-            "py" -> {
-                val fromImportRegex = Regex("""from\s+([\w.]+)\s+import""")
-                fromImportRegex.findAll(content).forEach { match ->
-                    imports.add(match.groupValues[1])
-                }
-                val importRegex = Regex("""^import\s+([\w.]+)""", RegexOption.MULTILINE)
-                importRegex.findAll(content).forEach { match ->
-                    imports.add(match.groupValues[1])
-                }
-            }
-            "ts", "tsx", "js", "jsx" -> {
-                val es6ImportRegex = Regex("""import\s+(?:.+\s+from\s+)?['"]([@\w./-]+)['"]""")
-                es6ImportRegex.findAll(content).forEach { match ->
-                    imports.add(match.groupValues[1])
-                }
-            }
-            "go" -> {
-                val importRegex = Regex(""""([^"]+)"""")
-                importRegex.findAll(content).forEach { match ->
-                    imports.add(match.groupValues[1])
-                }
-            }
-            "rs" -> {
-                val useRegex = Regex("""use\s+([\w:]+)""")
-                useRegex.findAll(content).forEach { match ->
-                    imports.add(match.groupValues[1])
-                }
-            }
+        // Return empty list for unsupported languages
+        if (language == Language.UNKNOWN) {
+            return emptyList()
         }
         
-        return imports.take(50)
+        return try {
+            codeParser.parseImports(content, filePath, language)
+        } catch (e: Exception) {
+            logger.warn { "Failed to parse imports for $filePath: ${e.message}" }
+            emptyList()
+        }
     }
     
     /**
