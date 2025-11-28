@@ -1,69 +1,54 @@
 
 Chinese,Code Translation,Description
-AI编程助手,AutoDev | AutoDevPlugin,AutoDev AI驱动的编程助手插件
-代码草图,Sketch | CodeSketch | DiffSketch | TerminalSketch | WebViewSketch,IDE画布功能，支持多种代码编辑和预览
-AI代理,Agent | CustomAgent | CodingAgent,可执行的AI代理和自定义代理
-AI代理语言,Shire | ShireLanguage | DevIn,AutoDev的AI代理语言
-自动代码生成,AutoCRUD | AutoSQL | AutoPage | AutoTesting | AutoDocument,自动生成CRUD、SQL、页面、测试和文档
-代码审查,CodeReview | ReviewComment,代码审查和评论功能
-智能重构,SmartRefactoring | Rename | RefactoringSuggestion,AI辅助的智能代码重构
-活文档,LivingDoc | LivingDocumentation,可自定义的活文档功能
-团队AI,TeamAI | TeamPrompt,团队级AI提示定制
-自定义提示,CustomPrompt | PromptOverride,自定义提示和提示覆盖
-LLM配置,LLM | LLMProvider | LLMConfig,大语言模型配置和提供者
-开发工作流,DevWorkflow | AutoDevMode | CopilotMode,自动开发模式和副驾驶模式
-提交消息,CommitMessage | ReleaseNote,自动生成提交消息和发布说明
-Docker配置,Dockerfile | CICDConfig,自动生成Dockerfile和CI/CD配置
-代码补全,Completion | InlayCompletion,智能代码补全和内联提示
-代码解释,CodeExplain | ExplainCode,AI代码解释功能
-代码修复,CodeFix | FixCode,AI辅助的代码修复
-代码聊天,ChatWithAI | ChatContext,与AI聊天和代码上下文对话
-相似代码,SimilarCode | SimilarChunk,基于相似性的代码推荐
-代码拓扑,CodeTopology | CodeTopologySketch,代码拓扑结构显示
-计划器,Planner | PlanSketch | AutoDevPlanner,AutoDev计划器和问题解决规划
+自动开发,AutoDev | AutoDevPlugin,AI驱动的智能编程助手
+代码草图,Sketch | CodeSketch | DiffSketch | TerminalSketch | WebViewSketch,IDE画布功能，支持多种编程视图
+AI代理,Agent | CustomAgent | CodingAgent,可执行的AI代理语言和自定义代理
+Shire语言,Shire | ShireFile | ShireLanguage,AutoDev专用的AI代理编程语言
+自动测试,AutoTest | TestGeneration | UnitTest,自动化单元测试生成和修复
+自动文档,AutoDoc | Documentation | LivingDoc,智能文档生成和活文档
+代码审查,CodeReview | ReviewComment | CodeSuggestion,AI辅助的代码审查和建议
+智能重构,SmartRefactor | Refactoring | CodeSmell,AI驱动的代码重构和异味检测
+团队AI,TeamAI | TeamPrompt | SharedPrompt,团队共享的AI提示和配置
+自定义提示,CustomPrompt | PromptOverride | PromptTemplate,可定制的AI提示模板
+OpenAPI草图,OpenAPISketch | OpenAPIEditor,OpenAPI编辑器和代码同步
 依赖检查,DependencySketch | VulnerableDependency,安全漏洞依赖检查器
-API编辑器,OpenAPISketch | OpenAPIEditor,OpenAPI编辑器和双向同步
-流程图编辑器,MermaidSketch | PlantUMLSketch,实时流程图和UML图编辑
-Go游乐场,GoPlaygroundSketch | GoPlayground,Go代码预览和编辑游乐场
-终端集成,TerminalSketch | TerminalIntegration,可编辑的弹出式终端界面
-Web视图,WebViewSketch | WebViewPreview,HTML/React/Ionic原型生成器
-差异查看,DiffSketch | DiffViewer,差异内容比较工具
-代码编辑器,CodeSketch | CodeEditor,实时语法高亮代码编辑器
-知识库,KnowledgeBase | KnowledgeGraph,项目知识库和图谱
-开发协议,DevTiProtocol | DevTiStory,开发协议和故事处理
-单元评估,UnitEval | LLMEvaluation,LLM结果评估框架
+Go游乐场,GoPlaygroundSketch | GoPlayground,Go代码实时预览和编辑
+流程图,MermaidSketch | MermaidEditor,实时流程图预览和编辑
+UML图,PlantUMLSketch | PlantUMLEditor,UML图表编辑器和同步
+代码拓扑,CodeTopologySketch | CodeTopology,当前文件的代码拓扑展示
+计划草图,PlanSketch | AutoDevPlanner,AutoDev规划器的问题解决计划
+自动SQL,AutoSQL | SQLGeneration,上下文感知的SQL生成
+自动页面,AutoPage | ReactPageGeneration,上下文感知的Web页面生成
+提交消息,CommitMessage | GitCommit,智能Git提交消息生成
+发布说明,ReleaseNote | ReleaseGeneration,自动生成发布说明
+Docker文件,Dockerfile | DockerGenerator,基于项目生成Dockerfile
+CI/CD配置,CICDConfig | BuildConfigGenerator,生成CI/CD配置文件
+终端助手,TerminalAssistant | ShellCommand,终端中的自定义命令生成
+大语言模型,LLM | LLMProvider | LLMConfig,大语言模型提供商和配置
+GitHub副驾驶,Copilot | CopilotIntegration,GitHub Copilot集成功能
+Claude模型,Claude | ClaudeProvider,Claude AI模型集成
+ChatGLM模型,ChatGLM | ChatGLMProvider,ChatGLM模型集成
+代码补全,CodeComplete | CompletionProvider,智能代码补全建议
+代码解释,CodeExplain | CodeExplainer,代码解释功能
+代码修复,CodeFix | BugFixer,智能bug修复助手
+相似代码,SimilarCode | SimilarChunk,基于最近文件变更的相似代码分析
+知识库,Knowledge | KnowledgeBase,项目知识库管理
+开发协议,DevTiProtocol | DevTiStory,开发协议和故事管理
+单元评估,UnitEval | ModelEvaluation,LLM结果评估框架
 单元生成,UnitGen | CodeGeneration,代码LLM微调数据生成
-多语言支持,Multilingual | LanguageSupport,多语言AI支持
-自定义规范,CustomSpec | Specification,自定义提示规范
+多语言支持,Multilingual | LanguageSupport,多语言编程支持
+AST分析,AST | StructureAnalysis,抽象语法树分析引擎
+精度测试,PrecisionTest | TestAccuracy,精度测试生成
+精度代码,PrecisionCode | CodeAccuracy,精度代码生成
+插件扩展,Extension | PluginExtension,插件扩展系统
 自定义动作,CustomAction | IntentionAction,自定义意图动作
-自定义服务器,CustomServer | CustomLLMServer,自定义LLM服务器
-SDLC集成,SDLC | VCSIntegration,软件开发生命周期集成
-代码分析,CodeAnalysis | ComplexityAnalysis,代码复杂度和结构分析
-智能提示,SmartSuggestion | ContextAwareSuggestion,基于上下文的智能建议
-代码生成器,CodeGenerator | AutoGenerator,自动代码生成器
-AI技能,AISkill | CustomSkill,可定制的AI技能
-开发工具链,Toolchain | DevToolchain,开发工具链集成
-项目配置,ProjectConfig | AutoDevConfig,AutoDev项目配置
-代码上下文,CodeContext | ContextAware,代码上下文感知
-AI交互,AIInteraction | InteractionMode,AI交互模式
-代码模板,CodeTemplate | TemplateGenerator,代码模板生成器
-语言特性,LanguageFeature | LanguageSupport,特定语言功能支持
-代码结构,CodeStructure | StructureAST,代码结构分析
-文档生成,DocGeneration | AutoDocument,自动文档生成
-测试生成,TestGeneration | PrecisionTest,精确测试生成
-代码搜索,CodeSearch | SimilarChunk,代码搜索和相似性分析
-开发代理,DevAgent | CodingAgent,开发专用AI代理
+活文档,LivingDoc | LivingDocumentation,活文档系统
 提示工程,PromptEngineering | PromptDesign,提示词工程和设计
-代码质量,CodeQuality | QualityAnalysis,代码质量分析
-开发助手,DevAssistant | CodingAssistant,开发助手功能
-智能编辑,SmartEdit | SmartEditor,智能代码编辑
-代码补全,CodeComplete | CompletionProvider,智能代码补全
-代码解释器,CodeExplainer | ExplainCode,代码解释功能
-代码修复器,CodeFixer | FixCode,代码自动修复
-代码重构器,CodeRefactorer | RefactorCode,代码重构工具
-代码审查器,CodeReviewer | ReviewCode,代码审查工具
-代码生成器,CodeGen | CodeGenerator,代码生成工具
-代码分析器,CodeAnalyzer | AnalyzeCode,代码分析工具
-代码优化器,CodeOptimizer | OptimizeCode,代码优化工具
-代码测试器,CodeTester | TestCode,代码测试工具
-代码文档器,CodeDocumenter | DocumentCode,代码文档工具
+流式差异,StreamDiff | DiffViewer,流式代码差异查看器
+Ripgrep搜索,Ripgrep | CodeSearch,基于Ripgrep的代码搜索
+MCP协议,MCP | McpServer | McpBridge,Model Context Protocol集成
+智能编辑器,SmartEditor | EditorAssistant,智能编辑器助手
+代码画布,CodeCanvas | SketchCanvas,代码画布和编辑界面
+Web视图,WebView | WebPreview,HTML/React/Ionic预览
+差异视图,DiffView | PatchViewer,差异内容比较工具
+终端视图,TerminalView | TerminalInterface,可编辑的弹出终端界面

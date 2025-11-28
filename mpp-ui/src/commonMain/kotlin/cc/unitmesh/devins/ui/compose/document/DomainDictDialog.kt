@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import cc.unitmesh.agent.subagent.DomainDictAgent
+import cc.unitmesh.agent.subagent.DomainDictCallbacks
 import cc.unitmesh.agent.subagent.DomainDictContext
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
@@ -36,6 +38,7 @@ import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -53,11 +56,15 @@ sealed class DomainDictStatus {
         val currentStep: Int = 0,
         val totalSteps: Int = 7,
         val stepName: String = "",
-        val progress: String = ""
+        val progress: String = "",
+        val hotFiles: Int = 0,
+        val coChangePatterns: Int = 0,
+        val concepts: Int = 0
     ) : DomainDictStatus()
     
     data class Success(val message: String) : DomainDictStatus()
     data class Error(val message: String) : DomainDictStatus()
+    data class Cancelled(val message: String = "Cancelled") : DomainDictStatus()
 }
 
 /**
@@ -117,8 +124,16 @@ fun DomainDictDialog(
     var hasChanges by remember { mutableStateOf(false) }
     var streamingContent by remember { mutableStateOf("") }
     
+    // AI thinking content (streaming)
+    var aiThinkingContent by remember { mutableStateOf("") }
+    var isAiThinking by remember { mutableStateOf(false) }
+    
     // Deep Research progress timeline
     val progressTimeline = remember { mutableStateListOf<ProgressItem>() }
+    
+    // Job for cancellation support
+    var currentJob by remember { mutableStateOf<Job?>(null) }
+    var currentAgent by remember { mutableStateOf<DomainDictAgent?>(null) }
 
     val scope = rememberCoroutineScope()
     val domainDictService = remember { DomainDictService(workspace.fileSystem) }
@@ -181,12 +196,26 @@ fun DomainDictDialog(
     }
 
     /**
+     * Cancel the current research
+     */
+    fun cancelResearch() {
+        currentAgent?.cancel()
+        currentJob?.cancel()
+        status = DomainDictStatus.Cancelled("Research cancelled by user")
+        isAiThinking = false
+        currentJob = null
+        currentAgent = null
+    }
+
+    /**
      * Deep Research generation using DomainDictAgent
      */
     fun generateDeepResearch() {
-        scope.launch {
+        currentJob = scope.launch {
             progressTimeline.clear()
             streamingContent = ""
+            aiThinkingContent = ""
+            isAiThinking = false
             status = DomainDictStatus.DeepResearch(0, 7, "Initializing", "Starting Deep Research...")
             
             try {
@@ -208,28 +237,39 @@ fun DomainDictDialog(
                     llmService = llmService,
                     fileSystem = workspace.fileSystem,
                     domainDictService = domainDictService,
-                    maxDefaultIterations = 7
+                    maxDefaultIterations = 7,
+                    enableStreaming = true
                 )
+                currentAgent = agent
                 
                 progressTimeline.add(ProgressItem(
                     message = "🔬 Domain Dictionary Deep Research Agent Started",
                     type = ProgressType.INFO
                 ))
                 
-                // Execute with progress callback
-                val result = agent.execute(
-                    input = DomainDictContext(
-                        userQuery = "Optimize domain dictionary based on current codebase",
-                        maxIterations = 7
-                    ),
+                // Create callbacks for full progress reporting
+                val callbacks = DomainDictCallbacks(
                     onProgress = { message ->
+                        // Clear AI thinking when new progress message arrives
+                        if (!message.contains("💭") && !message.contains("thinking")) {
+                            isAiThinking = false
+                            aiThinkingContent = ""
+                        } else {
+                            isAiThinking = true
+                        }
+                        
                         // Update progress timeline
                         val type = parseProgressType(message)
                         progressTimeline.add(ProgressItem(message = message, type = type))
                         
                         // Update status based on step headers
                         extractStepInfo(message)?.let { (step, name) ->
-                            status = DomainDictStatus.DeepResearch(step, 7, name, message)
+                            val currentStatus = status
+                            if (currentStatus is DomainDictStatus.DeepResearch) {
+                                status = currentStatus.copy(currentStep = step, stepName = name, progress = message)
+                            } else {
+                                status = DomainDictStatus.DeepResearch(step, 7, name, message)
+                            }
                         }
                         
                         // Keep streaming content updated for fallback display
@@ -241,8 +281,52 @@ fun DomainDictDialog(
                                 progressListState.animateScrollToItem(progressTimeline.size - 1)
                             }
                         }
+                    },
+                    onAIThinking = { chunk ->
+                        // Append AI thinking chunk
+                        isAiThinking = true
+                        aiThinkingContent += chunk
+                    },
+                    onStepComplete = { step, stepName, summary ->
+                        // Update status when step completes
+                        val currentStatus = status
+                        if (currentStatus is DomainDictStatus.DeepResearch) {
+                            status = currentStatus.copy(currentStep = step, stepName = stepName)
+                        }
+                        progressTimeline.add(ProgressItem(
+                            message = "   ✅ Step $step ($stepName): $summary",
+                            type = ProgressType.SUCCESS
+                        ))
+                    },
+                    onCodebaseStats = { hotFiles, coChangePatterns, concepts ->
+                        // Update status with codebase stats
+                        val currentStatus = status
+                        if (currentStatus is DomainDictStatus.DeepResearch) {
+                            status = currentStatus.copy(
+                                hotFiles = hotFiles,
+                                coChangePatterns = coChangePatterns,
+                                concepts = concepts
+                            )
+                        }
+                        progressTimeline.add(ProgressItem(
+                            message = "   📊 Codebase: $hotFiles hot files, $coChangePatterns patterns, $concepts concepts",
+                            type = ProgressType.INFO
+                        ))
                     }
                 )
+                
+                // Execute with full callbacks
+                val result = agent.executeWithCallbacks(
+                    input = DomainDictContext(
+                        userQuery = "Optimize domain dictionary based on current codebase",
+                        maxIterations = 7
+                    ),
+                    callbacks = callbacks
+                )
+                
+                isAiThinking = false
+                currentAgent = null
+                currentJob = null
                 
                 if (result.success) {
                     // Reload the dictionary
@@ -253,14 +337,23 @@ fun DomainDictDialog(
                     val newEntries = result.metadata["newEntries"]?.toIntOrNull() ?: 0
                     status = DomainDictStatus.Success("Deep Research complete! Added $newEntries new entries")
                 } else {
-                    status = DomainDictStatus.Error("Deep Research failed: ${result.content}")
+                    val reason = result.metadata["reason"]
+                    if (reason == "user_cancelled") {
+                        status = DomainDictStatus.Cancelled("Research cancelled")
+                    } else {
+                        status = DomainDictStatus.Error("Deep Research failed: ${result.content.take(100)}")
+                    }
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                status = DomainDictStatus.Cancelled("Research cancelled")
+                isAiThinking = false
             } catch (e: Exception) {
                 status = DomainDictStatus.Error("Failed: ${e.message}")
                 progressTimeline.add(ProgressItem(
                     message = "❌ Error: ${e.message}",
                     type = ProgressType.ERROR
                 ))
+                isAiThinking = false
             }
         }
     }
@@ -269,6 +362,7 @@ fun DomainDictDialog(
     val isGenerating = status is DomainDictStatus.Generating || 
                        status is DomainDictStatus.Scanning ||
                        status is DomainDictStatus.DeepResearch
+    val isCancellable = status is DomainDictStatus.DeepResearch
 
     Dialog(
         onDismissRequest = { if (!isGenerating) onDismiss() },
@@ -307,14 +401,28 @@ fun DomainDictDialog(
                             Modifier.fillMaxWidth().background(AutoDevColors.Indigo.c100.copy(0.5f)).padding(8.dp)
                         ) {
                             Row(
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = AutoDevColors.Indigo.c500)
-                                Text(
-                                    "🔬 Deep Research - Step ${s.currentStep}/7: ${s.stepName}",
-                                    fontSize = 12.sp, color = AutoDevColors.Indigo.c700, fontWeight = FontWeight.Medium
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = AutoDevColors.Indigo.c500)
+                                    Text(
+                                        "🔬 Step ${s.currentStep}/7: ${s.stepName}",
+                                        fontSize = 12.sp, color = AutoDevColors.Indigo.c700, fontWeight = FontWeight.Medium
+                                    )
+                                }
+                                // Cancel button
+                                TextButton(
+                                    onClick = { cancelResearch() },
+                                    modifier = Modifier.height(24.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                ) {
+                                    Text("Cancel", fontSize = 11.sp, color = AutoDevColors.Red.c500)
+                                }
                             }
                             // Progress bar
                             LinearProgressIndicator(
@@ -323,6 +431,17 @@ fun DomainDictDialog(
                                 color = AutoDevColors.Indigo.c500,
                                 trackColor = AutoDevColors.Indigo.c200
                             )
+                            // Codebase stats (if available)
+                            if (s.hotFiles > 0 || s.concepts > 0) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text("📊 ${s.hotFiles} hot files", fontSize = 10.sp, color = AutoDevColors.Indigo.c600)
+                                    Text("🔗 ${s.coChangePatterns} patterns", fontSize = 10.sp, color = AutoDevColors.Indigo.c600)
+                                    Text("💡 ${s.concepts} concepts", fontSize = 10.sp, color = AutoDevColors.Indigo.c600)
+                                }
+                            }
                         }
                     }
                     is DomainDictStatus.Generating, is DomainDictStatus.Scanning -> {
@@ -352,15 +471,34 @@ fun DomainDictDialog(
                             Text(s.message, fontSize = 12.sp, color = AutoDevColors.Red.c700)
                         }
                     }
+                    is DomainDictStatus.Cancelled -> {
+                        Row(Modifier.fillMaxWidth().background(AutoDevColors.Amber.c100.copy(0.5f)).padding(8.dp)) {
+                            Icon(AutoDevComposeIcons.Warning, null, Modifier.size(14.dp), AutoDevColors.Amber.c600)
+                            Spacer(Modifier.width(6.dp))
+                            Text(s.message, fontSize = 12.sp, color = AutoDevColors.Amber.c700)
+                        }
+                    }
                     else -> {}
                 }
 
                 // Content
                 Box(Modifier.weight(1f).fillMaxWidth().padding(8.dp)) {
                     when {
-                        // Deep Research progress timeline view
+                        // Deep Research progress timeline view with AI thinking
                         status is DomainDictStatus.DeepResearch && progressTimeline.isNotEmpty() -> {
-                            DeepResearchProgressView(progressTimeline, progressListState)
+                            Column(Modifier.fillMaxSize()) {
+                                // Main progress view
+                                Box(Modifier.weight(1f)) {
+                                    DeepResearchProgressView(progressTimeline, progressListState)
+                                }
+                                // AI Thinking block (collapsible, shows streaming AI output)
+                                if (isAiThinking && aiThinkingContent.isNotEmpty()) {
+                                    AIThinkingBlock(
+                                        content = aiThinkingContent,
+                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    )
+                                }
+                            }
                         }
                         isGenerating && streamingContent.isNotEmpty() -> StreamingView(streamingContent)
                         isLoading -> LoadingView()
@@ -427,6 +565,95 @@ fun DomainDictDialog(
 private fun LoadingView() {
     Box(Modifier.fillMaxSize(), Alignment.Center) {
         CircularProgressIndicator(Modifier.size(24.dp), color = AutoDevColors.Indigo.c500)
+    }
+}
+
+/**
+ * AI Thinking Block - shows streaming AI output in a collapsible block
+ * Similar to ThinkingBlockRenderer but simplified for dialog use
+ */
+@Composable
+private fun AIThinkingBlock(
+    content: String,
+    modifier: Modifier = Modifier
+) {
+    var isExpanded by remember { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
+    
+    // Auto-scroll to bottom during streaming
+    LaunchedEffect(content) {
+        if (isExpanded && content.isNotBlank()) {
+            scrollState.scrollTo(scrollState.maxValue)
+        }
+    }
+    
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(6.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded },
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(12.dp)
+                )
+                
+                Text(
+                    text = "💭 AI thinking...",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    fontSize = 10.sp
+                )
+                
+                // Animated indicator
+                CircularProgressIndicator(
+                    modifier = Modifier.size(10.dp),
+                    strokeWidth = 1.dp,
+                    color = AutoDevColors.Indigo.c400
+                )
+            }
+            
+            if (isExpanded) {
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Scrollable container with max height
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 80.dp)
+                        .verticalScroll(scrollState)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            RoundedCornerShape(3.dp)
+                        )
+                        .padding(4.dp)
+                ) {
+                    Text(
+                        text = content.takeLast(1000), // Limit to last 1000 chars for performance
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
+        }
     }
 }
 

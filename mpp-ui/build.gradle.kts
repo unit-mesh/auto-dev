@@ -522,6 +522,29 @@ tasks.register<JavaExec>("runReviewCli") {
     standardInput = System.`in`
 }
 
+// Task to run Domain Dictionary Deep Research CLI
+tasks.register<JavaExec>("runDomainDictCli") {
+    group = "application"
+    description = "Run Domain Dictionary Deep Research CLI (analyze agent output)"
+
+    val jvmCompilation = kotlin.jvm().compilations.getByName("main")
+    classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
+    mainClass.set("cc.unitmesh.server.cli.DomainDictCli")
+
+    // Pass properties
+    if (project.hasProperty("domainProjectPath")) {
+        systemProperty("domainProjectPath", project.property("domainProjectPath") as String)
+    }
+    if (project.hasProperty("domainQuery")) {
+        systemProperty("domainQuery", project.property("domainQuery") as String)
+    }
+    if (project.hasProperty("domainFocusArea")) {
+        systemProperty("domainFocusArea", project.property("domainFocusArea") as String)
+    }
+    
+    standardInput = System.`in`
+}
+
 // Ktlint configuration
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set("1.0.1")

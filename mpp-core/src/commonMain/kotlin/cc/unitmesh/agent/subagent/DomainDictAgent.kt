@@ -19,6 +19,7 @@ import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
 
 /**
@@ -214,6 +215,20 @@ enum class SuggestionType {
 }
 
 /**
+ * Callbacks for DomainDictAgent progress reporting
+ */
+data class DomainDictCallbacks(
+    /** Progress status messages (e.g., "Step 1/7: Clarify") */
+    val onProgress: (String) -> Unit = {},
+    /** AI streaming output for the current step */
+    val onAIThinking: (String) -> Unit = {},
+    /** Called when a step completes with its result summary */
+    val onStepComplete: (step: Int, stepName: String, summary: String) -> Unit = { _, _, _ -> },
+    /** Called with codebase analysis stats when available */
+    val onCodebaseStats: (hotFiles: Int, coChangePatterns: Int, concepts: Int) -> Unit = { _, _, _ -> }
+)
+
+/**
  * DomainDictAgent - DeepResearch style agent for domain dictionary optimization
  *
  * Implements the complete 7-step Deep Research flow:
@@ -224,12 +239,19 @@ enum class SuggestionType {
  * 5. Second-Order Insights - Extract patterns and principles
  * 6. Synthesis - Research Narrative
  * 7. Actionization - Final Deliverables
+ * 
+ * Features:
+ * - AI streaming output for real-time feedback
+ * - Detailed progress callbacks
+ * - Cancellation support via coroutine Job
+ * - Codebase analysis stats reporting
  */
 class DomainDictAgent(
     private val llmService: KoogLLMService,
     private val fileSystem: ProjectFileSystem,
     private val domainDictService: DomainDictService,
-    private val maxDefaultIterations: Int = 7
+    private val maxDefaultIterations: Int = 7,
+    private val enableStreaming: Boolean = true
 ) : SubAgent<DomainDictContext, ToolResult.AgentResult>(
     definition = createDefinition()
 ) {
@@ -238,6 +260,9 @@ class DomainDictAgent(
     private val reviewHistory = mutableListOf<DomainDictReviewResult>()
     private val allNewEntries = mutableListOf<DomainEntry>()
     
+    // Current job for cancellation support
+    private var currentJob: Job? = null
+    
     // Async codebase analysis (starts at agent init, ready for review step)
     private var asyncInsightsJob: Deferred<CodebaseInsightsResult?>? = null
     private val projectPath = fileSystem.getProjectPath() ?: "."
@@ -245,6 +270,9 @@ class DomainDictAgent(
         DefaultToolFileSystem(projectPath),
         projectPath
     )
+    
+    // Callbacks holder for streaming
+    private var callbacks: DomainDictCallbacks = DomainDictCallbacks()
 
     companion object {
         private fun createDefinition() = AgentDefinition(
@@ -344,9 +372,25 @@ class DomainDictAgent(
         input: DomainDictContext,
         onProgress: (String) -> Unit
     ): ToolResult.AgentResult {
+        return executeWithCallbacks(input, DomainDictCallbacks(onProgress = onProgress))
+    }
+    
+    /**
+     * Execute with full callback support for streaming AI output
+     */
+    suspend fun executeWithCallbacks(
+        input: DomainDictContext,
+        callbacks: DomainDictCallbacks
+    ): ToolResult.AgentResult {
+        this.callbacks = callbacks
+        val onProgress = callbacks.onProgress
+        
         onProgress("🔬 Domain Dictionary Deep Research Agent Started")
         onProgress("=" .repeat(60))
         onProgress("📋 Requirement: ${input.userQuery}")
+        if (input.focusArea != null) {
+            onProgress("🎯 Focus Area: ${input.focusArea}")
+        }
         onProgress("=" .repeat(60))
 
         try {
@@ -356,41 +400,46 @@ class DomainDictAgent(
             reviewHistory.clear()
             
             // Start async codebase analysis immediately (will be used in Step 7)
-            onProgress("🔍 Starting async codebase analysis (Git + Imports + Code)...")
-            startAsyncCodebaseAnalysis(input.focusArea)
+            onProgress("🔍 Starting codebase analysis (Git history + Import dependencies + Code structure)...")
+            onProgress("   📊 This runs in background while AI research proceeds")
+            startAsyncCodebaseAnalysis(input.focusArea, callbacks)
 
             // Load current dictionary
             val currentDict = input.currentDict ?: domainDictService.loadContent() ?: ""
-            onProgress("📚 Loaded current dictionary (${currentDict.lines().size} entries)")
+            val entryCount = currentDict.lines().count { it.contains(",") }
+            onProgress("📚 Loaded current dictionary ($entryCount entries)")
 
             // Execute 7-step Deep Research process
             
             // Step 1: Clarify - Problem Definition
             onProgress("\n## Step 1/7: Clarify - Problem Definition")
-            val problemDef = step1Clarify(input, onProgress)
+            val problemDef = step1Clarify(input, callbacks)
             researchState = researchState.copy(
                 step = 1,
                 stepName = "Clarify",
                 problemDefinition = problemDef
             )
+            callbacks.onStepComplete(1, "Clarify", "Goal: ${problemDef.goal.take(100)}")
 
             // Step 2: Decompose - Research Dimensions
             onProgress("\n## Step 2/7: Decompose - Research Dimensions")
-            val dimensions = step2Decompose(input, problemDef, onProgress)
+            val dimensions = step2Decompose(input, problemDef, callbacks)
             researchState = researchState.copy(
                 step = 2,
                 stepName = "Decompose",
                 dimensions = dimensions
             )
+            callbacks.onStepComplete(2, "Decompose", "${dimensions.size} dimensions identified")
 
             // Step 3: Information Map
             onProgress("\n## Step 3/7: Information Map - Planning")
-            val infoPlan = step3InformationMap(dimensions, onProgress)
+            val infoPlan = step3InformationMap(dimensions, callbacks)
             researchState = researchState.copy(
                 step = 3,
                 stepName = "Information Map",
                 informationPlan = infoPlan
             )
+            callbacks.onStepComplete(3, "Information Map", "${infoPlan.filePatterns.size} patterns, ${infoPlan.searchPaths.size} paths")
 
             // Step 4: Iterative Deep Research Loop
             onProgress("\n## Step 4/7: Iterative Deep Research Loop")
@@ -399,41 +448,46 @@ class DomainDictAgent(
                 infoPlan,
                 currentDict,
                 input.maxIterations,
-                onProgress
+                callbacks
             )
             researchState = researchState.copy(
                 step = 4,
                 stepName = "Iterative Research",
                 dimensionResults = dimensionResults
             )
+            val totalNewEntries = dimensionResults.sumOf { it.newEntries.size }
+            callbacks.onStepComplete(4, "Research", "$totalNewEntries entries from ${dimensionResults.size} dimensions")
 
             // Step 5: Second-Order Insights
             onProgress("\n## Step 5/7: Second-Order Insights")
-            val insights = step5SecondOrderInsights(dimensionResults, onProgress)
+            val insights = step5SecondOrderInsights(dimensionResults, callbacks)
             researchState = researchState.copy(
                 step = 5,
                 stepName = "Second-Order Insights",
                 insights = insights
             )
+            callbacks.onStepComplete(5, "Insights", "${insights.patterns.size} patterns, ${insights.principles.size} principles")
 
             // Step 6: Synthesis
             onProgress("\n## Step 6/7: Synthesis - Research Narrative")
-            val narrative = step6Synthesis(problemDef, dimensionResults, insights, onProgress)
+            val narrative = step6Synthesis(problemDef, dimensionResults, insights, callbacks)
             researchState = researchState.copy(
                 step = 6,
                 stepName = "Synthesis",
                 narrative = narrative
             )
+            callbacks.onStepComplete(6, "Synthesis", "${narrative.keyFindings.size} findings, ${narrative.recommendations.size} recommendations")
 
             // Step 7: Actionization
             onProgress("\n## Step 7/7: Actionization - Final Deliverables")
-            val deliverables = step7Actionization(currentDict, allNewEntries, narrative, onProgress)
+            val deliverables = step7Actionization(currentDict, allNewEntries, narrative, callbacks)
             researchState = researchState.copy(
                 step = 7,
                 stepName = "Actionization",
                 deliverables = deliverables,
                 isComplete = true
             )
+            callbacks.onStepComplete(7, "Actionization", "${allNewEntries.size} new entries added")
 
             // Save the final dictionary
             val saved = domainDictService.saveContent(deliverables.updatedDictionary)
@@ -458,6 +512,16 @@ class DomainDictAgent(
                 )
             )
 
+        } catch (e: CancellationException) {
+            onProgress("⏹️ Research cancelled by user")
+            return ToolResult.AgentResult(
+                success = false,
+                content = "Research cancelled at step ${researchState.step} (${researchState.stepName})",
+                metadata = mapOf(
+                    "cancelledStep" to researchState.step.toString(),
+                    "reason" to "user_cancelled"
+                )
+            )
         } catch (e: Exception) {
             onProgress("❌ Deep Research failed: ${e.message}")
             return ToolResult.AgentResult(
@@ -470,13 +534,22 @@ class DomainDictAgent(
             )
         }
     }
+    
+    /**
+     * Cancel the current research
+     */
+    fun cancel() {
+        currentJob?.cancel()
+        asyncInsightsJob?.cancel()
+    }
 
     // ============= Step 1: Clarify =============
     private suspend fun step1Clarify(
         input: DomainDictContext,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): ProblemDefinition {
-        onProgress("🎯 Analyzing requirement and defining problem scope...")
+        callbacks.onProgress("🎯 Analyzing requirement and defining problem scope...")
+        callbacks.onProgress("   💭 AI is thinking...")
 
         val prompt = """
             Analyze the following domain dictionary optimization request and define the problem clearly.
@@ -496,23 +569,51 @@ class DomainDictAgent(
             ```
         """.trimIndent()
 
-        val response = llmService.sendPrompt(prompt)
+        val response = streamLLMPrompt(prompt, callbacks)
         val parsed = parseProblemDefinition(response)
 
-        onProgress("   ✓ Goal: ${parsed.goal}")
-        onProgress("   ✓ Scope: ${parsed.scope}")
-        onProgress("   ✓ Depth: ${parsed.depth}")
+        callbacks.onProgress("   ✓ Goal: ${parsed.goal.take(80)}${if (parsed.goal.length > 80) "..." else ""}")
+        callbacks.onProgress("   ✓ Scope: ${parsed.scope.take(80)}${if (parsed.scope.length > 80) "..." else ""}")
+        callbacks.onProgress("   ✓ Depth: ${parsed.depth}")
 
         return parsed
+    }
+    
+    /**
+     * Stream LLM prompt and collect response, emitting chunks to AI thinking callback
+     */
+    private suspend fun streamLLMPrompt(prompt: String, callbacks: DomainDictCallbacks): String {
+        val response = StringBuilder()
+        
+        if (enableStreaming) {
+            try {
+                llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+                    response.append(chunk)
+                    callbacks.onAIThinking(chunk)
+                }
+            } catch (e: Exception) {
+                // Fallback to non-streaming if streaming fails
+                val result = llmService.sendPrompt(prompt)
+                response.append(result)
+                callbacks.onAIThinking(result)
+            }
+        } else {
+            val result = llmService.sendPrompt(prompt)
+            response.append(result)
+            callbacks.onAIThinking(result)
+        }
+        
+        return response.toString()
     }
 
     // ============= Step 2: Decompose =============
     private suspend fun step2Decompose(
         input: DomainDictContext,
         problemDef: ProblemDefinition,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): List<ResearchDimension> {
-        onProgress("🔍 Decomposing problem into research dimensions...")
+        callbacks.onProgress("🔍 Decomposing problem into research dimensions...")
+        callbacks.onProgress("   💭 AI is thinking...")
 
         val prompt = """
             Based on this problem definition, decompose it into 3-7 research dimensions.
@@ -541,11 +642,12 @@ class DomainDictAgent(
             ```
         """.trimIndent()
 
-        val response = llmService.sendPrompt(prompt)
+        val response = streamLLMPrompt(prompt, callbacks)
         val dimensions = parseResearchDimensions(response)
 
+        callbacks.onProgress("   📋 Research dimensions identified:")
         dimensions.forEachIndexed { idx, dim ->
-            onProgress("   ${idx + 1}. ${dim.name} (Priority: ${dim.priority})")
+            callbacks.onProgress("      ${idx + 1}. ${dim.name} (Priority: ${dim.priority})")
         }
 
         return dimensions
@@ -554,9 +656,10 @@ class DomainDictAgent(
     // ============= Step 3: Information Map =============
     private suspend fun step3InformationMap(
         dimensions: List<ResearchDimension>,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): InformationPlan {
-        onProgress("🗺️ Creating information gathering plan...")
+        callbacks.onProgress("🗺️ Creating information gathering plan...")
+        callbacks.onProgress("   💭 AI is thinking...")
 
         val dimensionList = dimensions.joinToString("\n") { "- ${it.name}: ${it.description}" }
 
@@ -581,12 +684,12 @@ class DomainDictAgent(
             ```
         """.trimIndent()
 
-        val response = llmService.sendPrompt(prompt)
+        val response = streamLLMPrompt(prompt, callbacks)
         val plan = parseInformationPlan(response)
 
-        onProgress("   ✓ Search paths: ${plan.searchPaths.take(3).joinToString(", ")}")
-        onProgress("   ✓ File patterns: ${plan.filePatterns.take(3).joinToString(", ")}")
-        onProgress("   ✓ Analysis strategies: ${plan.analysisStrategies.size} defined")
+        callbacks.onProgress("   ✓ Search paths: ${plan.searchPaths.take(3).joinToString(", ")}")
+        callbacks.onProgress("   ✓ File patterns: ${plan.filePatterns.take(3).joinToString(", ")}")
+        callbacks.onProgress("   ✓ Analysis strategies: ${plan.analysisStrategies.size} defined")
 
         return plan
     }
@@ -597,33 +700,41 @@ class DomainDictAgent(
         infoPlan: InformationPlan,
         currentDict: String,
         maxIterations: Int,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): List<DimensionResearchResult> {
         val results = mutableListOf<DimensionResearchResult>()
         var iterationDict = currentDict
 
         for ((idx, dimension) in dimensions.withIndex()) {
-            onProgress("\n### Researching Dimension ${idx + 1}/${dimensions.size}: ${dimension.name}")
+            callbacks.onProgress("\n### Researching Dimension ${idx + 1}/${dimensions.size}: ${dimension.name}")
 
             // Collect information
-            onProgress("   📥 Collecting information...")
-            val collected = collectInformationForDimension(dimension, infoPlan, onProgress)
+            callbacks.onProgress("   📥 Collecting information from codebase...")
+            val collected = collectInformationForDimension(dimension, infoPlan, callbacks)
+            callbacks.onProgress("      Found ${collected.size} code elements")
 
             // Organize information
-            onProgress("   📊 Organizing findings...")
+            callbacks.onProgress("   📊 Organizing findings...")
             val organized = organizeInformation(collected, dimension)
+            val classCount = organized["classes"]?.size ?: 0
+            val funcCount = organized["functions"]?.size ?: 0
+            callbacks.onProgress("      Classes: $classCount, Functions: $funcCount")
 
             // Validate findings
-            onProgress("   ✓ Validating...")
+            callbacks.onProgress("   ✓ Validating against existing dictionary...")
             val conflicts = validateFindings(organized, iterationDict)
+            if (conflicts.isNotEmpty()) {
+                callbacks.onProgress("      ⚠️ Found ${conflicts.size} potential duplicates")
+            }
 
             // Generate domain entries for this dimension
-            onProgress("   📝 Generating domain entries...")
+            callbacks.onProgress("   📝 Generating domain entries...")
+            callbacks.onProgress("   💭 AI is thinking...")
             val dimensionEntries = generateDimensionEntries(
                 dimension,
                 organized,
                 iterationDict,
-                onProgress
+                callbacks
             )
 
             allNewEntries.addAll(dimensionEntries)
@@ -631,7 +742,15 @@ class DomainDictAgent(
             // Apply new entries
             if (dimensionEntries.isNotEmpty()) {
                 iterationDict = applyNewEntries(iterationDict, dimensionEntries)
-                onProgress("   ➕ Added ${dimensionEntries.size} new entries")
+                callbacks.onProgress("   ➕ Added ${dimensionEntries.size} new entries:")
+                dimensionEntries.take(3).forEach { entry ->
+                    callbacks.onProgress("      • ${entry.chinese} -> ${entry.codeTranslation}")
+                }
+                if (dimensionEntries.size > 3) {
+                    callbacks.onProgress("      ... and ${dimensionEntries.size - 3} more")
+                }
+            } else {
+                callbacks.onProgress("   ℹ️ No new entries for this dimension")
             }
 
             // Conclude dimension research
@@ -649,7 +768,7 @@ class DomainDictAgent(
                 )
             )
 
-            onProgress("   ✅ Dimension complete: ${dimensionEntries.size} entries, ${conflicts.size} conflicts")
+            callbacks.onProgress("   ✅ Dimension complete: ${dimensionEntries.size} entries")
         }
 
         return results
@@ -658,9 +777,10 @@ class DomainDictAgent(
     private suspend fun collectInformationForDimension(
         dimension: ResearchDimension,
         infoPlan: InformationPlan,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): List<String> {
         val collected = mutableListOf<String>()
+        var filesSearched = 0
 
         // Use dimension queries + info plan patterns
         val patterns = dimension.queries + infoPlan.filePatterns.map { pattern ->
@@ -689,6 +809,7 @@ class DomainDictAgent(
                             val names = extractSemanticNames(content, file)
                             collected.addAll(names)
                             fileContentCache[file] = content
+                            filesSearched++
                         }
                     } catch (e: Exception) {
                         // Skip files that can't be read
@@ -697,8 +818,12 @@ class DomainDictAgent(
                 }
             } catch (e: Exception) {
                 // Continue with other patterns
-                onProgress("   ⚠️ Pattern '$pattern' failed: ${e.message?.take(50)}")
+                callbacks.onProgress("      ⚠️ Pattern '$pattern' failed: ${e.message?.take(50)}")
             }
+        }
+        
+        if (filesSearched > 0) {
+            callbacks.onProgress("      Searched $filesSearched files")
         }
 
         return collected.distinct()
@@ -771,7 +896,7 @@ class DomainDictAgent(
         dimension: ResearchDimension,
         organized: Map<String, List<String>>,
         currentDict: String,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): List<DomainEntry> {
         val organizedStr = organized.entries.joinToString("\n") { (cat, items) ->
             "$cat: ${items.take(20).joinToString(", ")}"
@@ -804,7 +929,7 @@ class DomainDictAgent(
             - Maximum 10 entries per dimension
         """.trimIndent()
 
-        val response = llmService.sendPrompt(prompt)
+        val response = streamLLMPrompt(prompt, callbacks)
         return parseNewEntries(response)
     }
 
@@ -821,9 +946,10 @@ class DomainDictAgent(
     // ============= Step 5: Second-Order Insights =============
     private suspend fun step5SecondOrderInsights(
         dimensionResults: List<DimensionResearchResult>,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): SecondOrderInsights {
-        onProgress("💡 Extracting second-order insights...")
+        callbacks.onProgress("💡 Extracting second-order insights from ${dimensionResults.size} dimensions...")
+        callbacks.onProgress("   💭 AI is thinking...")
 
         val summaries = dimensionResults.joinToString("\n") { result ->
             "- ${result.dimension}: ${result.conclusion}"
@@ -847,12 +973,17 @@ class DomainDictAgent(
             ```
         """.trimIndent()
 
-        val response = llmService.sendPrompt(prompt)
+        val response = streamLLMPrompt(prompt, callbacks)
         val insights = parseSecondOrderInsights(response)
 
-        onProgress("   ✓ Principles: ${insights.principles.size}")
-        onProgress("   ✓ Patterns: ${insights.patterns.size}")
-        onProgress("   ✓ Unified Model: ${insights.unifiedModel.take(100)}...")
+        callbacks.onProgress("   ✓ Principles: ${insights.principles.size}")
+        insights.principles.take(2).forEach { 
+            callbacks.onProgress("      • ${it.take(60)}${if (it.length > 60) "..." else ""}")
+        }
+        callbacks.onProgress("   ✓ Patterns: ${insights.patterns.size}")
+        insights.patterns.take(2).forEach {
+            callbacks.onProgress("      • ${it.take(60)}${if (it.length > 60) "..." else ""}")
+        }
 
         return insights
     }
@@ -862,9 +993,10 @@ class DomainDictAgent(
         problemDef: ProblemDefinition,
         dimensionResults: List<DimensionResearchResult>,
         insights: SecondOrderInsights,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): ResearchNarrative {
-        onProgress("📖 Synthesizing research narrative...")
+        callbacks.onProgress("📖 Synthesizing research narrative...")
+        callbacks.onProgress("   💭 AI is thinking...")
 
         val prompt = """
             Synthesize the following research into a coherent narrative:
@@ -889,12 +1021,15 @@ class DomainDictAgent(
             ```
         """.trimIndent()
 
-        val response = llmService.sendPrompt(prompt)
+        val response = streamLLMPrompt(prompt, callbacks)
         val narrative = parseResearchNarrative(response)
 
-        onProgress("   ✓ Summary: ${narrative.summary.take(100)}...")
-        onProgress("   ✓ Key Findings: ${narrative.keyFindings.size}")
-        onProgress("   ✓ Recommendations: ${narrative.recommendations.size}")
+        callbacks.onProgress("   ✓ Summary: ${narrative.summary.take(80)}${if (narrative.summary.length > 80) "..." else ""}")
+        callbacks.onProgress("   ✓ Key Findings:")
+        narrative.keyFindings.take(3).forEach {
+            callbacks.onProgress("      • ${it.take(60)}${if (it.length > 60) "..." else ""}")
+        }
+        callbacks.onProgress("   ✓ Recommendations: ${narrative.recommendations.size}")
 
         return narrative
     }
@@ -904,28 +1039,49 @@ class DomainDictAgent(
         currentDict: String,
         newEntries: List<DomainEntry>,
         narrative: ResearchNarrative,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): FinalDeliverables {
-        onProgress("🚀 Creating final deliverables...")
+        callbacks.onProgress("🚀 Creating final deliverables...")
 
         // Wait for async codebase analysis to complete and enrich entries
         val enrichedEntries = newEntries.toMutableList()
         try {
-            onProgress("   ⏳ Waiting for codebase analysis to complete...")
+            callbacks.onProgress("   ⏳ Waiting for codebase analysis to complete...")
             val insights = asyncInsightsJob?.await()
             if (insights != null && insights.success) {
-                onProgress("   ✓ Codebase analysis completed")
-                onProgress("     - Hot files: ${insights.hotFiles.size}")
-                onProgress("     - Co-change patterns: ${insights.coChangePatterns.size}")
-                onProgress("     - Domain concepts: ${insights.domainConcepts.size}")
+                callbacks.onProgress("   ✓ Codebase analysis completed:")
+                callbacks.onProgress("      📊 Hot files: ${insights.hotFiles.size}")
+                callbacks.onProgress("      🔗 Co-change patterns: ${insights.coChangePatterns.size}")
+                callbacks.onProgress("      💡 Domain concepts: ${insights.domainConcepts.size}")
+                
+                // Report top concepts
+                if (insights.domainConcepts.isNotEmpty()) {
+                    val topConcepts = insights.domainConcepts.take(5).joinToString(", ") { it.name }
+                    callbacks.onProgress("      🏷️ Top concepts: $topConcepts")
+                }
+                
+                // Notify via callback
+                callbacks.onCodebaseStats(
+                    insights.hotFiles.size,
+                    insights.coChangePatterns.size,
+                    insights.domainConcepts.size
+                )
                 
                 // Enrich entries with codebase insights
-                val insightsEntries = enrichEntriesWithCodebaseInsights(insights, currentDict, onProgress)
+                callbacks.onProgress("   📝 Enriching entries with codebase insights...")
+                callbacks.onProgress("   💭 AI is thinking...")
+                val insightsEntries = enrichEntriesWithCodebaseInsights(insights, currentDict, callbacks)
                 enrichedEntries.addAll(insightsEntries)
-                onProgress("   ✓ Added ${insightsEntries.size} entries from codebase analysis")
+                if (insightsEntries.isNotEmpty()) {
+                    callbacks.onProgress("   ➕ Added ${insightsEntries.size} entries from codebase analysis")
+                }
+            } else {
+                callbacks.onProgress("   ℹ️ Codebase analysis not available")
             }
+        } catch (e: CancellationException) {
+            callbacks.onProgress("   ⏹️ Codebase analysis was cancelled")
         } catch (e: Exception) {
-            onProgress("   ⚠️ Codebase analysis failed: ${e.message}")
+            callbacks.onProgress("   ⚠️ Codebase analysis failed: ${e.message}")
         }
 
         // Build updated dictionary
@@ -951,9 +1107,9 @@ class DomainDictAgent(
             "Consider adding more specific terms for key modules"
         ) + narrative.recommendations.take(2)
 
-        onProgress("   ✓ Updated dictionary: ${dictLines.size} entries")
-        onProgress("   ✓ New entries added: ${enrichedEntries.size}")
-        onProgress("   ✓ Quality score: ${(qualityMetrics["completeness"]?.times(100))?.toInt()}%")
+        callbacks.onProgress("   ✓ Updated dictionary: ${dictLines.size} entries")
+        callbacks.onProgress("   ✓ New entries added: ${enrichedEntries.size}")
+        callbacks.onProgress("   ✓ Quality score: ${(qualityMetrics["completeness"]?.times(100))?.toInt()}%")
 
         return FinalDeliverables(
             updatedDictionary = updatedDict,
@@ -970,7 +1126,7 @@ class DomainDictAgent(
     private suspend fun enrichEntriesWithCodebaseInsights(
         insights: CodebaseInsightsResult,
         currentDict: String,
-        onProgress: (String) -> Unit
+        callbacks: DomainDictCallbacks
     ): List<DomainEntry> {
         val existingTerms = currentDict.lines()
             .mapNotNull { line -> line.split(",").firstOrNull()?.trim()?.lowercase() }
@@ -987,7 +1143,7 @@ class DomainDictAgent(
             .take(15)
         
         if (topConcepts.isNotEmpty()) {
-            onProgress("   📊 Processing ${topConcepts.size} high-frequency concepts...")
+            callbacks.onProgress("      📊 Processing ${topConcepts.size} high-frequency concepts...")
             
             val conceptsPrompt = buildString {
                 appendLine("Based on these high-frequency domain concepts from codebase analysis:")
@@ -1003,7 +1159,7 @@ class DomainDictAgent(
             }
             
             try {
-                val response = llmService.sendPrompt(conceptsPrompt)
+                val response = streamLLMPrompt(conceptsPrompt, callbacks)
                 val entries = parseEntriesFromCsvResponse(response)
                 enrichedEntries.addAll(entries)
             } catch (e: Exception) {
@@ -1023,6 +1179,7 @@ class DomainDictAgent(
             .sortedByDescending { it.value.size }
             .take(10)
         
+        var coChangeCount = 0
         for ((filePath, coChangedFiles) in topCoChangeFiles) {
             val className = filePath.substringAfterLast("/").substringBeforeLast(".")
             if (className.length > 2 && 
@@ -1034,7 +1191,11 @@ class DomainDictAgent(
                     codeTranslation = className,
                     description = "Frequently changed with ${coChangedFiles.size} other files"
                 ))
+                coChangeCount++
             }
+        }
+        if (coChangeCount > 0) {
+            callbacks.onProgress("      🔗 Added $coChangeCount entries from co-change patterns")
         }
         
         // 3. Add entries from hot files' function signatures
@@ -1042,6 +1203,7 @@ class DomainDictAgent(
             .filter { it.functions.isNotEmpty() }
             .take(10)
         
+        var hotFileCount = 0
         for (hotFile in hotFilesWithSignatures) {
             hotFile.className?.let { className ->
                 if (className.lowercase() !in existingTerms && 
@@ -1052,8 +1214,12 @@ class DomainDictAgent(
                         codeTranslation = className,
                         description = "Hot file class with ${hotFile.functions.size} functions"
                     ))
+                    hotFileCount++
                 }
             }
+        }
+        if (hotFileCount > 0) {
+            callbacks.onProgress("      🔥 Added $hotFileCount entries from hot files")
         }
         
         return enrichedEntries.distinctBy { it.chinese.lowercase() }
@@ -1063,7 +1229,7 @@ class DomainDictAgent(
      * Start async codebase analysis using CodebaseInsightsTool
      * This runs in parallel with the main research process and is used in Step 7
      */
-    private fun startAsyncCodebaseAnalysis(focusArea: String?) {
+    private fun startAsyncCodebaseAnalysis(focusArea: String?, callbacks: DomainDictCallbacks) {
         val scope = CoroutineScope(Dispatchers.Default)
         asyncInsightsJob = scope.async {
             try {
@@ -1072,7 +1238,21 @@ class DomainDictAgent(
                     maxFiles = 50,
                     focusArea = focusArea
                 )
-                codebaseInsightsTool.startAsyncAnalysis(params, scope).await()
+                
+                val result = codebaseInsightsTool.startAsyncAnalysis(params, scope).await()
+                
+                // Report stats when analysis completes (may happen during any step)
+                if (result != null && result.success) {
+                    callbacks.onCodebaseStats(
+                        result.hotFiles.size,
+                        result.coChangePatterns.size,
+                        result.domainConcepts.size
+                    )
+                }
+                
+                result
+            } catch (e: CancellationException) {
+                null
             } catch (e: Exception) {
                 null
             }
