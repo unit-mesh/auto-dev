@@ -15,7 +15,6 @@ import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 /**
  * Schema for DomainDictAgent tool
@@ -31,7 +30,7 @@ object DomainDictAgentSchema : DeclarativeToolSchema(
             description = "Current domain.csv content (optional, will be loaded if not provided)"
         ),
         "maxIterations" to integer(
-            description = "Maximum review iterations (default: 5)"
+            description = "Maximum research iterations (default: 7)"
         ),
         "focusArea" to string(
             description = "Specific area to focus on, e.g., 'authentication', 'payment', 'agent'"
@@ -50,7 +49,7 @@ object DomainDictAgentSchema : DeclarativeToolSchema(
 data class DomainDictContext(
     val userQuery: String,
     val currentDict: String? = null,
-    val maxIterations: Int = 5,
+    val maxIterations: Int = 7,
     val focusArea: String? = null,
     val projectContext: Map<String, String> = emptyMap()
 ) {
@@ -58,50 +57,105 @@ data class DomainDictContext(
         "DomainDictContext(query='${userQuery.take(50)}...', focusArea=$focusArea, maxIterations=$maxIterations)"
 }
 
+// ============= Deep Research Data Models =============
+
 /**
- * Review result from each iteration
+ * Step 1: Problem Definition
  */
 @Serializable
-data class DomainDictReviewResult(
-    val iteration: Int,
-    val assessment: DictAssessment,
-    val suggestions: List<DictSuggestion>,
-    val queriesNeeded: List<String> = emptyList(),
+data class ProblemDefinition(
+    val goal: String,
+    val scope: String,
+    val depth: String,
+    val deliverableFormat: String,
+    val constraints: List<String> = emptyList()
+)
+
+/**
+ * Step 2: Research Dimensions
+ */
+@Serializable
+data class ResearchDimension(
+    val name: String,
+    val description: String,
+    val priority: Int,  // 1-5, higher is more important
+    val queries: List<String> = emptyList()
+)
+
+/**
+ * Step 3: Information Plan
+ */
+@Serializable
+data class InformationPlan(
+    val searchPaths: List<String>,
+    val filePatterns: List<String>,
+    val knowledgeSources: List<String>,
+    val analysisStrategies: List<String>
+)
+
+/**
+ * Step 4: Dimension Research Result
+ */
+@Serializable
+data class DimensionResearchResult(
+    val dimension: String,
+    val collected: List<String>,
+    val organized: Map<String, List<String>>,
+    val validated: Boolean,
+    val conflicts: List<String>,
+    val conclusion: String,
     val newEntries: List<DomainEntry> = emptyList()
 )
 
 /**
- * Assessment of current dictionary quality
+ * Step 5: Second-Order Insights
  */
 @Serializable
-data class DictAssessment(
-    val satisfiesRequirement: Boolean,
-    val completenessScore: Float,  // 0.0 - 1.0
-    val relevanceScore: Float,     // 0.0 - 1.0
-    val gaps: List<String> = emptyList(),
-    val reasoning: String
+data class SecondOrderInsights(
+    val principles: List<String>,
+    val patterns: List<String>,
+    val frameworks: List<String>,
+    val unifiedModel: String
 )
 
 /**
- * Suggestion for improving the dictionary
+ * Step 6: Research Narrative
  */
 @Serializable
-data class DictSuggestion(
-    val type: SuggestionType,
-    val description: String,
-    val filesToQuery: List<String> = emptyList(),
-    val termsToAdd: List<String> = emptyList()
+data class ResearchNarrative(
+    val summary: String,
+    val keyFindings: List<String>,
+    val implications: List<String>,
+    val recommendations: List<String>
 )
 
+/**
+ * Step 7: Final Deliverables
+ */
 @Serializable
-enum class SuggestionType {
-    ADD_TERMS,           // Add new domain terms
-    REFINE_TRANSLATION,  // Improve code translations
-    ADD_DESCRIPTION,     // Add or improve descriptions
-    QUERY_MORE_FILES,    // Need to read more source files
-    CLUSTER_ANALYSIS,    // Need clustering analysis
-    COMPLETE             // Dictionary is complete
-}
+data class FinalDeliverables(
+    val updatedDictionary: String,
+    val changeLog: List<String>,
+    val qualityMetrics: Map<String, Float>,
+    val nextSteps: List<String>
+)
+
+/**
+ * Complete Deep Research State
+ */
+@Serializable
+data class DeepResearchState(
+    val step: Int = 0,
+    val stepName: String = "",
+    val problemDefinition: ProblemDefinition? = null,
+    val dimensions: List<ResearchDimension> = emptyList(),
+    val informationPlan: InformationPlan? = null,
+    val dimensionResults: List<DimensionResearchResult> = emptyList(),
+    val insights: SecondOrderInsights? = null,
+    val narrative: ResearchNarrative? = null,
+    val deliverables: FinalDeliverables? = null,
+    val isComplete: Boolean = false
+)
 
 /**
  * A single domain entry for the CSV
@@ -116,38 +170,74 @@ data class DomainEntry(
 }
 
 /**
+ * Legacy compatibility types
+ */
+@Serializable
+data class DomainDictReviewResult(
+    val iteration: Int,
+    val assessment: DictAssessment,
+    val suggestions: List<DictSuggestion> = emptyList(),
+    val queriesNeeded: List<String> = emptyList(),
+    val newEntries: List<DomainEntry> = emptyList()
+)
+
+@Serializable
+data class DictAssessment(
+    val satisfiesRequirement: Boolean,
+    val completenessScore: Float,
+    val relevanceScore: Float,
+    val gaps: List<String> = emptyList(),
+    val reasoning: String
+)
+
+@Serializable
+data class DictSuggestion(
+    val type: SuggestionType,
+    val description: String,
+    val filesToQuery: List<String> = emptyList(),
+    val termsToAdd: List<String> = emptyList()
+)
+
+@Serializable
+enum class SuggestionType {
+    ADD_TERMS,
+    REFINE_TRANSLATION,
+    ADD_DESCRIPTION,
+    QUERY_MORE_FILES,
+    CLUSTER_ANALYSIS,
+    COMPLETE
+}
+
+/**
  * DomainDictAgent - DeepResearch style agent for domain dictionary optimization
  *
- * This agent uses an iterative approach similar to DocumentAgent to:
- * 1. Review the current domain.csv against user requirements
- * 2. Query the codebase for relevant information using DocQL-like patterns
- * 3. Suggest and apply improvements iteratively
- * 4. Stop when the dictionary meets the requirements or max iterations reached
- *
- * Follows the SubAgent pattern for integration with CodingAgent and DocumentAgent.
+ * Implements the complete 7-step Deep Research flow:
+ * 1. Clarify - Problem Definition
+ * 2. Decompose - Research Dimensions
+ * 3. Information Map - Information Plan
+ * 4. Iterative Deep Research Loop - Research each dimension
+ * 5. Second-Order Insights - Extract patterns and principles
+ * 6. Synthesis - Research Narrative
+ * 7. Actionization - Final Deliverables
  */
 class DomainDictAgent(
     private val llmService: KoogLLMService,
     private val fileSystem: ProjectFileSystem,
     private val domainDictService: DomainDictService,
-    private val maxDefaultIterations: Int = 5
+    private val maxDefaultIterations: Int = 7
 ) : SubAgent<DomainDictContext, ToolResult.AgentResult>(
     definition = createDefinition()
 ) {
-    private val reviewHistory = mutableListOf<DomainDictReviewResult>()
-    private val conversationContext = mutableMapOf<String, Any>()
+    private var researchState = DeepResearchState()
     private val fileContentCache = mutableMapOf<String, String>()
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
+    private val reviewHistory = mutableListOf<DomainDictReviewResult>()
+    private val allNewEntries = mutableListOf<DomainEntry>()
 
     companion object {
         private fun createDefinition() = AgentDefinition(
             name = ToolType.DomainDictAgent.name,
-            displayName = "Domain Dictionary Agent",
-            description = "DeepResearch agent that iteratively reviews and improves domain dictionary based on user requirements",
+            displayName = "Domain Dictionary Deep Research Agent",
+            description = "DeepResearch agent that iteratively reviews and improves domain dictionary through a 7-step research process",
             promptConfig = PromptConfig(
                 systemPrompt = buildSystemPrompt(),
                 queryTemplate = null,
@@ -155,37 +245,64 @@ class DomainDictAgent(
             ),
             modelConfig = ModelConfig.default(),
             runConfig = RunConfig(
-                maxTurns = 10,
-                maxTimeMinutes = 5,
+                maxTurns = 15,
+                maxTimeMinutes = 10,
                 terminateOnError = false
             )
         )
 
         private fun buildSystemPrompt(): String = """
-            You are a Domain Dictionary Research Agent specialized in improving project domain vocabulary.
+            You are a Domain Dictionary Deep Research Agent specialized in comprehensive domain vocabulary analysis.
 
-            Your responsibilities:
-            1. Review domain.csv against user requirements and project context
-            2. Identify gaps in domain coverage
-            3. Query codebase for relevant class names, function names, and domain concepts
-            4. Generate high-quality domain entries with accurate Chinese/English translations
-            5. Iteratively improve until requirements are met
-
+            You follow a rigorous 7-step Deep Research methodology:
+            
+            ## Step 1 - Clarify (Problem Definition)
+            - Confirm goal, scope, depth, and deliverable format
+            - Output: Problem Definition with clear constraints
+            
+            ## Step 2 - Decompose (Research Dimensions)  
+            - Split the problem into 3-7 meaningful dimensions
+            - Each dimension should be independently researchable
+            - Output: Prioritized list of research dimensions
+            
+            ## Step 3 - Information Map (Information Plan)
+            - Plan search paths and knowledge sources
+            - Identify file patterns and analysis strategies
+            - Output: Comprehensive information gathering plan
+            
+            ## Step 4 - Iterative Deep Research Loop
+            For each dimension:
+            - Collect: Gather relevant information from codebase
+            - Organize: Structure the collected information
+            - Validate: Verify accuracy and completeness
+            - Conflict Analysis: Identify inconsistencies
+            - Conclude: Draw dimension-specific conclusions
+            - Output: Structured research notes with new domain entries
+            
+            ## Step 5 - Second-Order Insights
+            From all research notes, abstract:
+            - Principles: Core truths discovered
+            - Patterns: Recurring structures
+            - Frameworks: Mental models
+            - Unified Model: Integrated understanding
+            
+            ## Step 6 - Synthesis (Research Narrative)
+            Integrate all content into a clear narrative:
+            - Summary of findings
+            - Key implications
+            - Recommendations
+            
+            ## Step 7 - Actionization (Final Deliverables)
+            Produce actionable outputs:
+            - Updated domain dictionary (CSV format)
+            - Change log
+            - Quality metrics
+            - Next steps
+            
             Domain Entry Format (CSV):
             Chinese,Code Translation,Description
-
-            Review Criteria:
-            - Completeness: Does the dictionary cover all relevant domain concepts?
-            - Accuracy: Are the translations and descriptions accurate?
-            - Relevance: Are the entries relevant to user's query?
-            - Quality: Are descriptions clear and helpful for prompt enhancement?
-
-            When reviewing:
-            1. First assess if current dictionary satisfies the requirement
-            2. If not, identify what's missing and what files to query
-            3. Suggest specific terms to add based on codebase analysis
-            4. Generate new entries following the CSV format
-            5. Repeat until complete or max iterations reached
+            
+            Always output JSON responses for structured data.
         """.trimIndent()
     }
 
@@ -206,281 +323,789 @@ class DomainDictAgent(
         )
     }
 
-    override fun formatOutput(output: ToolResult.AgentResult): String {
-        return output.content
-    }
+    override fun formatOutput(output: ToolResult.AgentResult): String = output.content
 
-    override val priority: Int = 50  // Higher priority than AnalysisAgent
+    override val priority: Int = 50
 
     override suspend fun execute(
         input: DomainDictContext,
         onProgress: (String) -> Unit
     ): ToolResult.AgentResult {
-        onProgress("🔍 Domain Dictionary Agent started")
-        onProgress("Requirement: ${input.userQuery}")
+        onProgress("🔬 Domain Dictionary Deep Research Agent Started")
+        onProgress("=" .repeat(60))
+        onProgress("📋 Requirement: ${input.userQuery}")
+        onProgress("=" .repeat(60))
 
         try {
-            // Load current dictionary if not provided
+            // Reset state
+            researchState = DeepResearchState()
+            allNewEntries.clear()
+            reviewHistory.clear()
+
+            // Load current dictionary
             val currentDict = input.currentDict ?: domainDictService.loadContent() ?: ""
             onProgress("📚 Loaded current dictionary (${currentDict.lines().size} entries)")
 
-            var iterationDict = currentDict
-            var iteration = 0
+            // Execute 7-step Deep Research process
+            
+            // Step 1: Clarify - Problem Definition
+            onProgress("\n## Step 1/7: Clarify - Problem Definition")
+            val problemDef = step1Clarify(input, onProgress)
+            researchState = researchState.copy(
+                step = 1,
+                stepName = "Clarify",
+                problemDefinition = problemDef
+            )
 
-            while (iteration < input.maxIterations) {
-                iteration++
-                onProgress("📝 Iteration $iteration/${input.maxIterations}")
+            // Step 2: Decompose - Research Dimensions
+            onProgress("\n## Step 2/7: Decompose - Research Dimensions")
+            val dimensions = step2Decompose(input, problemDef, onProgress)
+            researchState = researchState.copy(
+                step = 2,
+                stepName = "Decompose",
+                dimensions = dimensions
+            )
 
-                // Step 1: Review current dictionary
-                val reviewResult = reviewDictionary(
-                    userQuery = input.userQuery,
-                    currentDict = iterationDict,
-                    focusArea = input.focusArea,
-                    iteration = iteration,
-                    onProgress = onProgress
-                )
+            // Step 3: Information Map
+            onProgress("\n## Step 3/7: Information Map - Planning")
+            val infoPlan = step3InformationMap(dimensions, onProgress)
+            researchState = researchState.copy(
+                step = 3,
+                stepName = "Information Map",
+                informationPlan = infoPlan
+            )
 
-                reviewHistory.add(reviewResult)
+            // Step 4: Iterative Deep Research Loop
+            onProgress("\n## Step 4/7: Iterative Deep Research Loop")
+            val dimensionResults = step4IterativeResearch(
+                dimensions,
+                infoPlan,
+                currentDict,
+                input.maxIterations,
+                onProgress
+            )
+            researchState = researchState.copy(
+                step = 4,
+                stepName = "Iterative Research",
+                dimensionResults = dimensionResults
+            )
 
-                // Step 2: Check if requirement is satisfied
-                if (reviewResult.assessment.satisfiesRequirement) {
-                    onProgress("✅ Dictionary satisfies requirement after $iteration iterations")
-                    break
-                }
+            // Step 5: Second-Order Insights
+            onProgress("\n## Step 5/7: Second-Order Insights")
+            val insights = step5SecondOrderInsights(dimensionResults, onProgress)
+            researchState = researchState.copy(
+                step = 5,
+                stepName = "Second-Order Insights",
+                insights = insights
+            )
 
-                // Step 3: Query codebase if needed
-                if (reviewResult.queriesNeeded.isNotEmpty()) {
-                    onProgress("🔎 Querying ${reviewResult.queriesNeeded.size} patterns...")
-                    val queryResults = queryCodebase(reviewResult.queriesNeeded, onProgress)
-                    updateFileCache(queryResults)
-                }
+            // Step 6: Synthesis
+            onProgress("\n## Step 6/7: Synthesis - Research Narrative")
+            val narrative = step6Synthesis(problemDef, dimensionResults, insights, onProgress)
+            researchState = researchState.copy(
+                step = 6,
+                stepName = "Synthesis",
+                narrative = narrative
+            )
 
-                // Step 4: Generate and apply improvements
-                if (reviewResult.newEntries.isNotEmpty()) {
-                    onProgress("➕ Adding ${reviewResult.newEntries.size} new entries")
-                    iterationDict = applyNewEntries(iterationDict, reviewResult.newEntries)
-                }
-
-                // Step 5: Handle other suggestions
-                for (suggestion in reviewResult.suggestions) {
-                    when (suggestion.type) {
-                        SuggestionType.QUERY_MORE_FILES -> {
-                            val results = queryCodebase(suggestion.filesToQuery.map { "file:$it" }, onProgress)
-                            updateFileCache(results)
-                        }
-                        SuggestionType.CLUSTER_ANALYSIS -> {
-                            onProgress("📊 Performing clustering analysis...")
-                            performClusteringAnalysis(onProgress)
-                        }
-                        SuggestionType.COMPLETE -> {
-                            onProgress("✅ Dictionary is complete")
-                            break
-                        }
-                        else -> { /* Handle in next iteration */ }
-                    }
-                }
-            }
+            // Step 7: Actionization
+            onProgress("\n## Step 7/7: Actionization - Final Deliverables")
+            val deliverables = step7Actionization(currentDict, allNewEntries, narrative, onProgress)
+            researchState = researchState.copy(
+                step = 7,
+                stepName = "Actionization",
+                deliverables = deliverables,
+                isComplete = true
+            )
 
             // Save the final dictionary
-            val saved = domainDictService.saveContent(iterationDict)
+            val saved = domainDictService.saveContent(deliverables.updatedDictionary)
             if (saved) {
-                onProgress("💾 Saved updated dictionary")
+                onProgress("💾 Saved updated dictionary to prompts/domain.csv")
             }
 
             // Generate final report
-            val report = generateFinalReport(input, iterationDict, iteration)
+            val report = generateFinalReport(input, deliverables)
+            onProgress("\n" + "=".repeat(60))
+            onProgress("✅ Deep Research Complete!")
+            onProgress("=".repeat(60))
 
             return ToolResult.AgentResult(
                 success = true,
                 content = report,
                 metadata = mapOf(
-                    "iterations" to iteration.toString(),
-                    "entriesCount" to iterationDict.lines().filter { it.contains(",") }.size.toString(),
-                    "satisfied" to (reviewHistory.lastOrNull()?.assessment?.satisfiesRequirement?.toString() ?: "unknown")
+                    "steps" to "7",
+                    "dimensions" to dimensions.size.toString(),
+                    "newEntries" to allNewEntries.size.toString(),
+                    "completeness" to (deliverables.qualityMetrics["completeness"]?.toString() ?: "N/A")
                 )
             )
 
         } catch (e: Exception) {
-            onProgress("❌ Domain dictionary optimization failed: ${e.message}")
+            onProgress("❌ Deep Research failed: ${e.message}")
             return ToolResult.AgentResult(
                 success = false,
-                content = "Domain dictionary optimization failed: ${e.message}",
-                metadata = mapOf("error" to e.message.orEmpty())
+                content = "Deep Research failed at step ${researchState.step} (${researchState.stepName}): ${e.message}",
+                metadata = mapOf(
+                    "failedStep" to researchState.step.toString(),
+                    "error" to e.message.orEmpty()
+                )
             )
         }
     }
 
-    /**
-     * Review dictionary against user requirements
-     */
-    private suspend fun reviewDictionary(
-        userQuery: String,
-        currentDict: String,
-        focusArea: String?,
-        iteration: Int,
+    // ============= Step 1: Clarify =============
+    private suspend fun step1Clarify(
+        input: DomainDictContext,
         onProgress: (String) -> Unit
-    ): DomainDictReviewResult {
-        onProgress("Analyzing dictionary coverage...")
+    ): ProblemDefinition {
+        onProgress("🎯 Analyzing requirement and defining problem scope...")
 
-        val prompt = buildReviewPrompt(userQuery, currentDict, focusArea, iteration)
-        val response = llmService.sendPrompt(prompt)
-
-        return parseReviewResponse(response, iteration)
-    }
-
-    private fun buildReviewPrompt(
-        userQuery: String,
-        currentDict: String,
-        focusArea: String?,
-        iteration: Int
-    ): String {
-        val previousReviews = reviewHistory.takeLast(2).joinToString("\n") {
-            "Iteration ${it.iteration}: Score=${it.assessment.completenessScore}, Gaps=${it.assessment.gaps.take(3)}"
-        }
-
-        val cachedFileInfo = fileContentCache.entries.take(5).joinToString("\n") { (path, content) ->
-            "- $path: ${content.take(200)}..."
-        }
-
-        return """
-            You are reviewing a domain dictionary for a software project.
-
-            ## User Requirement
-            $userQuery
-            ${focusArea?.let { "\n## Focus Area: $it" } ?: ""}
-
-            ## Current Dictionary (domain.csv)
-            ```csv
-            $currentDict
-            ```
-
-            ## Previous Review History
-            $previousReviews
-
-            ## Cached File Information
-            $cachedFileInfo
-
-            ## Iteration
-            This is iteration $iteration. Provide a detailed assessment.
-
-            ## Your Task
-            1. Assess if the current dictionary satisfies the user's requirement
-            2. Score completeness (0.0-1.0) and relevance (0.0-1.0)
-            3. Identify specific gaps that need to be filled
-            4. Suggest what queries to make or files to read
-            5. Generate new domain entries if you have enough information
-
-            ## Response Format
-            Respond in the following JSON format:
+        val prompt = """
+            Analyze the following domain dictionary optimization request and define the problem clearly.
+            
+            User Request: ${input.userQuery}
+            Focus Area: ${input.focusArea ?: "General"}
+            
+            Provide a problem definition in JSON format:
             ```json
             {
-                "assessment": {
-                    "satisfiesRequirement": boolean,
-                    "completenessScore": 0.0-1.0,
-                    "relevanceScore": 0.0-1.0,
-                    "gaps": ["gap1", "gap2"],
-                    "reasoning": "explanation"
-                },
-                "suggestions": [
+                "goal": "What we want to achieve",
+                "scope": "What's included and excluded",
+                "depth": "How deep should the analysis go",
+                "deliverableFormat": "Expected output format",
+                "constraints": ["constraint1", "constraint2"]
+            }
+            ```
+        """.trimIndent()
+
+        val response = llmService.sendPrompt(prompt)
+        val parsed = parseProblemDefinition(response)
+
+        onProgress("   ✓ Goal: ${parsed.goal}")
+        onProgress("   ✓ Scope: ${parsed.scope}")
+        onProgress("   ✓ Depth: ${parsed.depth}")
+
+        return parsed
+    }
+
+    // ============= Step 2: Decompose =============
+    private suspend fun step2Decompose(
+        input: DomainDictContext,
+        problemDef: ProblemDefinition,
+        onProgress: (String) -> Unit
+    ): List<ResearchDimension> {
+        onProgress("🔍 Decomposing problem into research dimensions...")
+
+        val prompt = """
+            Based on this problem definition, decompose it into 3-7 research dimensions.
+            
+            Problem: ${problemDef.goal}
+            Scope: ${problemDef.scope}
+            Focus Area: ${input.focusArea ?: "General domain vocabulary"}
+            
+            Each dimension should be:
+            - Independently researchable
+            - Relevant to domain vocabulary discovery
+            - Actionable for code analysis
+            
+            Provide dimensions in JSON format:
+            ```json
+            {
+                "dimensions": [
                     {
-                        "type": "ADD_TERMS|REFINE_TRANSLATION|QUERY_MORE_FILES|CLUSTER_ANALYSIS|COMPLETE",
-                        "description": "what to do",
-                        "filesToQuery": ["pattern1", "pattern2"],
-                        "termsToAdd": ["term1", "term2"]
-                    }
-                ],
-                "queriesNeeded": ["$.code.class(*Agent*)", "$.code.function(*process*)"],
-                "newEntries": [
-                    {
-                        "chinese": "中文术语",
-                        "codeTranslation": "CodeTerm | AnotherTerm",
-                        "description": "功能描述"
+                        "name": "Dimension Name",
+                        "description": "What this dimension covers",
+                        "priority": 1-5,
+                        "queries": ["search pattern 1", "search pattern 2"]
                     }
                 ]
             }
             ```
         """.trimIndent()
+
+        val response = llmService.sendPrompt(prompt)
+        val dimensions = parseResearchDimensions(response)
+
+        dimensions.forEachIndexed { idx, dim ->
+            onProgress("   ${idx + 1}. ${dim.name} (Priority: ${dim.priority})")
+        }
+
+        return dimensions
     }
 
-    private fun parseReviewResponse(response: String, iteration: Int): DomainDictReviewResult {
-        try {
-            // Extract JSON from response
-            val jsonContent = CodeFence.parse(response).text.ifBlank { response }
+    // ============= Step 3: Information Map =============
+    private suspend fun step3InformationMap(
+        dimensions: List<ResearchDimension>,
+        onProgress: (String) -> Unit
+    ): InformationPlan {
+        onProgress("🗺️ Creating information gathering plan...")
+
+        val dimensionList = dimensions.joinToString("\n") { "- ${it.name}: ${it.description}" }
+
+        val prompt = """
+            Create an information gathering plan for these research dimensions:
             
-            // Try to parse as JSON
-            val jsonObject = json.parseToJsonElement(jsonContent)
+            $dimensionList
             
-            // This is simplified parsing - in production, use proper JSON deserialization
-            return DomainDictReviewResult(
-                iteration = iteration,
-                assessment = parseAssessment(jsonObject.toString()),
-                suggestions = parseSuggestions(jsonObject.toString()),
-                queriesNeeded = parseQueriesNeeded(jsonObject.toString()),
-                newEntries = parseNewEntries(jsonObject.toString())
+            Consider:
+            - What file patterns to search (*.kt, *.java, etc.)
+            - What code structures to analyze (classes, functions, interfaces)
+            - What documentation to review
+            
+            Provide plan in JSON format:
+            ```json
+            {
+                "searchPaths": ["src/main", "src/commonMain"],
+                "filePatterns": ["*Agent*.kt", "*Service*.kt"],
+                "knowledgeSources": ["source code", "README files"],
+                "analysisStrategies": ["class name analysis", "function signature analysis"]
+            }
+            ```
+        """.trimIndent()
+
+        val response = llmService.sendPrompt(prompt)
+        val plan = parseInformationPlan(response)
+
+        onProgress("   ✓ Search paths: ${plan.searchPaths.take(3).joinToString(", ")}")
+        onProgress("   ✓ File patterns: ${plan.filePatterns.take(3).joinToString(", ")}")
+        onProgress("   ✓ Analysis strategies: ${plan.analysisStrategies.size} defined")
+
+        return plan
+    }
+
+    // ============= Step 4: Iterative Deep Research Loop =============
+    private suspend fun step4IterativeResearch(
+        dimensions: List<ResearchDimension>,
+        infoPlan: InformationPlan,
+        currentDict: String,
+        maxIterations: Int,
+        onProgress: (String) -> Unit
+    ): List<DimensionResearchResult> {
+        val results = mutableListOf<DimensionResearchResult>()
+        var iterationDict = currentDict
+
+        for ((idx, dimension) in dimensions.withIndex()) {
+            onProgress("\n### Researching Dimension ${idx + 1}/${dimensions.size}: ${dimension.name}")
+
+            // Collect information
+            onProgress("   📥 Collecting information...")
+            val collected = collectInformationForDimension(dimension, infoPlan, onProgress)
+
+            // Organize information
+            onProgress("   📊 Organizing findings...")
+            val organized = organizeInformation(collected, dimension)
+
+            // Validate findings
+            onProgress("   ✓ Validating...")
+            val conflicts = validateFindings(organized, iterationDict)
+
+            // Generate domain entries for this dimension
+            onProgress("   📝 Generating domain entries...")
+            val dimensionEntries = generateDimensionEntries(
+                dimension,
+                organized,
+                iterationDict,
+                onProgress
+            )
+
+            allNewEntries.addAll(dimensionEntries)
+
+            // Apply new entries
+            if (dimensionEntries.isNotEmpty()) {
+                iterationDict = applyNewEntries(iterationDict, dimensionEntries)
+                onProgress("   ➕ Added ${dimensionEntries.size} new entries")
+            }
+
+            // Conclude dimension research
+            val conclusion = concludeDimensionResearch(dimension, organized, dimensionEntries)
+
+            results.add(
+                DimensionResearchResult(
+                    dimension = dimension.name,
+                    collected = collected,
+                    organized = organized,
+                    validated = conflicts.isEmpty(),
+                    conflicts = conflicts,
+                    conclusion = conclusion,
+                    newEntries = dimensionEntries
+                )
+            )
+
+            onProgress("   ✅ Dimension complete: ${dimensionEntries.size} entries, ${conflicts.size} conflicts")
+        }
+
+        return results
+    }
+
+    private suspend fun collectInformationForDimension(
+        dimension: ResearchDimension,
+        infoPlan: InformationPlan,
+        onProgress: (String) -> Unit
+    ): List<String> {
+        val collected = mutableListOf<String>()
+
+        // Use dimension queries + info plan patterns
+        val patterns = dimension.queries + infoPlan.filePatterns.map { pattern ->
+            if (dimension.name.isNotEmpty()) {
+                pattern.replace("*", "*${dimension.name.take(10)}*")
+            } else pattern
+        }
+
+        for (pattern in patterns.take(5)) {
+            try {
+                val files = fileSystem.searchFiles(pattern, maxDepth = 5, maxResults = 10)
+                    .filter { file ->
+                        // Skip problematic paths
+                        !file.contains("kcef-cache") &&
+                        !file.contains("node_modules") &&
+                        !file.contains("/build/") &&
+                        !file.contains("/.gradle/") &&
+                        !file.contains("/bin/")
+                    }
+                    
+                for (file in files.take(5)) {
+                    try {
+                        val content = fileSystem.readFile(file)
+                        if (content != null) {
+                            // Extract class/function names
+                            val names = extractSemanticNames(content, file)
+                            collected.addAll(names)
+                            fileContentCache[file] = content
+                        }
+                    } catch (e: Exception) {
+                        // Skip files that can't be read
+                        continue
+                    }
+                }
+            } catch (e: Exception) {
+                // Continue with other patterns
+                onProgress("   ⚠️ Pattern '$pattern' failed: ${e.message?.take(50)}")
+            }
+        }
+
+        return collected.distinct()
+    }
+
+    private fun extractSemanticNames(content: String, filePath: String): List<String> {
+        val names = mutableListOf<String>()
+
+        // Extract class names
+        val classPattern = "(?:class|interface|object|enum)\\s+(\\w+)".toRegex()
+        classPattern.findAll(content).forEach { match ->
+            names.add("class:${match.groupValues[1]}")
+        }
+
+        // Extract function names
+        val funPattern = "(?:fun|suspend fun)\\s+(\\w+)".toRegex()
+        funPattern.findAll(content).forEach { match ->
+            names.add("fun:${match.groupValues[1]}")
+        }
+
+        // Extract file name
+        val fileName = filePath.substringAfterLast("/").substringBeforeLast(".")
+        names.add("file:$fileName")
+
+        return names
+    }
+
+    private fun organizeInformation(
+        collected: List<String>,
+        dimension: ResearchDimension
+    ): Map<String, List<String>> {
+        val organized = mutableMapOf<String, MutableList<String>>()
+
+        for (item in collected) {
+            val category = when {
+                item.startsWith("class:") -> "classes"
+                item.startsWith("fun:") -> "functions"
+                item.startsWith("file:") -> "files"
+                else -> "other"
+            }
+            organized.getOrPut(category) { mutableListOf() }.add(item.substringAfter(":"))
+        }
+
+        return organized
+    }
+
+    private fun validateFindings(
+        organized: Map<String, List<String>>,
+        currentDict: String
+    ): List<String> {
+        val conflicts = mutableListOf<String>()
+
+        // Check for duplicate entries
+        val existingTerms = currentDict.lines()
+            .filter { it.contains(",") }
+            .mapNotNull { it.split(",").firstOrNull()?.trim() }
+            .toSet()
+
+        val allNames = organized.values.flatten()
+        for (name in allNames) {
+            if (existingTerms.any { it.equals(name, ignoreCase = true) }) {
+                conflicts.add("Potential duplicate: $name")
+            }
+        }
+
+        return conflicts.take(5)  // Limit conflicts reported
+    }
+
+    private suspend fun generateDimensionEntries(
+        dimension: ResearchDimension,
+        organized: Map<String, List<String>>,
+        currentDict: String,
+        onProgress: (String) -> Unit
+    ): List<DomainEntry> {
+        val organizedStr = organized.entries.joinToString("\n") { (cat, items) ->
+            "$cat: ${items.take(20).joinToString(", ")}"
+        }
+
+        val prompt = """
+            Based on the following code analysis for dimension "${dimension.name}":
+            
+            $organizedStr
+            
+            Current dictionary has ${currentDict.lines().size} entries.
+            
+            Generate domain dictionary entries in JSON format:
+            ```json
+            {
+                "entries": [
+                    {
+                        "chinese": "Chinese term or concept",
+                        "codeTranslation": "CodeName | AltName | Package.Name",
+                        "description": "Brief description of this domain concept"
+                    }
+                ]
+            }
+            ```
+            
+            Rules:
+            - Only include meaningful domain concepts
+            - Avoid common programming terms (like "List", "Map", "String")
+            - Focus on business/domain-specific vocabulary
+            - Maximum 10 entries per dimension
+        """.trimIndent()
+
+        val response = llmService.sendPrompt(prompt)
+        return parseNewEntries(response)
+    }
+
+    private fun concludeDimensionResearch(
+        dimension: ResearchDimension,
+        organized: Map<String, List<String>>,
+        entries: List<DomainEntry>
+    ): String {
+        val classCount = organized["classes"]?.size ?: 0
+        val funcCount = organized["functions"]?.size ?: 0
+        return "Analyzed $classCount classes, $funcCount functions. Generated ${entries.size} domain entries."
+    }
+
+    // ============= Step 5: Second-Order Insights =============
+    private suspend fun step5SecondOrderInsights(
+        dimensionResults: List<DimensionResearchResult>,
+        onProgress: (String) -> Unit
+    ): SecondOrderInsights {
+        onProgress("💡 Extracting second-order insights...")
+
+        val summaries = dimensionResults.joinToString("\n") { result ->
+            "- ${result.dimension}: ${result.conclusion}"
+        }
+
+        val prompt = """
+            From these research findings, extract higher-order insights:
+            
+            $summaries
+            
+            Total new entries: ${dimensionResults.sumOf { it.newEntries.size }}
+            
+            Provide insights in JSON format:
+            ```json
+            {
+                "principles": ["Core truths about this codebase's domain vocabulary"],
+                "patterns": ["Recurring naming or structural patterns"],
+                "frameworks": ["Mental models for understanding the domain"],
+                "unifiedModel": "A single integrated understanding of the domain vocabulary"
+            }
+            ```
+        """.trimIndent()
+
+        val response = llmService.sendPrompt(prompt)
+        val insights = parseSecondOrderInsights(response)
+
+        onProgress("   ✓ Principles: ${insights.principles.size}")
+        onProgress("   ✓ Patterns: ${insights.patterns.size}")
+        onProgress("   ✓ Unified Model: ${insights.unifiedModel.take(100)}...")
+
+        return insights
+    }
+
+    // ============= Step 6: Synthesis =============
+    private suspend fun step6Synthesis(
+        problemDef: ProblemDefinition,
+        dimensionResults: List<DimensionResearchResult>,
+        insights: SecondOrderInsights,
+        onProgress: (String) -> Unit
+    ): ResearchNarrative {
+        onProgress("📖 Synthesizing research narrative...")
+
+        val prompt = """
+            Synthesize the following research into a coherent narrative:
+            
+            Problem: ${problemDef.goal}
+            
+            Dimension Results:
+            ${dimensionResults.joinToString("\n") { "- ${it.dimension}: ${it.conclusion}" }}
+            
+            Key Insights:
+            - Principles: ${insights.principles.take(3).joinToString(", ")}
+            - Patterns: ${insights.patterns.take(3).joinToString(", ")}
+            
+            Provide narrative in JSON format:
+            ```json
+            {
+                "summary": "Executive summary of the research",
+                "keyFindings": ["Finding 1", "Finding 2", "Finding 3"],
+                "implications": ["What this means for the project"],
+                "recommendations": ["Actionable recommendations"]
+            }
+            ```
+        """.trimIndent()
+
+        val response = llmService.sendPrompt(prompt)
+        val narrative = parseResearchNarrative(response)
+
+        onProgress("   ✓ Summary: ${narrative.summary.take(100)}...")
+        onProgress("   ✓ Key Findings: ${narrative.keyFindings.size}")
+        onProgress("   ✓ Recommendations: ${narrative.recommendations.size}")
+
+        return narrative
+    }
+
+    // ============= Step 7: Actionization =============
+    private suspend fun step7Actionization(
+        currentDict: String,
+        newEntries: List<DomainEntry>,
+        narrative: ResearchNarrative,
+        onProgress: (String) -> Unit
+    ): FinalDeliverables {
+        onProgress("🚀 Creating final deliverables...")
+
+        // Build updated dictionary
+        val updatedDict = applyNewEntries(currentDict, newEntries)
+        val dictLines = updatedDict.lines().filter { it.contains(",") }
+
+        // Calculate quality metrics
+        val qualityMetrics = mapOf(
+            "completeness" to (dictLines.size.toFloat() / (dictLines.size + 10)),  // Simplified metric
+            "newEntriesRatio" to (newEntries.size.toFloat() / maxOf(1, dictLines.size)),
+            "dimensionsCovered" to (researchState.dimensions.size.toFloat() / 7f)
+        )
+
+        // Build change log
+        val changeLog = newEntries.map { entry ->
+            "Added: ${entry.chinese} -> ${entry.codeTranslation}"
+        }
+
+        // Determine next steps
+        val nextSteps = listOf(
+            "Review the updated domain.csv for accuracy",
+            "Test prompt enhancement with the new vocabulary",
+            "Consider adding more specific terms for key modules"
+        ) + narrative.recommendations.take(2)
+
+        onProgress("   ✓ Updated dictionary: ${dictLines.size} entries")
+        onProgress("   ✓ New entries added: ${newEntries.size}")
+        onProgress("   ✓ Quality score: ${(qualityMetrics["completeness"]?.times(100))?.toInt()}%")
+
+        return FinalDeliverables(
+            updatedDictionary = updatedDict,
+            changeLog = changeLog,
+            qualityMetrics = qualityMetrics,
+            nextSteps = nextSteps
+        )
+    }
+
+    // ============= Helper Methods =============
+
+    private fun applyNewEntries(currentDict: String, newEntries: List<DomainEntry>): String {
+        val existingLines = currentDict.lines().toMutableList()
+
+        val existingChinese = existingLines.mapNotNull { line ->
+            line.split(",").firstOrNull()?.trim()
+        }.toSet()
+
+        val newLines = newEntries
+            .filter { it.chinese !in existingChinese }
+            .map { it.toCsvRow() }
+
+        if (newLines.isEmpty()) return currentDict
+
+        return (existingLines + newLines).joinToString("\n")
+    }
+
+    private fun generateFinalReport(
+        input: DomainDictContext,
+        deliverables: FinalDeliverables
+    ): String {
+        return buildString {
+            appendLine("# Domain Dictionary Deep Research Report")
+            appendLine()
+            appendLine("## Summary")
+            appendLine("- **Requirement**: ${input.userQuery}")
+            appendLine("- **Research Steps**: 7/7 completed")
+            appendLine("- **Dimensions Analyzed**: ${researchState.dimensions.size}")
+            appendLine("- **New Entries Added**: ${allNewEntries.size}")
+            appendLine()
+
+            researchState.narrative?.let { narrative ->
+                appendLine("## Key Findings")
+                narrative.keyFindings.forEach { finding ->
+                    appendLine("- $finding")
+                }
+                appendLine()
+            }
+
+            researchState.insights?.let { insights ->
+                appendLine("## Insights")
+                appendLine("### Patterns")
+                insights.patterns.take(5).forEach { pattern ->
+                    appendLine("- $pattern")
+                }
+                appendLine()
+                appendLine("### Unified Model")
+                appendLine(insights.unifiedModel)
+                appendLine()
+            }
+
+            appendLine("## Quality Metrics")
+            deliverables.qualityMetrics.forEach { (metric, value) ->
+                appendLine("- **$metric**: ${(value * 100).toInt()}%")
+            }
+            appendLine()
+
+            appendLine("## Change Log")
+            deliverables.changeLog.take(10).forEach { change ->
+                appendLine("- $change")
+            }
+            if (deliverables.changeLog.size > 10) {
+                appendLine("- ... and ${deliverables.changeLog.size - 10} more")
+            }
+            appendLine()
+
+            appendLine("## Next Steps")
+            deliverables.nextSteps.forEach { step ->
+                appendLine("1. $step")
+            }
+            appendLine()
+
+            appendLine("## Updated Dictionary Preview")
+            appendLine("```csv")
+            appendLine(deliverables.updatedDictionary.lines().take(15).joinToString("\n"))
+            if (deliverables.updatedDictionary.lines().size > 15) {
+                appendLine("... (${deliverables.updatedDictionary.lines().size - 15} more entries)")
+            }
+            appendLine("```")
+        }
+    }
+
+    // ============= Parsing Methods =============
+
+    private fun parseProblemDefinition(response: String): ProblemDefinition {
+        val json = extractJsonFromResponse(response)
+        return try {
+            ProblemDefinition(
+                goal = extractString(json, "goal") ?: "Optimize domain dictionary",
+                scope = extractString(json, "scope") ?: "Project-wide vocabulary",
+                depth = extractString(json, "depth") ?: "Comprehensive",
+                deliverableFormat = extractString(json, "deliverableFormat") ?: "CSV",
+                constraints = extractStringArray(json, "constraints")
             )
         } catch (e: Exception) {
-            // Fallback: create a default result indicating need for more analysis
-            return DomainDictReviewResult(
-                iteration = iteration,
-                assessment = DictAssessment(
-                    satisfiesRequirement = false,
-                    completenessScore = 0.5f,
-                    relevanceScore = 0.5f,
-                    gaps = listOf("Could not parse LLM response"),
-                    reasoning = "Parsing failed: ${e.message}"
-                ),
-                suggestions = listOf(
-                    DictSuggestion(
-                        type = SuggestionType.QUERY_MORE_FILES,
-                        description = "Query more files to gather information",
-                        filesToQuery = listOf("src/**/*.kt")
-                    )
-                )
+            ProblemDefinition(
+                goal = "Optimize domain dictionary based on user requirements",
+                scope = "Project-wide vocabulary enhancement",
+                depth = "Comprehensive analysis",
+                deliverableFormat = "CSV domain dictionary"
             )
         }
     }
 
-    private fun parseAssessment(json: String): DictAssessment {
-        // Simplified parsing - extract key values from JSON string
-        val satisfies = json.contains("\"satisfiesRequirement\"\\s*:\\s*true".toRegex())
-        val completeness = extractFloat(json, "completenessScore") ?: 0.5f
-        val relevance = extractFloat(json, "relevanceScore") ?: 0.5f
-        val reasoning = extractString(json, "reasoning") ?: "No reasoning provided"
-        val gaps = extractStringArray(json, "gaps")
+    private fun parseResearchDimensions(response: String): List<ResearchDimension> {
+        val json = extractJsonFromResponse(response)
+        val dimensions = mutableListOf<ResearchDimension>()
 
-        return DictAssessment(
-            satisfiesRequirement = satisfies,
-            completenessScore = completeness,
-            relevanceScore = relevance,
-            gaps = gaps,
-            reasoning = reasoning
+        // Try to parse dimensions array
+        val dimPattern = "\"name\"\\s*:\\s*\"([^\"]+)\"[^}]*\"description\"\\s*:\\s*\"([^\"]+)\"[^}]*\"priority\"\\s*:\\s*(\\d+)".toRegex()
+        dimPattern.findAll(json).forEach { match ->
+            dimensions.add(
+                ResearchDimension(
+                    name = match.groupValues[1],
+                    description = match.groupValues[2],
+                    priority = match.groupValues[3].toIntOrNull() ?: 3
+                )
+            )
+        }
+
+        return dimensions.ifEmpty {
+            listOf(
+                ResearchDimension("Core Domain", "Main business logic entities", 5),
+                ResearchDimension("Infrastructure", "Technical infrastructure components", 3),
+                ResearchDimension("API Layer", "API and service interfaces", 4)
+            )
+        }
+    }
+
+    private fun parseInformationPlan(response: String): InformationPlan {
+        val json = extractJsonFromResponse(response)
+        return InformationPlan(
+            searchPaths = extractStringArray(json, "searchPaths").ifEmpty { listOf("src/main", "src/commonMain") },
+            filePatterns = extractStringArray(json, "filePatterns").ifEmpty { listOf("*.kt", "*.java") },
+            knowledgeSources = extractStringArray(json, "knowledgeSources").ifEmpty { listOf("source code") },
+            analysisStrategies = extractStringArray(json, "analysisStrategies").ifEmpty { listOf("class analysis") }
         )
     }
 
-    private fun parseSuggestions(json: String): List<DictSuggestion> {
-        // Simplified - return empty list if parsing fails
-        return emptyList()
-    }
+    private fun parseNewEntries(response: String): List<DomainEntry> {
+        val json = extractJsonFromResponse(response)
+        val entries = mutableListOf<DomainEntry>()
 
-    private fun parseQueriesNeeded(json: String): List<String> {
-        return extractStringArray(json, "queriesNeeded")
-    }
-
-    private fun parseNewEntries(json: String): List<DomainEntry> {
-        // Extract entries from newEntries array in JSON
-        val entriesPattern = "\"chinese\"\\s*:\\s*\"([^\"]+)\"[^}]*\"codeTranslation\"\\s*:\\s*\"([^\"]+)\"[^}]*\"description\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        return entriesPattern.findAll(json).map { match ->
-            DomainEntry(
-                chinese = match.groupValues[1],
-                codeTranslation = match.groupValues[2],
-                description = match.groupValues[3]
+        val entryPattern = "\"chinese\"\\s*:\\s*\"([^\"]+)\"[^}]*\"codeTranslation\"\\s*:\\s*\"([^\"]+)\"[^}]*\"description\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+        entryPattern.findAll(json).forEach { match ->
+            entries.add(
+                DomainEntry(
+                    chinese = match.groupValues[1],
+                    codeTranslation = match.groupValues[2],
+                    description = match.groupValues[3]
+                )
             )
-        }.toList()
+        }
+
+        return entries.take(10)
     }
 
-    private fun extractFloat(json: String, key: String): Float? {
-        val pattern = "\"$key\"\\s*:\\s*([0-9.]+)".toRegex()
-        return pattern.find(json)?.groupValues?.get(1)?.toFloatOrNull()
+    private fun parseSecondOrderInsights(response: String): SecondOrderInsights {
+        val json = extractJsonFromResponse(response)
+        return SecondOrderInsights(
+            principles = extractStringArray(json, "principles"),
+            patterns = extractStringArray(json, "patterns"),
+            frameworks = extractStringArray(json, "frameworks"),
+            unifiedModel = extractString(json, "unifiedModel") ?: "Domain vocabulary reflects core business concepts"
+        )
+    }
+
+    private fun parseResearchNarrative(response: String): ResearchNarrative {
+        val json = extractJsonFromResponse(response)
+        return ResearchNarrative(
+            summary = extractString(json, "summary") ?: "Research completed successfully",
+            keyFindings = extractStringArray(json, "keyFindings"),
+            implications = extractStringArray(json, "implications"),
+            recommendations = extractStringArray(json, "recommendations")
+        )
+    }
+
+    private fun extractJsonFromResponse(response: String): String {
+        return CodeFence.parse(response).text.ifBlank { response }
     }
 
     private fun extractString(json: String, key: String): String? {
@@ -497,212 +1122,60 @@ class DomainDictAgent(
             .toList()
     }
 
-    /**
-     * Query codebase for patterns
-     */
-    private suspend fun queryCodebase(
-        patterns: List<String>,
-        onProgress: (String) -> Unit
-    ): Map<String, String> {
-        val results = mutableMapOf<String, String>()
+    // ============= SubAgent Interface =============
 
-        for (pattern in patterns) {
-            onProgress("Querying: $pattern")
-            try {
-                // Use file system to search for files matching pattern
-                val searchPattern = pattern.removePrefix("file:").removePrefix("$.code.")
-                val files = fileSystem.searchFiles(searchPattern, maxDepth = 5, maxResults = 10)
-                
-                for (file in files) {
-                    val content = fileSystem.readFile(file)
-                    if (content != null) {
-                        results[file] = content
-                    }
-                }
-            } catch (e: Exception) {
-                onProgress("⚠️ Query failed: $pattern - ${e.message}")
-            }
-        }
-
-        return results
-    }
-
-    private fun updateFileCache(results: Map<String, String>) {
-        // Keep cache limited to last 20 files
-        if (fileContentCache.size + results.size > 20) {
-            val toRemove = fileContentCache.keys.take(results.size)
-            toRemove.forEach { fileContentCache.remove(it) }
-        }
-        fileContentCache.putAll(results)
-    }
-
-    /**
-     * Apply new entries to dictionary
-     */
-    private fun applyNewEntries(currentDict: String, newEntries: List<DomainEntry>): String {
-        val existingLines = currentDict.lines().toMutableList()
-        
-        // Find existing entries to avoid duplicates
-        val existingChinese = existingLines.mapNotNull { line ->
-            line.split(",").firstOrNull()?.trim()
-        }.toSet()
-
-        val newLines = newEntries
-            .filter { it.chinese !in existingChinese }
-            .map { it.toCsvRow() }
-
-        if (newLines.isEmpty()) return currentDict
-
-        return (existingLines + newLines).joinToString("\n")
-    }
-
-    /**
-     * Perform clustering analysis for domain term discovery
-     */
-    private suspend fun performClusteringAnalysis(onProgress: (String) -> Unit) {
-        try {
-            val clusteredDict = domainDictService.collectSemanticNamesWithClustering(
-                maxTokenLength = 64000,
-                maxClusters = 15
-            )
-            
-            onProgress("Found ${clusteredDict.clusters.size} clusters with ${clusteredDict.clusterTerms.size} terms")
-            
-            // Cache cluster information for next iteration
-            conversationContext["clusters"] = clusteredDict.clusters.map { it.name }
-            conversationContext["clusterTerms"] = clusteredDict.clusterTerms.take(50).map { it.name }
-        } catch (e: Exception) {
-            onProgress("⚠️ Clustering failed: ${e.message}")
-        }
-    }
-
-    /**
-     * Generate final report
-     */
-    private fun generateFinalReport(
-        input: DomainDictContext,
-        finalDict: String,
-        iterations: Int
-    ): String {
-        val lastReview = reviewHistory.lastOrNull()
-        val entriesCount = finalDict.lines().filter { it.contains(",") }.size
-
-        return buildString {
-            appendLine("# Domain Dictionary Optimization Report")
-            appendLine()
-            appendLine("## Summary")
-            appendLine("- **Requirement**: ${input.userQuery}")
-            appendLine("- **Iterations**: $iterations/${input.maxIterations}")
-            appendLine("- **Total Entries**: $entriesCount")
-            appendLine()
-            
-            lastReview?.let { review ->
-                appendLine("## Final Assessment")
-                appendLine("- **Satisfies Requirement**: ${review.assessment.satisfiesRequirement}")
-                appendLine("- **Completeness Score**: ${(review.assessment.completenessScore * 100).toInt()}%")
-                appendLine("- **Relevance Score**: ${(review.assessment.relevanceScore * 100).toInt()}%")
-                appendLine("- **Reasoning**: ${review.assessment.reasoning}")
-                appendLine()
-                
-                if (review.assessment.gaps.isNotEmpty()) {
-                    appendLine("## Remaining Gaps")
-                    review.assessment.gaps.forEach { gap ->
-                        appendLine("- $gap")
-                    }
-                    appendLine()
-                }
-            }
-
-            appendLine("## Updated Dictionary Preview")
-            appendLine("```csv")
-            appendLine(finalDict.lines().take(20).joinToString("\n"))
-            if (finalDict.lines().size > 20) {
-                appendLine("... (${finalDict.lines().size - 20} more entries)")
-            }
-            appendLine("```")
-            appendLine()
-            appendLine("💡 Use `/ask-agent agentName=\"domain-dict-agent\" question=\"...\"` to ask follow-up questions.")
-        }
-    }
-
-    /**
-     * Handle questions from other agents
-     */
     override suspend fun handleQuestion(
         question: String,
         context: Map<String, Any>
     ): ToolResult.AgentResult {
-        if (reviewHistory.isEmpty()) {
+        if (!researchState.isComplete) {
             return ToolResult.AgentResult(
                 success = false,
-                content = "No domain dictionary reviews have been performed yet. Run a review first.",
-                metadata = mapOf("subagent" to name, "historySize" to "0")
+                content = "No research has been completed yet. Run a research session first.",
+                metadata = mapOf("subagent" to name)
             )
         }
 
-        try {
-            val prompt = buildQuestionPrompt(question, context)
-            val response = llmService.sendPrompt(prompt)
+        val prompt = buildQuestionPrompt(question)
+        val response = llmService.sendPrompt(prompt)
 
-            return ToolResult.AgentResult(
-                success = true,
-                content = response,
-                metadata = mapOf(
-                    "subagent" to name,
-                    "question" to question,
-                    "reviewHistorySize" to reviewHistory.size.toString()
-                )
+        return ToolResult.AgentResult(
+            success = true,
+            content = response,
+            metadata = mapOf(
+                "subagent" to name,
+                "question" to question,
+                "researchComplete" to "true"
             )
-        } catch (e: Exception) {
-            return ToolResult.AgentResult(
-                success = false,
-                content = "Failed to answer question: ${e.message}",
-                metadata = mapOf("error" to e.message.orEmpty())
-            )
-        }
+        )
     }
 
-    private fun buildQuestionPrompt(question: String, context: Map<String, Any>): String {
-        val recentReviews = reviewHistory.takeLast(3)
-
+    private fun buildQuestionPrompt(question: String): String {
         return buildString {
-            appendLine("You are a Domain Dictionary Agent answering questions about previous reviews.")
+            appendLine("You are answering questions about a completed domain dictionary research.")
             appendLine()
             appendLine("## Question")
             appendLine(question)
             appendLine()
-            appendLine("## Review History (${recentReviews.size} items)")
-            
-            recentReviews.forEach { review ->
-                appendLine("### Iteration ${review.iteration}")
-                appendLine("- Satisfies: ${review.assessment.satisfiesRequirement}")
-                appendLine("- Completeness: ${review.assessment.completenessScore}")
-                appendLine("- Gaps: ${review.assessment.gaps.take(3).joinToString(", ")}")
-                appendLine("- New Entries: ${review.newEntries.size}")
-                appendLine()
-            }
-
-            appendLine("## Instructions")
-            appendLine("1. Answer based on the review history above")
-            appendLine("2. Be specific about which iteration you're referencing")
-            appendLine("3. Suggest next steps if applicable")
+            appendLine("## Research Summary")
+            researchState.narrative?.let { appendLine("Summary: ${it.summary}") }
+            researchState.insights?.let { appendLine("Key Pattern: ${it.patterns.firstOrNull()}") }
+            appendLine("Dimensions Analyzed: ${researchState.dimensions.size}")
+            appendLine("New Entries: ${allNewEntries.size}")
+            appendLine()
+            appendLine("Answer based on the research findings.")
         }
     }
 
     override fun getStateSummary(): Map<String, Any> {
         return mapOf(
             "name" to name,
-            "description" to description,
             "priority" to priority,
-            "reviewCount" to reviewHistory.size,
-            "lastAssessment" to (reviewHistory.lastOrNull()?.assessment?.let {
-                mapOf(
-                    "satisfies" to it.satisfiesRequirement,
-                    "completeness" to it.completenessScore,
-                    "relevance" to it.relevanceScore
-                )
-            } ?: emptyMap<String, Any>()),
-            "cachedFiles" to fileContentCache.keys.toList()
+            "currentStep" to researchState.step,
+            "stepName" to researchState.stepName,
+            "isComplete" to researchState.isComplete,
+            "dimensions" to researchState.dimensions.size,
+            "newEntries" to allNewEntries.size
         )
     }
 
@@ -710,17 +1183,14 @@ class DomainDictAgent(
         val query = context["query"] as? String ?: return false
         return query.contains("domain", ignoreCase = true) ||
                query.contains("dictionary", ignoreCase = true) ||
-               query.contains("词典", ignoreCase = true) ||
-               query.contains("术语", ignoreCase = true)
+               query.contains("deep research", ignoreCase = true) ||
+               query.contains("vocabulary", ignoreCase = true)
     }
 
-    /**
-     * Clear review history and caches
-     */
     fun reset() {
-        reviewHistory.clear()
+        researchState = DeepResearchState()
+        allNewEntries.clear()
         fileContentCache.clear()
-        conversationContext.clear()
+        reviewHistory.clear()
     }
 }
-

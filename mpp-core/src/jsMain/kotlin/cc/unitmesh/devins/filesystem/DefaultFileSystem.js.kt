@@ -163,7 +163,11 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             val excludeDirs = setOf(
                 "node_modules", ".git", ".idea", "build", "out", "target",
                 "dist", ".gradle", "venv", "__pycache__", "bin", ".next",
-                "coverage", ".vscode", ".DS_Store"
+                "coverage", ".vscode", ".DS_Store",
+                // KCEF/JCEF cache directories
+                "kcef-cache", "kcef-bundle", "jcef-bundle", "jcef-cache",
+                // Additional common excludes
+                "Pods", ".svn", ".hg", "bower_components"
             )
             
             // 使用 BFS 遍历以提高性能

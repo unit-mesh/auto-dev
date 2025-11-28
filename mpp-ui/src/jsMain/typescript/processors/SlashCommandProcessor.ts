@@ -104,6 +104,13 @@ export class SlashCommandProcessor implements InputProcessor {
       description: 'Enhance a prompt using AI',
       action: async (context, args) => this.handleEnhanceCommand(context, args)
     });
+
+    // /deep-research - Deep Research for domain dictionary
+    this.registerCommand('deep-research', {
+      description: 'Run Deep Research to optimize domain dictionary',
+      aliases: ['dr', 'research'],
+      action: async (context, args) => this.handleDeepResearchCommand(context, args)
+    });
   }
 
   /**
@@ -341,6 +348,139 @@ export class SlashCommandProcessor implements InputProcessor {
       return {
         type: 'handled',
         output: `⚠️ 提示词增强失败：${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  /**
+   * Handle /deep-research command for domain dictionary optimization
+   * 
+   * Implements a 7-step Deep Research methodology:
+   * 1. Clarify - Problem Definition
+   * 2. Decompose - Research Dimensions
+   * 3. Information Map - Planning
+   * 4. Iterative Deep Research Loop
+   * 5. Second-Order Insights
+   * 6. Synthesis - Research Narrative
+   * 7. Actionization - Final Deliverables
+   */
+  private async handleDeepResearchCommand(context: ProcessorContext, args: string): Promise<ProcessorResult> {
+    try {
+      const projectPath = getCurrentProjectPath();
+      if (!projectPath) {
+        return {
+          type: 'error',
+          message: '❌ Unable to get project path'
+        };
+      }
+
+      // Parse arguments
+      const parts = args.trim().split(/\s+/);
+      let focusArea: string | undefined;
+      let maxIterations = 7;
+      let query = args.trim();
+
+      // Check for flags
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i] === '--focus' && parts[i + 1]) {
+          focusArea = parts[i + 1];
+          query = query.replace(`--focus ${focusArea}`, '').trim();
+          i++;
+        } else if (parts[i] === '--quick') {
+          maxIterations = 3;
+          query = query.replace('--quick', '').trim();
+        } else if (parts[i] === '--max' && parts[i + 1]) {
+          maxIterations = parseInt(parts[i + 1], 10) || 7;
+          query = query.replace(`--max ${parts[i + 1]}`, '').trim();
+          i++;
+        }
+      }
+
+      // Default query if none provided
+      if (!query) {
+        query = 'Optimize domain dictionary based on current codebase';
+      }
+
+      // Load configuration
+      const config = await ConfigManager.load();
+      const activeConfig = config.getActiveConfig();
+      if (!activeConfig) {
+        return {
+          type: 'error',
+          message: '❌ No LLM configuration found. Please run the setup first.'
+        };
+      }
+
+      // Display banner
+      console.log('\n' + '='.repeat(60));
+      console.log('🔬 Domain Dictionary Deep Research');
+      console.log('='.repeat(60));
+      console.log(`📋 Query: ${query}`);
+      console.log(`🎯 Focus Area: ${focusArea || 'General'}`);
+      console.log(`🔄 Max Iterations: ${maxIterations}`);
+      console.log('='.repeat(60) + '\n');
+
+      // Create LLM service
+      const modelConfig = new mppCore.cc.unitmesh.llm.JsModelConfig(
+        activeConfig.provider,
+        activeConfig.model,
+        activeConfig.apiKey,
+        activeConfig.temperature || 0.7,
+        activeConfig.maxTokens || 8192,
+        activeConfig.baseUrl || ''
+      );
+
+      const llmService = mppCore.cc.unitmesh.llm.JsKoogLLMService.Companion.create(modelConfig);
+
+      // Create DomainDictAgent
+      const agent = new mppCore.cc.unitmesh.agent.JsDomainDictAgent(
+        projectPath,
+        llmService
+      );
+
+      // Progress callback
+      const onProgress = (message: string) => {
+        console.log(message);
+      };
+
+      // Execute deep research
+      console.log('Starting Deep Research...\n');
+      
+      const result = await agent.executeDeepResearch(
+        query,
+        focusArea,
+        maxIterations,
+        onProgress
+      );
+
+      // Display results
+      console.log('\n' + '='.repeat(60));
+      if (result.success) {
+        console.log('✅ Deep Research Completed Successfully!');
+        console.log('='.repeat(60));
+        console.log(`📊 Steps Completed: ${result.steps}/7`);
+        console.log(`📝 New Entries Added: ${result.newEntries}`);
+        console.log('='.repeat(60) + '\n');
+        console.log('📄 Full Report:\n');
+        console.log(result.report);
+      } else {
+        console.log('❌ Deep Research Failed');
+        console.log('='.repeat(60));
+        console.log(`Error: ${result.message}`);
+      }
+
+      return {
+        type: 'handled',
+        output: result.success 
+          ? `\n✅ Deep Research complete! Added ${result.newEntries} new domain entries.`
+          : `\n❌ Deep Research failed: ${result.message}`
+      };
+
+    } catch (error) {
+      context.logger.error('[SlashCommandProcessor] Error in /deep-research command:', error);
+      return {
+        type: 'error',
+        message: `❌ Deep Research failed: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }
