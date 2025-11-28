@@ -13,13 +13,13 @@ import cc.unitmesh.indexer.naming.CamelCaseSplitter
 import cc.unitmesh.indexer.naming.CommonSuffixRules
 
 /**
- * Clustering strategy using mpp-codegraph for accurate AST-based dependency extraction.
+ * Clustering strategy using mpp-codegraph for accurate AST-based analysis.
  * Leverages TreeSitter parsing for multi-language support.
  * 
  * 基于 CodeGraph 的聚类策略：
  * 1. 使用 TreeSitter 解析 AST
  * 2. 提取 IMPORT 节点和 DEPENDS_ON 关系
- * 3. 构建精确的依赖图进行聚类
+ * 3. 结合代码结构信息进行聚类
  */
 class CodeGraphClusterer(
     private val codeParser: CodeParser
@@ -27,7 +27,9 @@ class CodeGraphClusterer(
     
     private val logger = getLogger("CodeGraphClusterer")
     private val suffixRules = CommonSuffixRules()
-    private val fallbackClusterer = ImportDependencyClusterer()
+    
+    // Delegate to ImportDependencyClusterer with TreeSitter-backed parsing
+    private val importClusterer = ImportDependencyClusterer(codeParser)
     
     override val name: String = "codegraph"
     
@@ -43,13 +45,13 @@ class CodeGraphClusterer(
         for ((language, languageFiles) in filesByLanguage) {
             if (language == Language.UNKNOWN) {
                 // Use fallback for unknown languages
-                val fallbackClusters = fallbackClusterer.cluster(languageFiles, context)
+                val fallbackClusters = importClusterer.cluster(languageFiles, context)
                 allClusters.addAll(fallbackClusters)
                 continue
             }
             
             try {
-                // Parse files with CodeGraph
+                // Get file contents
                 val fileContents = languageFiles.mapNotNull { filePath ->
                     val content = context.fileContents[filePath]
                     if (content != null) filePath to content else null
@@ -60,13 +62,17 @@ class CodeGraphClusterer(
                     continue
                 }
                 
+                // Parse files with CodeGraph for structure analysis
                 val codeGraph = codeParser.parseCodeGraph(fileContents, language)
                 
-                // Build dependency graph from CodeGraph
-                val dependencyGraph = buildDependencyGraph(codeGraph, languageFiles)
+                // Parse imports using TreeSitter
+                val fileImports = codeParser.parseAllImports(fileContents, language)
                 
-                // Use the dependency graph for clustering
-                val languageClusters = clusterFromGraph(
+                // Build dependency graph from imports
+                val dependencyGraph = buildDependencyGraphFromImports(languageFiles, fileImports)
+                
+                // Create clusters with CodeGraph enhancement
+                val languageClusters = clusterWithCodeGraph(
                     files = languageFiles,
                     dependencyGraph = dependencyGraph,
                     codeGraph = codeGraph,
@@ -77,7 +83,7 @@ class CodeGraphClusterer(
                 
             } catch (e: Exception) {
                 logger.error(e) { "Error parsing files for language $language, using fallback" }
-                val fallbackClusters = fallbackClusterer.cluster(languageFiles, context)
+                val fallbackClusters = importClusterer.cluster(languageFiles, context)
                 allClusters.addAll(fallbackClusters)
             }
         }
@@ -88,50 +94,29 @@ class CodeGraphClusterer(
     }
     
     override fun getStatistics(clusters: List<ModuleCluster>): ClusteringStatistics {
-        return fallbackClusterer.getStatistics(clusters)
+        return importClusterer.getStatistics(clusters)
     }
     
     /**
-     * Build dependency graph from CodeGraph
+     * Build dependency graph from parsed imports
      */
-    private fun buildDependencyGraph(
-        codeGraph: CodeGraph,
-        files: List<String>
+    private fun buildDependencyGraphFromImports(
+        files: List<String>,
+        fileImports: Map<String, cc.unitmesh.codegraph.model.FileImports>
     ): DependencyGraph {
         val builder = DependencyGraphBuilder()
         builder.addNodes(files)
         
-        // Get import nodes
-        val importNodes = codeGraph.getNodesByType(CodeElementType.IMPORT)
-        
-        // Get DEPENDS_ON relationships
-        val dependsOnRelations = codeGraph.getRelationshipsByType(RelationshipType.DEPENDS_ON)
-        
-        // Map nodes to files
-        val nodeToFile = mutableMapOf<String, String>()
-        for (node in codeGraph.nodes) {
-            nodeToFile[node.id] = node.filePath
-        }
-        
-        // Add edges from relationships
-        for (relation in dependsOnRelations) {
-            val sourceFile = nodeToFile[relation.sourceId]
-            val targetFile = nodeToFile[relation.targetId]
-            
-            if (sourceFile != null && targetFile != null && sourceFile != targetFile) {
-                builder.addEdge(sourceFile, targetFile)
-            }
-        }
-        
-        // Also extract imports from import nodes
-        for (importNode in importNodes) {
-            val sourceFile = importNode.filePath
-            val importedName = importNode.name
-            
-            // Try to resolve import to a file
-            val targetFile = resolveImportToFile(importedName, importNode.qualifiedName, files)
-            if (targetFile != null && targetFile != sourceFile) {
-                builder.addEdge(sourceFile, targetFile)
+        for ((filePath, imports) in fileImports) {
+            for (importInfo in imports.imports) {
+                // Try to resolve import to a project file
+                val targetFile = files.find { target ->
+                    target != filePath && importInfo.couldResolveTo(target)
+                }
+                
+                if (targetFile != null) {
+                    builder.addEdge(filePath, targetFile)
+                }
             }
         }
         
@@ -139,33 +124,9 @@ class CodeGraphClusterer(
     }
     
     /**
-     * Resolve import name to actual file path
+     * Cluster files using dependency graph with CodeGraph enhancement
      */
-    private fun resolveImportToFile(
-        importName: String,
-        qualifiedName: String,
-        files: List<String>
-    ): String? {
-        // Convert qualified name to path patterns
-        val pathPattern = qualifiedName
-            .replace(".", "/")
-            .replace("::", "/")
-        
-        // Find matching file
-        return files.find { file ->
-            file.contains(pathPattern) ||
-            file.endsWith("$pathPattern.kt") ||
-            file.endsWith("$pathPattern.java") ||
-            file.endsWith("$pathPattern.py") ||
-            file.endsWith("$pathPattern.js") ||
-            file.endsWith("$pathPattern.ts")
-        }
-    }
-    
-    /**
-     * Cluster files using dependency graph
-     */
-    private fun clusterFromGraph(
+    private fun clusterWithCodeGraph(
         files: List<String>,
         dependencyGraph: DependencyGraph,
         codeGraph: CodeGraph,
@@ -181,7 +142,6 @@ class CodeGraphClusterer(
         for (file in sortedFiles) {
             if (file in visited) continue
             
-            // Find connected component
             val component = findConnectedComponent(file, dependencyGraph, visited)
             
             if (component.size >= context.minClusterSize || context.includeIsolatedFiles) {
@@ -198,9 +158,6 @@ class CodeGraphClusterer(
         return clusters
     }
     
-    /**
-     * Find connected component using BFS
-     */
     private fun findConnectedComponent(
         startFile: String,
         graph: DependencyGraph,
@@ -243,13 +200,13 @@ class CodeGraphClusterer(
             .sortedByDescending { dependencyGraph.getDegree(it) }
             .take(3)
         
-        // Extract domain terms from class and method names
+        // Extract domain terms from class and method names using AST
         val domainTerms = extractDomainTermsFromNodes(fileNodes)
         
-        // Infer cluster name
+        // Infer cluster name from AST structure
         val name = inferClusterNameFromNodes(files, fileNodes, coreFiles)
         
-        // Create semantic names from nodes
+        // Create semantic names from code nodes
         val semanticNames = createSemanticNamesFromNodes(fileNodes, name)
         
         // Calculate metrics
@@ -274,7 +231,7 @@ class CodeGraphClusterer(
     }
     
     /**
-     * Extract domain terms from code nodes
+     * Extract domain terms from code nodes (AST-based)
      */
     private fun extractDomainTermsFromNodes(nodes: List<CodeNode>): List<String> {
         val terms = mutableSetOf<String>()
@@ -298,9 +255,6 @@ class CodeGraphClusterer(
         return terms.toList().sortedBy { it }
     }
     
-    /**
-     * Infer cluster name from nodes
-     */
     private fun inferClusterNameFromNodes(
         files: List<String>,
         nodes: List<CodeNode>,
@@ -336,9 +290,6 @@ class CodeGraphClusterer(
         return findCommonPathName(files)
     }
     
-    /**
-     * Create semantic names from code nodes
-     */
     private fun createSemanticNamesFromNodes(
         nodes: List<CodeNode>,
         clusterName: String
@@ -359,13 +310,9 @@ class CodeGraphClusterer(
             }
     }
     
-    /**
-     * Calculate weight for a code node
-     */
     private fun calculateNodeWeight(node: CodeNode): Float {
         var weight = 0.5f
         
-        // Type weight
         weight += when (node.type) {
             CodeElementType.INTERFACE -> 0.2f
             CodeElementType.CLASS -> 0.1f
@@ -373,7 +320,6 @@ class CodeGraphClusterer(
             else -> 0f
         }
         
-        // Size weight (more content = more important)
         weight += when {
             node.content.length > 2000 -> 0.15f
             node.content.length > 500 -> 0.1f
@@ -474,4 +420,3 @@ class CodeGraphClusterer(
         )
     }
 }
-

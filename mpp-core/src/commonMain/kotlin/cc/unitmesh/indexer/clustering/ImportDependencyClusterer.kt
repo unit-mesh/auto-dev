@@ -1,6 +1,9 @@
 package cc.unitmesh.indexer.clustering
 
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.codegraph.model.ImportInfo
+import cc.unitmesh.codegraph.parser.CodeParser
+import cc.unitmesh.codegraph.parser.Language
 import cc.unitmesh.indexer.model.ElementType
 import cc.unitmesh.indexer.model.SemanticName
 import cc.unitmesh.indexer.naming.CamelCaseSplitter
@@ -8,14 +11,16 @@ import cc.unitmesh.indexer.naming.CommonSuffixRules
 
 /**
  * Clustering strategy based on import dependencies.
- * Uses code graph to extract import relationships and cluster related files.
+ * Uses mpp-codegraph with TreeSitter for accurate AST-based import extraction.
  * 
  * 基于 Import 依赖的聚类策略：
- * 1. 解析代码提取 import 语句
+ * 1. 使用 TreeSitter 解析 AST 提取 import 语句
  * 2. 构建依赖图
  * 3. 使用连通分量算法聚类
  */
-class ImportDependencyClusterer : ClusteringStrategy {
+class ImportDependencyClusterer(
+    private val codeParser: CodeParser? = null
+) : ClusteringStrategy {
     
     private val logger = getLogger("ImportDependencyClusterer")
     private val suffixRules = CommonSuffixRules()
@@ -28,7 +33,7 @@ class ImportDependencyClusterer : ClusteringStrategy {
     ): List<ModuleCluster> {
         // Use pre-built dependency graph if available, otherwise build from file contents
         val dependencyGraph = context.dependencyGraph 
-            ?: buildDependencyGraphFromContents(files, context.fileContents)
+            ?: buildDependencyGraph(files, context.fileContents)
         
         if (dependencyGraph.nodes.isEmpty()) {
             logger.warn { "No dependency graph available for clustering" }
@@ -76,26 +81,60 @@ class ImportDependencyClusterer : ClusteringStrategy {
     }
     
     /**
-     * Build dependency graph from file contents by extracting import statements
+     * Build dependency graph from file contents
+     * Uses TreeSitter AST parsing when CodeParser is available, fallback to regex otherwise
      */
-    private fun buildDependencyGraphFromContents(
+    private suspend fun buildDependencyGraph(
         files: List<String>,
         fileContents: Map<String, String>
     ): DependencyGraph {
         val builder = DependencyGraphBuilder()
         builder.addNodes(files)
         
-        for (filePath in files) {
-            val content = fileContents[filePath] ?: continue
-            val language = detectLanguage(filePath)
+        // Group files by language
+        val filesByLanguage = files.groupBy { detectLanguage(it) }
+        
+        for ((language, languageFiles) in filesByLanguage) {
+            if (language == Language.UNKNOWN) continue
             
-            val imports = extractImports(content, language)
-            
-            // Resolve imports to actual files in the project
-            for (import in imports) {
-                val resolvedFile = resolveImportToFile(import, files, filePath)
-                if (resolvedFile != null && resolvedFile != filePath) {
-                    builder.addEdge(filePath, resolvedFile)
+            for (filePath in languageFiles) {
+                val content = fileContents[filePath] ?: continue
+                
+                // Extract imports using TreeSitter (via CodeParser) or fallback to regex
+                val imports = if (codeParser != null) {
+                    try {
+                        codeParser.parseImports(content, filePath, language)
+                    } catch (e: Exception) {
+                        logger.debug { "TreeSitter parsing failed for $filePath, using regex fallback" }
+                        extractImportsFallback(content, language).map { path ->
+                            ImportInfo(
+                                path = path,
+                                type = cc.unitmesh.codegraph.model.ImportType.MODULE,
+                                filePath = filePath,
+                                startLine = 0,
+                                endLine = 0
+                            )
+                        }
+                    }
+                } else {
+                    // Fallback to regex-based extraction
+                    extractImportsFallback(content, language).map { path ->
+                        ImportInfo(
+                            path = path,
+                            type = cc.unitmesh.codegraph.model.ImportType.MODULE,
+                            filePath = filePath,
+                            startLine = 0,
+                            endLine = 0
+                        )
+                    }
+                }
+                
+                // Resolve imports to actual files in the project
+                for (importInfo in imports) {
+                    val resolvedFile = resolveImportToFile(importInfo, files, filePath)
+                    if (resolvedFile != null && resolvedFile != filePath) {
+                        builder.addEdge(filePath, resolvedFile)
+                    }
                 }
             }
         }
@@ -104,105 +143,25 @@ class ImportDependencyClusterer : ClusteringStrategy {
     }
     
     /**
-     * Extract import statements from source code
-     * Multi-language support: Java, Kotlin, Python, JavaScript/TypeScript
-     */
-    private fun extractImports(content: String, language: String): List<String> {
-        return when (language) {
-            "java", "kotlin" -> extractJvmImports(content)
-            "python" -> extractPythonImports(content)
-            "javascript", "typescript" -> extractJsImports(content)
-            "go" -> extractGoImports(content)
-            "rust" -> extractRustImports(content)
-            else -> emptyList()
-        }
-    }
-    
-    private fun extractJvmImports(content: String): List<String> {
-        val importRegex = Regex("""import\s+(static\s+)?([a-zA-Z_][\w.]*[\w*])""")
-        return importRegex.findAll(content)
-            .map { it.groupValues[2] }
-            .toList()
-    }
-    
-    private fun extractPythonImports(content: String): List<String> {
-        val imports = mutableListOf<String>()
-        
-        // from X import Y
-        val fromImportRegex = Regex("""from\s+([\w.]+)\s+import\s+(.+)""")
-        fromImportRegex.findAll(content).forEach { match ->
-            imports.add(match.groupValues[1])
-        }
-        
-        // import X
-        val importRegex = Regex("""^import\s+([\w.]+)""", RegexOption.MULTILINE)
-        importRegex.findAll(content).forEach { match ->
-            imports.add(match.groupValues[1])
-        }
-        
-        return imports
-    }
-    
-    private fun extractJsImports(content: String): List<String> {
-        val imports = mutableListOf<String>()
-        
-        // ES6: import X from 'Y'
-        val es6ImportRegex = Regex("""import\s+(?:.+\s+from\s+)?['"]([@\w./-]+)['"]""")
-        es6ImportRegex.findAll(content).forEach { match ->
-            imports.add(match.groupValues[1])
-        }
-        
-        // CommonJS: require('X')
-        val requireRegex = Regex("""require\s*\(\s*['"]([@\w./-]+)['"]\s*\)""")
-        requireRegex.findAll(content).forEach { match ->
-            imports.add(match.groupValues[1])
-        }
-        
-        return imports
-    }
-    
-    private fun extractGoImports(content: String): List<String> {
-        val importRegex = Regex("""import\s*\(\s*([\s\S]*?)\s*\)|import\s+"([^"]+)"""")
-        val imports = mutableListOf<String>()
-        
-        importRegex.findAll(content).forEach { match ->
-            if (match.groupValues[1].isNotEmpty()) {
-                // Multi-line import block
-                val block = match.groupValues[1]
-                val lineRegex = Regex(""""([^"]+)"""")
-                lineRegex.findAll(block).forEach { lineMatch ->
-                    imports.add(lineMatch.groupValues[1])
-                }
-            } else if (match.groupValues[2].isNotEmpty()) {
-                imports.add(match.groupValues[2])
-            }
-        }
-        
-        return imports
-    }
-    
-    private fun extractRustImports(content: String): List<String> {
-        val useRegex = Regex("""use\s+([\w:]+)""")
-        return useRegex.findAll(content)
-            .map { it.groupValues[1] }
-            .toList()
-    }
-    
-    /**
-     * Resolve an import path to an actual file in the project
+     * Resolve an ImportInfo to an actual file in the project
      */
     private fun resolveImportToFile(
-        importPath: String,
+        importInfo: ImportInfo,
         projectFiles: List<String>,
         currentFile: String
     ): String? {
-        // Convert import path to potential file patterns
-        val patterns = generateFilePatterns(importPath)
+        // Use ImportInfo's built-in resolution
+        for (file in projectFiles) {
+            if (file != currentFile && importInfo.couldResolveTo(file)) {
+                return file
+            }
+        }
         
-        // Find matching file in project
+        // Fallback: try pattern-based matching
+        val patterns = generateFilePatterns(importInfo.path)
         for (pattern in patterns) {
             val match = projectFiles.find { file ->
-                file.endsWith(pattern) || file.contains(pattern)
+                file != currentFile && (file.endsWith(pattern) || file.contains(pattern))
             }
             if (match != null) return match
         }
@@ -221,6 +180,7 @@ class ImportDependencyClusterer : ClusteringStrategy {
             .replace(".", "/")
             .replace("::", "/")
             .removePrefix("@")
+            .removeSuffix(".*")
         
         // Common file extensions
         val extensions = listOf("", ".kt", ".java", ".py", ".js", ".ts", ".tsx", ".go", ".rs")
@@ -240,6 +200,84 @@ class ImportDependencyClusterer : ClusteringStrategy {
     }
     
     /**
+     * Fallback regex-based import extraction (when CodeParser is not available)
+     */
+    private fun extractImportsFallback(content: String, language: Language): List<String> {
+        return when (language) {
+            Language.JAVA, Language.KOTLIN -> extractJvmImportsRegex(content)
+            Language.PYTHON -> extractPythonImportsRegex(content)
+            Language.JAVASCRIPT, Language.TYPESCRIPT -> extractJsImportsRegex(content)
+            Language.GO -> extractGoImportsRegex(content)
+            Language.RUST -> extractRustImportsRegex(content)
+            else -> emptyList()
+        }
+    }
+    
+    private fun extractJvmImportsRegex(content: String): List<String> {
+        val importRegex = Regex("""import\s+(static\s+)?([a-zA-Z_][\w.]*[\w*])""")
+        return importRegex.findAll(content)
+            .map { it.groupValues[2].removeSuffix(".*") }
+            .toList()
+    }
+    
+    private fun extractPythonImportsRegex(content: String): List<String> {
+        val imports = mutableListOf<String>()
+        
+        val fromImportRegex = Regex("""from\s+([\w.]+)\s+import""")
+        fromImportRegex.findAll(content).forEach { match ->
+            imports.add(match.groupValues[1])
+        }
+        
+        val importRegex = Regex("""^import\s+([\w.]+)""", RegexOption.MULTILINE)
+        importRegex.findAll(content).forEach { match ->
+            imports.add(match.groupValues[1])
+        }
+        
+        return imports
+    }
+    
+    private fun extractJsImportsRegex(content: String): List<String> {
+        val imports = mutableListOf<String>()
+        
+        val es6ImportRegex = Regex("""import\s+(?:.+\s+from\s+)?['"]([@\w./-]+)['"]""")
+        es6ImportRegex.findAll(content).forEach { match ->
+            imports.add(match.groupValues[1])
+        }
+        
+        val requireRegex = Regex("""require\s*\(\s*['"]([@\w./-]+)['"]\s*\)""")
+        requireRegex.findAll(content).forEach { match ->
+            imports.add(match.groupValues[1])
+        }
+        
+        return imports
+    }
+    
+    private fun extractGoImportsRegex(content: String): List<String> {
+        val imports = mutableListOf<String>()
+        val importRegex = Regex("""import\s*\(\s*([\s\S]*?)\s*\)|import\s+"([^"]+)"""")
+        
+        importRegex.findAll(content).forEach { match ->
+            if (match.groupValues[1].isNotEmpty()) {
+                val lineRegex = Regex(""""([^"]+)"""")
+                lineRegex.findAll(match.groupValues[1]).forEach { lineMatch ->
+                    imports.add(lineMatch.groupValues[1])
+                }
+            } else if (match.groupValues[2].isNotEmpty()) {
+                imports.add(match.groupValues[2])
+            }
+        }
+        
+        return imports
+    }
+    
+    private fun extractRustImportsRegex(content: String): List<String> {
+        val useRegex = Regex("""use\s+([\w:]+)""")
+        return useRegex.findAll(content)
+            .map { it.groupValues[1] }
+            .toList()
+    }
+    
+    /**
      * Find connected components in the dependency graph
      */
     private fun findConnectedComponents(
@@ -253,7 +291,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
         for (node in graph.nodes) {
             if (node in visited) continue
             
-            // BFS to find connected component
             val component = mutableSetOf<String>()
             val queue = mutableListOf(node)
             
@@ -264,7 +301,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
                 visited.add(current)
                 component.add(current)
                 
-                // Add all connected nodes
                 graph.getConnected(current).forEach { neighbor ->
                     if (neighbor !in visited && neighbor in graph.nodes) {
                         queue.add(neighbor)
@@ -293,7 +329,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
         files: List<String>,
         graph: DependencyGraph
     ): ModuleCluster {
-        // Find core files (highest connectivity within cluster)
         val coreFiles = files
             .sortedByDescending { file ->
                 graph.getDependencies(file).count { it in files } +
@@ -301,13 +336,9 @@ class ImportDependencyClusterer : ClusteringStrategy {
             }
             .take(3)
         
-        // Infer cluster name from common path prefix or core file names
         val name = inferClusterName(files, coreFiles)
-        
-        // Extract domain terms from file names
         val domainTerms = extractDomainTerms(files)
         
-        // Create semantic names
         val semanticNames = domainTerms.map { term ->
             SemanticName(
                 name = term,
@@ -319,10 +350,7 @@ class ImportDependencyClusterer : ClusteringStrategy {
             )
         }
         
-        // Calculate cohesion (internal edges / possible internal edges)
         val cohesion = calculateCohesion(files, graph)
-        
-        // Calculate coupling (external edges / total edges)
         val coupling = calculateCoupling(files, graph)
         
         return ModuleCluster(
@@ -341,11 +369,7 @@ class ImportDependencyClusterer : ClusteringStrategy {
         )
     }
     
-    /**
-     * Infer a meaningful name for the cluster
-     */
     private fun inferClusterName(files: List<String>, coreFiles: List<String>): String {
-        // Try to find common path prefix
         val commonPrefix = findCommonPathPrefix(files)
         if (commonPrefix.isNotEmpty()) {
             val lastSegment = commonPrefix.split("/").lastOrNull { it.isNotEmpty() }
@@ -354,7 +378,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
             }
         }
         
-        // Use core file name
         if (coreFiles.isNotEmpty()) {
             val coreFileName = coreFiles.first()
                 .substringAfterLast("/")
@@ -365,9 +388,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
         return "Module"
     }
     
-    /**
-     * Find common path prefix among files
-     */
     private fun findCommonPathPrefix(files: List<String>): String {
         if (files.isEmpty()) return ""
         if (files.size == 1) return files.first().substringBeforeLast("/")
@@ -388,9 +408,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
         return commonParts.joinToString("/")
     }
     
-    /**
-     * Extract domain terms from file names in the cluster
-     */
     private fun extractDomainTerms(files: List<String>): List<String> {
         val terms = mutableSetOf<String>()
         
@@ -399,7 +416,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
                 .substringAfterLast("/")
                 .substringBeforeLast(".")
             
-            // Normalize and split
             val normalized = suffixRules.normalize(fileName)
             val words = CamelCaseSplitter.splitAndFilter(normalized, suffixRules)
             
@@ -409,9 +425,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
         return terms.toList().sortedBy { it }
     }
     
-    /**
-     * Calculate cohesion: ratio of internal edges to possible internal edges
-     */
     private fun calculateCohesion(files: List<String>, graph: DependencyGraph): Float {
         if (files.size <= 1) return 1f
         
@@ -430,9 +443,6 @@ class ImportDependencyClusterer : ClusteringStrategy {
         }
     }
     
-    /**
-     * Calculate coupling: ratio of external edges to total edges
-     */
     private fun calculateCoupling(files: List<String>, graph: DependencyGraph): Float {
         val fileSet = files.toSet()
         var internalEdges = 0
@@ -458,19 +468,18 @@ class ImportDependencyClusterer : ClusteringStrategy {
     /**
      * Detect programming language from file extension
      */
-    private fun detectLanguage(filePath: String): String {
+    private fun detectLanguage(filePath: String): Language {
         val extension = filePath.substringAfterLast(".", "").lowercase()
         return when (extension) {
-            "java" -> "java"
-            "kt", "kts" -> "kotlin"
-            "py" -> "python"
-            "js", "jsx" -> "javascript"
-            "ts", "tsx" -> "typescript"
-            "go" -> "go"
-            "rs" -> "rust"
-            "cs" -> "csharp"
-            else -> "unknown"
+            "java" -> Language.JAVA
+            "kt", "kts" -> Language.KOTLIN
+            "py" -> Language.PYTHON
+            "js", "jsx" -> Language.JAVASCRIPT
+            "ts", "tsx" -> Language.TYPESCRIPT
+            "go" -> Language.GO
+            "rs" -> Language.RUST
+            "cs" -> Language.CSHARP
+            else -> Language.UNKNOWN
         }
     }
 }
-
