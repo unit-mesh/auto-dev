@@ -6,7 +6,7 @@ import cc.unitmesh.agent.scoring.ExpandedKeywords
 import cc.unitmesh.agent.scoring.KeywordExpander
 import cc.unitmesh.agent.tool.ToolResult
 
-interface SmartSearchStrategy {
+interface SearchStrategy {
     suspend fun execute(context: SmartSearchContext): ToolResult
 }
 
@@ -37,7 +37,7 @@ data class SearchLevelResult(
     val activeChannels: List<String>
 )
 
-class KeepStrategy : SmartSearchStrategy {
+class KeepStrategy : SearchStrategy {
     override suspend fun execute(context: SmartSearchContext): ToolResult {
         return context.resultBuilder(
             context.level1Results,
@@ -55,7 +55,7 @@ class KeepStrategy : SmartSearchStrategy {
     }
 }
 
-class FilterStrategy : SmartSearchStrategy {
+class FilterStrategy : SearchStrategy {
     override suspend fun execute(context: SmartSearchContext): ToolResult {
         val filterKeywords = if (context.secondaryKeyword != null) {
             listOf(context.secondaryKeyword) + context.expandedKeywords.secondary.take(3)
@@ -135,7 +135,7 @@ class FilterStrategy : SmartSearchStrategy {
     }
 }
 
-class ExpandStrategy : SmartSearchStrategy {
+class ExpandStrategy : SearchStrategy {
     override suspend fun execute(context: SmartSearchContext): ToolResult {
         // Too few results, expand to Level 2
         val level2Results = context.searchExecutor(
