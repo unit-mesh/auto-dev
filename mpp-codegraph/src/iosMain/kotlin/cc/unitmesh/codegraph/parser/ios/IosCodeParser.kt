@@ -63,6 +63,136 @@ class IosCodeParser : CodeParser {
         )
     }
     
+    override suspend fun parseImports(
+        sourceCode: String,
+        filePath: String,
+        language: Language
+    ): List<ImportInfo> {
+        return when (language) {
+            Language.JAVA, Language.KOTLIN -> extractJvmImports(sourceCode, filePath)
+            Language.PYTHON -> extractPythonImports(sourceCode, filePath)
+            Language.JAVASCRIPT, Language.TYPESCRIPT -> extractJsImports(sourceCode, filePath)
+            Language.GO -> extractGoImports(sourceCode, filePath)
+            Language.RUST -> extractRustImports(sourceCode, filePath)
+            else -> emptyList()
+        }
+    }
+    
+    private fun extractJvmImports(content: String, filePath: String): List<ImportInfo> {
+        val importRegex = Regex("""import\s+(static\s+)?([a-zA-Z_][\w.]*[\w*])""")
+        return importRegex.findAll(content).mapIndexed { index, match ->
+            ImportInfo(
+                path = match.groupValues[2].removeSuffix(".*"),
+                type = ImportType.MODULE,
+                filePath = filePath,
+                startLine = index,
+                endLine = index
+            )
+        }.toList()
+    }
+    
+    private fun extractPythonImports(content: String, filePath: String): List<ImportInfo> {
+        val imports = mutableListOf<ImportInfo>()
+        var lineIndex = 0
+        
+        val fromImportRegex = Regex("""from\s+([\w.]+)\s+import""")
+        fromImportRegex.findAll(content).forEach { match ->
+            imports.add(ImportInfo(
+                path = match.groupValues[1],
+                type = ImportType.MODULE,
+                filePath = filePath,
+                startLine = lineIndex++,
+                endLine = lineIndex
+            ))
+        }
+        
+        val importRegex = Regex("""^import\s+([\w.]+)""", RegexOption.MULTILINE)
+        importRegex.findAll(content).forEach { match ->
+            imports.add(ImportInfo(
+                path = match.groupValues[1],
+                type = ImportType.MODULE,
+                filePath = filePath,
+                startLine = lineIndex++,
+                endLine = lineIndex
+            ))
+        }
+        
+        return imports
+    }
+    
+    private fun extractJsImports(content: String, filePath: String): List<ImportInfo> {
+        val imports = mutableListOf<ImportInfo>()
+        var lineIndex = 0
+        
+        val es6ImportRegex = Regex("""import\s+(?:.+\s+from\s+)?['"]([@\w./-]+)['"]""")
+        es6ImportRegex.findAll(content).forEach { match ->
+            imports.add(ImportInfo(
+                path = match.groupValues[1],
+                type = ImportType.MODULE,
+                filePath = filePath,
+                startLine = lineIndex++,
+                endLine = lineIndex
+            ))
+        }
+        
+        val requireRegex = Regex("""require\s*\(\s*['"]([@\w./-]+)['"]\s*\)""")
+        requireRegex.findAll(content).forEach { match ->
+            imports.add(ImportInfo(
+                path = match.groupValues[1],
+                type = ImportType.MODULE,
+                filePath = filePath,
+                startLine = lineIndex++,
+                endLine = lineIndex
+            ))
+        }
+        
+        return imports
+    }
+    
+    private fun extractGoImports(content: String, filePath: String): List<ImportInfo> {
+        val imports = mutableListOf<ImportInfo>()
+        val importRegex = Regex("""import\s*\(\s*([\s\S]*?)\s*\)|import\s+"([^"]+)"""")
+        var lineIndex = 0
+        
+        importRegex.findAll(content).forEach { match ->
+            if (match.groupValues[1].isNotEmpty()) {
+                val lineRegex = Regex(""""([^"]+)"""")
+                lineRegex.findAll(match.groupValues[1]).forEach { lineMatch ->
+                    imports.add(ImportInfo(
+                        path = lineMatch.groupValues[1],
+                        type = ImportType.MODULE,
+                        filePath = filePath,
+                        startLine = lineIndex++,
+                        endLine = lineIndex
+                    ))
+                }
+            } else if (match.groupValues[2].isNotEmpty()) {
+                imports.add(ImportInfo(
+                    path = match.groupValues[2],
+                    type = ImportType.MODULE,
+                    filePath = filePath,
+                    startLine = lineIndex++,
+                    endLine = lineIndex
+                ))
+            }
+        }
+        
+        return imports
+    }
+    
+    private fun extractRustImports(content: String, filePath: String): List<ImportInfo> {
+        val useRegex = Regex("""use\s+([\w:]+)""")
+        return useRegex.findAll(content).mapIndexed { index, match ->
+            ImportInfo(
+                path = match.groupValues[1],
+                type = ImportType.MODULE,
+                filePath = filePath,
+                startLine = index,
+                endLine = index
+            )
+        }.toList()
+    }
+    
     /**
      * Parse Object-Oriented Programming language nodes (Java, Kotlin)
      */
