@@ -6,9 +6,12 @@ import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.codegraph.model.CodeElementType
+import cc.unitmesh.codegraph.model.CodeNode
 import cc.unitmesh.codegraph.model.ImportInfo
 import cc.unitmesh.codegraph.parser.CodeParser
 import cc.unitmesh.codegraph.parser.Language
+import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.indexer.naming.CamelCaseSplitter
 import cc.unitmesh.indexer.naming.CommonSuffixRules
 import kotlinx.coroutines.*
@@ -129,6 +132,9 @@ class CodebaseInsightsTool(
     private val suffixRules = CommonSuffixRules()
     private val gitOperations = GitOperations(projectPath)
     private val codeParser: CodeParser = createCodeParser()
+    
+    // ProjectFileSystem adapter for file operations
+    private val projectFileSystem: ProjectFileSystem = createProjectFileSystemAdapter(fileSystem, projectPath)
     
     // Cached results for async analysis
     private var cachedResult: CodebaseInsightsResult? = null
@@ -308,33 +314,12 @@ class CodebaseInsightsTool(
     }
     
     /**
-     * Collect source files from project using listFiles
+     * Collect source files from project using ProjectFileSystem
      */
     private fun collectSourceFiles(maxFiles: Int, focusArea: String?): List<String> {
-        val allFiles = mutableListOf<String>()
-        val extensions = setOf("kt", "java", "py", "ts", "tsx", "js", "jsx", "go", "rs")
+        val pattern = focusArea?.let { "*$it*" } ?: "*"
         
-        try {
-            // Use listFiles to get files recursively from common source directories
-            val sourceDirs = listOf("src", "app", "lib", "core", "main")
-            
-            for (sourceDir in sourceDirs) {
-                val dirPath = if (projectPath.isNotEmpty()) "$projectPath/$sourceDir" else sourceDir
-                if (fileSystem.exists(dirPath)) {
-                    collectFilesRecursive(dirPath, extensions, focusArea, allFiles, maxFiles * 2)
-                }
-            }
-            
-            // Also try project root for smaller projects
-            if (allFiles.size < maxFiles / 2) {
-                collectFilesRecursive(projectPath, extensions, focusArea, allFiles, maxFiles * 2)
-            }
-            
-        } catch (e: Exception) {
-            logger.warn { "Failed to collect source files: ${e.message}" }
-        }
-        
-        return allFiles
+        return projectFileSystem.searchFiles(pattern, maxDepth = 10, maxResults = maxFiles * 2)
             .filter { file ->
                 // Exclude test files and generated code
                 !file.contains("/test/") &&
@@ -346,42 +331,6 @@ class CodebaseInsightsTool(
             }
             .distinct()
             .take(maxFiles)
-    }
-    
-    private fun collectFilesRecursive(
-        dirPath: String,
-        extensions: Set<String>,
-        focusArea: String?,
-        result: MutableList<String>,
-        maxFiles: Int
-    ) {
-        if (result.size >= maxFiles) return
-        
-        try {
-            val items = fileSystem.listFiles(dirPath)
-            for (item in items) {
-                if (result.size >= maxFiles) break
-                
-                val fileInfo = fileSystem.getFileInfo(item)
-                if (fileInfo?.isDirectory == true) {
-                    // Skip common non-source directories
-                    val dirName = item.substringAfterLast("/")
-                    if (dirName !in setOf("node_modules", ".git", "build", "target", ".gradle", "dist", "kcef-cache")) {
-                        collectFilesRecursive(item, extensions, focusArea, result, maxFiles)
-                    }
-                } else {
-                    val extension = item.substringAfterLast(".", "").lowercase()
-                    if (extension in extensions) {
-                        // Filter by focus area if specified
-                        if (focusArea == null || item.contains(focusArea, ignoreCase = true)) {
-                            result.add(item)
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            // Skip directories that can't be read
-        }
     }
     
     /**
@@ -419,18 +368,32 @@ class CodebaseInsightsTool(
                         ))
                     }
                     
-                    // Extract concepts from signatures
-                    for (sig in signatures) {
-                        extractConceptFromSignature(sig)?.let { conceptName ->
-                            if (conceptName.length > 2) {
-                                addOrIncrementConcept(
-                                    domainConcepts, 
-                                    conceptName, 
-                                    if (sig.contains("class ") || sig.contains("interface ")) "class" else "function",
-                                    1,
-                                    sig.take(100)
-                                )
+                    // Extract concepts from CodeNodes directly
+                    val extension = filePath.substringAfterLast(".").lowercase()
+                    val language = getLanguageFromExtension(extension)
+                    
+                    if (language != Language.UNKNOWN) {
+                        try {
+                            val nodes = codeParser.parseNodes(content, filePath, language)
+                            for (node in nodes) {
+                                val conceptName = suffixRules.normalize(node.name)
+                                if (conceptName.length > 2) {
+                                    val conceptType = when (node.type) {
+                                        CodeElementType.CLASS, CodeElementType.INTERFACE -> "class"
+                                        CodeElementType.FUNCTION, CodeElementType.METHOD -> "function"
+                                        else -> "code-element"
+                                    }
+                                    addOrIncrementConcept(
+                                        domainConcepts,
+                                        conceptName,
+                                        conceptType,
+                                        1,
+                                        "${node.type.name.lowercase()} ${node.name}"
+                                    )
+                                }
                             }
+                        } catch (e: Exception) {
+                            // Continue with other files
                         }
                     }
                 }
@@ -526,92 +489,31 @@ class CodebaseInsightsTool(
     }
     
     /**
-     * Extract class/function signatures using regex
+     * Extract class/function signatures using TreeSitter AST parsing
      */
-    private fun extractSignatures(content: String, filePath: String): List<String> {
+    private suspend fun extractSignatures(content: String, filePath: String): List<String> {
         val extension = filePath.substringAfterLast(".").lowercase()
-        val signatures = mutableListOf<String>()
+        val language = getLanguageFromExtension(extension)
         
-        when (extension) {
-            "kt" -> {
-                // Extract class/interface declarations
-                val classRegex = Regex("""(class|interface|object|enum class|sealed class)\s+(\w+)(?:<[^>]+>)?(?:\s*:\s*[^{]+)?""")
-                classRegex.findAll(content).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-                
-                // Extract function signatures
-                val funRegex = Regex("""(?:suspend\s+)?fun\s+(?:<[^>]+>\s*)?(\w+)\s*\([^)]*\)(?:\s*:\s*[^{=]+)?""")
-                funRegex.findAll(content).take(20).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-            }
-            "java" -> {
-                // Extract class/interface declarations
-                val classRegex = Regex("""(public|private|protected)?\s*(class|interface|enum)\s+(\w+)(?:<[^>]+>)?(?:\s+extends\s+[^{]+)?(?:\s+implements\s+[^{]+)?""")
-                classRegex.findAll(content).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-                
-                // Extract method signatures
-                val methodRegex = Regex("""(public|private|protected)?\s*(static\s+)?[\w<>\[\],\s]+\s+(\w+)\s*\([^)]*\)(?:\s*throws\s+[\w,\s]+)?""")
-                methodRegex.findAll(content).take(20).forEach { match ->
-                    val value = match.value.trim()
-                    if (!value.contains("if ") && !value.contains("for ") && 
-                        !value.contains("while ") && !value.contains("return ")) {
-                        signatures.add(value)
-                    }
-                }
-            }
-            "ts", "tsx", "js", "jsx" -> {
-                // Extract class declarations
-                val classRegex = Regex("""(export\s+)?(class|interface)\s+(\w+)(?:<[^>]+>)?(?:\s+extends\s+[^{]+)?(?:\s+implements\s+[^{]+)?""")
-                classRegex.findAll(content).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-                
-                // Extract function declarations
-                val funRegex = Regex("""(export\s+)?(async\s+)?function\s+(\w+)\s*(?:<[^>]+>)?\s*\([^)]*\)(?:\s*:\s*[^{]+)?""")
-                funRegex.findAll(content).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-            }
-            "py" -> {
-                // Extract class declarations
-                val classRegex = Regex("""class\s+(\w+)(?:\([^)]*\))?:""")
-                classRegex.findAll(content).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-                
-                // Extract function definitions
-                val defRegex = Regex("""(async\s+)?def\s+(\w+)\s*\([^)]*\)(?:\s*->\s*[^:]+)?:""")
-                defRegex.findAll(content).forEach { match ->
-                    signatures.add(match.value.trim())
-                }
-            }
+        if (language == Language.UNKNOWN) {
+            return emptyList()
         }
         
-        return signatures.take(30)
-    }
-    
-    /**
-     * Extract a concept name from a signature
-     */
-    private fun extractConceptFromSignature(signature: String): String? {
-        val patterns = listOf(
-            Regex("""(?:class|interface|object|enum)\s+(\w+)"""),
-            Regex("""fun\s+(?:<[^>]+>\s*)?(\w+)"""),
-            Regex("""function\s+(\w+)"""),
-            Regex("""def\s+(\w+)""")
-        )
-        
-        for (pattern in patterns) {
-            pattern.find(signature)?.groupValues?.get(1)?.let { name ->
-                return suffixRules.normalize(name)
-            }
+        return try {
+            val nodes = codeParser.parseNodes(content, filePath, language)
+            nodes.mapNotNull { node ->
+                when (node.type) {
+                    CodeElementType.CLASS -> "class ${node.name}"
+                    CodeElementType.INTERFACE -> "interface ${node.name}"
+                    CodeElementType.FUNCTION, CodeElementType.METHOD -> "fun ${node.name}"
+                    CodeElementType.CONSTRUCTOR -> "constructor ${node.name}"
+                    else -> null
+                }
+            }.take(30)
+        } catch (e: Exception) {
+            logger.warn { "Failed to extract signatures for $filePath: ${e.message}" }
+            emptyList()
         }
-        
-        return null
     }
     
     private fun addOrIncrementConcept(
@@ -683,5 +585,70 @@ class CodebaseInsightsTool(
     fun reset() {
         cachedResult = null
         analysisJob = null
+    }
+}
+
+/**
+ * Create ProjectFileSystem adapter from ToolFileSystem
+ */
+private fun createProjectFileSystemAdapter(toolFS: ToolFileSystem, projectPath: String): ProjectFileSystem {
+    return object : ProjectFileSystem {
+        override fun getProjectPath() = projectPath
+        
+        // Note: readFile is not used in this adapter since we use fileSystem.readFile directly
+        override fun readFile(path: String): String? = null
+        
+        override fun readFileAsBytes(path: String): ByteArray? = null  // Not supported by ToolFileSystem
+        
+        override fun writeFile(path: String, content: String) = false  // Not needed for insights
+        
+        override fun exists(path: String) = toolFS.exists(path)
+        
+        override fun isDirectory(path: String) = toolFS.getFileInfo(path)?.isDirectory ?: false
+        
+        override fun listFiles(path: String, pattern: String?): List<String> {
+            return toolFS.listFiles(path)
+        }
+        
+        override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
+            val results = mutableListOf<String>()
+            val extensions = setOf("kt", "java", "py", "ts", "tsx", "js", "jsx", "go", "rs", "cs")
+            
+            fun searchRecursive(dir: String, depth: Int) {
+                if (depth > maxDepth || results.size >= maxResults) return
+                
+                try {
+                    val items = toolFS.listFiles(dir)
+                    for (item in items) {
+                        if (results.size >= maxResults) break
+                        
+                        val fileInfo = toolFS.getFileInfo(item)
+                        if (fileInfo?.isDirectory == true) {
+                            val dirName = item.substringAfterLast("/")
+                            if (dirName !in setOf("node_modules", ".git", "build", "target", ".gradle", "dist", "kcef-cache")) {
+                                searchRecursive(item, depth + 1)
+                            }
+                        } else {
+                            val ext = item.substringAfterLast(".").lowercase()
+                            if (ext in extensions) {
+                                val fileName = item.substringAfterLast("/")
+                                if (pattern == "*" || fileName.contains(pattern.removeSurrounding("*"), ignoreCase = true)) {
+                                    results.add(item)
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Skip directories that can't be read
+                }
+            }
+            
+            searchRecursive(projectPath, 0)
+            return results
+        }
+        
+        override fun resolvePath(relativePath: String): String {
+            return if (relativePath.startsWith("/")) relativePath else "$projectPath/$relativePath"
+        }
     }
 }
