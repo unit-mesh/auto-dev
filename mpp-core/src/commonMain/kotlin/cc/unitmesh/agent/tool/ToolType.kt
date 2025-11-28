@@ -2,6 +2,7 @@ package cc.unitmesh.agent.tool
 
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorSchema
 import cc.unitmesh.agent.subagent.ContentHandlerSchema
+import cc.unitmesh.agent.subagent.DomainDictAgentSchema
 import cc.unitmesh.agent.subagent.ErrorRecoverySchema
 import cc.unitmesh.agent.tool.impl.*
 import cc.unitmesh.agent.tool.impl.AskSubAgentSchema
@@ -135,6 +136,15 @@ sealed class ToolType(
         schema = CodebaseInvestigatorSchema
     )
 
+    data object DomainDictAgent : ToolType(
+        name = "domain-dict-agent",
+        displayName = "Domain Dict Agent",
+        tuiEmoji = "📖",
+        composeIcon = "book",
+        category = ToolCategory.SubAgent,
+        schema = DomainDictAgentSchema
+    )
+
     data object AskAgent : ToolType(
         name = "ask-agent",
         displayName = "Ask Agent",
@@ -161,7 +171,7 @@ sealed class ToolType(
             listOf(
                 ReadFile, WriteFile, EditFile, Grep, Glob,
                 Shell,
-                ErrorAgent, AnalysisAgent, CodeAgent,
+                ErrorAgent, AnalysisAgent, CodeAgent, DomainDictAgent,
                 AskAgent,
                 WebFetch
             )

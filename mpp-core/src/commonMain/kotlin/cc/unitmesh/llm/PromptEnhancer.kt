@@ -1,21 +1,38 @@
 package cc.unitmesh.llm
 
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.agent.subagent.DomainDictAgent
+import cc.unitmesh.agent.subagent.DomainDictContext
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.parser.CodeFence
 import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.indexer.template.TemplateEngine
 
 /**
+ * Enhancement mode for PromptEnhancer
+ */
+enum class EnhancementMode {
+    /** Simple enhancement using existing domain.csv */
+    SIMPLE,
+    /** DeepResearch mode: iteratively improve domain.csv using DomainDictAgent */
+    DEEP_RESEARCH
+}
+
+/**
  * Prompt Enhancer for improving user prompts using domain knowledge and context
  * 
  * This is a multiplatform version of the IDEA plugin's PromptEnhancer,
  * designed to work across JVM, JS, and other Kotlin targets.
+ * 
+ * Supports two enhancement modes:
+ * - SIMPLE: Uses existing domain.csv for quick enhancement
+ * - DEEP_RESEARCH: Uses DomainDictAgent to iteratively improve domain.csv before enhancement
  */
 class PromptEnhancer(
     private val llmService: KoogLLMService,
     private val fileSystem: ProjectFileSystem,
-    private val domainDictService: DomainDictService? = null
+    private val domainDictService: DomainDictService? = null,
+    private val defaultMode: EnhancementMode = EnhancementMode.SIMPLE
 ) {
     private val logger = getLogger("PromptEnhancer")
     private val templateEngine = TemplateEngine()
@@ -25,14 +42,31 @@ class PromptEnhancer(
      * 
      * @param userInput The original user input to enhance
      * @param language Language preference ("zh" or "en")
+     * @param mode Enhancement mode (SIMPLE or DEEP_RESEARCH)
+     * @param onProgress Progress callback for DEEP_RESEARCH mode
      * @return Enhanced prompt text
      */
-    suspend fun enhance(userInput: String, language: String = "zh"): String {
+    suspend fun enhance(
+        userInput: String,
+        language: String = "zh",
+        mode: EnhancementMode = defaultMode,
+        onProgress: ((String) -> Unit)? = null
+    ): String {
         if (userInput.isBlank()) {
             logger.warn("Empty user input provided for enhancement")
             return userInput
         }
         
+        return when (mode) {
+            EnhancementMode.SIMPLE -> enhanceSimple(userInput, language)
+            EnhancementMode.DEEP_RESEARCH -> enhanceWithDeepResearch(userInput, language, onProgress ?: {})
+        }
+    }
+    
+    /**
+     * Simple enhancement using existing domain.csv
+     */
+    private suspend fun enhanceSimple(userInput: String, language: String): String {
         try {
             // Build context with available information
             val context = buildContext(userInput, language)
@@ -66,6 +100,90 @@ class PromptEnhancer(
             logger.error("Failed to enhance prompt: ${e.message}", e)
             return userInput // Return original input on error
         }
+    }
+    
+    /**
+     * Deep research enhancement using DomainDictAgent
+     * 
+     * This mode:
+     * 1. Uses DomainDictAgent to review and iteratively improve domain.csv
+     * 2. Queries codebase for relevant domain terms
+     * 3. Applies the optimized dictionary for final enhancement
+     */
+    private suspend fun enhanceWithDeepResearch(
+        userInput: String,
+        language: String,
+        onProgress: (String) -> Unit
+    ): String {
+        if (domainDictService == null) {
+            logger.warn("DomainDictService not available, falling back to simple enhancement")
+            return enhanceSimple(userInput, language)
+        }
+        
+        try {
+            onProgress("🔍 Starting DeepResearch enhancement...")
+            
+            // Create and execute DomainDictAgent
+            val dictAgent = DomainDictAgent(
+                llmService = llmService,
+                fileSystem = fileSystem,
+                domainDictService = domainDictService,
+                maxDefaultIterations = 3
+            )
+            
+            val dictContext = DomainDictContext(
+                userQuery = userInput,
+                maxIterations = 3,
+                focusArea = extractFocusArea(userInput)
+            )
+            
+            onProgress("📚 Optimizing domain dictionary for: ${userInput.take(50)}...")
+            
+            // Execute dictionary optimization
+            val dictResult = dictAgent.execute(dictContext, onProgress)
+            
+            if (dictResult.success) {
+                onProgress("✅ Dictionary optimization complete")
+                logger.info("Dictionary optimization completed: ${dictResult.metadata}")
+            } else {
+                onProgress("⚠️ Dictionary optimization failed, using existing dictionary")
+                logger.warn("Dictionary optimization failed: ${dictResult.content}")
+            }
+            
+            // Now perform simple enhancement with the optimized dictionary
+            onProgress("🔄 Applying enhanced dictionary...")
+            val result = enhanceSimple(userInput, language)
+            
+            onProgress("✅ Enhancement complete")
+            return result
+            
+        } catch (e: Exception) {
+            logger.error("DeepResearch enhancement failed: ${e.message}", e)
+            onProgress("❌ DeepResearch failed, falling back to simple enhancement")
+            return enhanceSimple(userInput, language)
+        }
+    }
+    
+    /**
+     * Extract focus area from user input for targeted dictionary optimization
+     */
+    private fun extractFocusArea(userInput: String): String? {
+        val keywords = listOf(
+            "authentication" to "auth",
+            "authorization" to "auth",
+            "payment" to "payment",
+            "agent" to "agent",
+            "document" to "document",
+            "database" to "database",
+            "api" to "api",
+            "认证" to "auth",
+            "支付" to "payment",
+            "代理" to "agent",
+            "文档" to "document"
+        )
+        
+        val lowerInput = userInput.lowercase()
+        return keywords.find { lowerInput.contains(it.first) }?.second
     }
     
     /**
