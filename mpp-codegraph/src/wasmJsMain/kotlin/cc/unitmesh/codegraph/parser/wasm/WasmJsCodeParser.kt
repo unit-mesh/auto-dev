@@ -563,6 +563,67 @@ class WasmJsCodeParser : CodeParser {
         }
     }
 
+    override suspend fun parseImports(
+        sourceCode: String,
+        filePath: String,
+        language: Language
+    ): List<ImportInfo> {
+        initialize()
+        
+        val parser = getOrCreateParser(language)
+        val tree = parser.parse(sourceCode)
+        val lang = languages[language] ?: return emptyList()
+        
+        val queryString = when (language) {
+            Language.JAVA, Language.KOTLIN -> """
+                (import_declaration (identifier) @import.path)
+                (import_list (import_header (identifier) @import.path))
+            """.trimIndent()
+            
+            Language.JAVASCRIPT, Language.TYPESCRIPT -> """
+                (import_statement source: (string) @import.path)
+            """.trimIndent()
+            
+            Language.PYTHON -> """
+                (import_statement name: (dotted_name) @import.path)
+                (import_from_statement module_name: (dotted_name) @import.path)
+            """.trimIndent()
+            
+            Language.GO -> """
+                (import_declaration (import_spec path: (interpreted_string_literal) @import.path))
+            """.trimIndent()
+            
+            else -> return emptyList()
+        }
+        
+        return try {
+            val query = lang.query(queryString)
+            val captures = query.captures(tree.rootNode).toArray()
+            val imports = captures
+                .filter { it.name == "import.path" }
+                .map { capture ->
+                    val importPath = capture.node.text.trim('"', '\'')
+                    ImportInfo(
+                        path = importPath,
+                        type = ImportType.MODULE,
+                        filePath = filePath,
+                        startLine = capture.node.startPosition.row + 1,
+                        endLine = capture.node.endPosition.row + 1,
+                        isStatic = false,
+                        alias = null,
+                        importedNames = emptyList(),
+                        rawText = capture.node.text
+                    )
+                }
+                .distinct()
+            query.delete()
+            imports
+        } catch (e: Throwable) {
+            console.warn("Failed to extract imports: ${e.message}")
+            emptyList()
+        }
+    }
+
     /**
      * Check if code contains syntax errors
      */
