@@ -6,6 +6,10 @@ import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.impl.CodebaseInsightsParams
+import cc.unitmesh.agent.tool.impl.CodebaseInsightsResult
+import cc.unitmesh.agent.tool.impl.CodebaseInsightsTool
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
@@ -14,6 +18,7 @@ import cc.unitmesh.devins.parser.CodeFence
 import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
+import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 
 /**
@@ -232,6 +237,14 @@ class DomainDictAgent(
     private val fileContentCache = mutableMapOf<String, String>()
     private val reviewHistory = mutableListOf<DomainDictReviewResult>()
     private val allNewEntries = mutableListOf<DomainEntry>()
+    
+    // Async codebase analysis (starts at agent init, ready for review step)
+    private var asyncInsightsJob: Deferred<CodebaseInsightsResult?>? = null
+    private val projectPath = fileSystem.getProjectPath() ?: "."
+    private val codebaseInsightsTool = CodebaseInsightsTool(
+        DefaultToolFileSystem(projectPath),
+        projectPath
+    )
 
     companion object {
         private fun createDefinition() = AgentDefinition(
@@ -341,6 +354,10 @@ class DomainDictAgent(
             researchState = DeepResearchState()
             allNewEntries.clear()
             reviewHistory.clear()
+            
+            // Start async codebase analysis immediately (will be used in Step 7)
+            onProgress("🔍 Starting async codebase analysis (Git + Imports + Code)...")
+            startAsyncCodebaseAnalysis(input.focusArea)
 
             // Load current dictionary
             val currentDict = input.currentDict ?: domainDictService.loadContent() ?: ""
@@ -891,19 +908,39 @@ class DomainDictAgent(
     ): FinalDeliverables {
         onProgress("🚀 Creating final deliverables...")
 
+        // Wait for async codebase analysis to complete and enrich entries
+        val enrichedEntries = newEntries.toMutableList()
+        try {
+            onProgress("   ⏳ Waiting for codebase analysis to complete...")
+            val insights = asyncInsightsJob?.await()
+            if (insights != null && insights.success) {
+                onProgress("   ✓ Codebase analysis completed")
+                onProgress("     - Hot files: ${insights.hotFiles.size}")
+                onProgress("     - Co-change patterns: ${insights.coChangePatterns.size}")
+                onProgress("     - Domain concepts: ${insights.domainConcepts.size}")
+                
+                // Enrich entries with codebase insights
+                val insightsEntries = enrichEntriesWithCodebaseInsights(insights, currentDict, onProgress)
+                enrichedEntries.addAll(insightsEntries)
+                onProgress("   ✓ Added ${insightsEntries.size} entries from codebase analysis")
+            }
+        } catch (e: Exception) {
+            onProgress("   ⚠️ Codebase analysis failed: ${e.message}")
+        }
+
         // Build updated dictionary
-        val updatedDict = applyNewEntries(currentDict, newEntries)
+        val updatedDict = applyNewEntries(currentDict, enrichedEntries)
         val dictLines = updatedDict.lines().filter { it.contains(",") }
 
         // Calculate quality metrics
         val qualityMetrics = mapOf(
             "completeness" to (dictLines.size.toFloat() / (dictLines.size + 10)),  // Simplified metric
-            "newEntriesRatio" to (newEntries.size.toFloat() / maxOf(1, dictLines.size)),
+            "newEntriesRatio" to (enrichedEntries.size.toFloat() / maxOf(1, dictLines.size)),
             "dimensionsCovered" to (researchState.dimensions.size.toFloat() / 7f)
         )
 
         // Build change log
-        val changeLog = newEntries.map { entry ->
+        val changeLog = enrichedEntries.map { entry ->
             "Added: ${entry.chinese} -> ${entry.codeTranslation}"
         }
 
@@ -915,7 +952,7 @@ class DomainDictAgent(
         ) + narrative.recommendations.take(2)
 
         onProgress("   ✓ Updated dictionary: ${dictLines.size} entries")
-        onProgress("   ✓ New entries added: ${newEntries.size}")
+        onProgress("   ✓ New entries added: ${enrichedEntries.size}")
         onProgress("   ✓ Quality score: ${(qualityMetrics["completeness"]?.times(100))?.toInt()}%")
 
         return FinalDeliverables(
@@ -924,6 +961,136 @@ class DomainDictAgent(
             qualityMetrics = qualityMetrics,
             nextSteps = nextSteps
         )
+    }
+    
+    /**
+     * Enrich domain entries with codebase insights
+     * Uses hot files, clusters, and domain concepts from async analysis
+     */
+    private suspend fun enrichEntriesWithCodebaseInsights(
+        insights: CodebaseInsightsResult,
+        currentDict: String,
+        onProgress: (String) -> Unit
+    ): List<DomainEntry> {
+        val existingTerms = currentDict.lines()
+            .mapNotNull { line -> line.split(",").firstOrNull()?.trim()?.lowercase() }
+            .toSet()
+        
+        val existingNewTerms = allNewEntries.map { it.chinese.lowercase() }.toSet()
+        
+        val enrichedEntries = mutableListOf<DomainEntry>()
+        
+        // 1. Add entries from high-frequency domain concepts
+        val topConcepts = insights.domainConcepts
+            .filter { it.occurrences >= 3 }
+            .filter { it.name.lowercase() !in existingTerms && it.name.lowercase() !in existingNewTerms }
+            .take(15)
+        
+        if (topConcepts.isNotEmpty()) {
+            onProgress("   📊 Processing ${topConcepts.size} high-frequency concepts...")
+            
+            val conceptsPrompt = buildString {
+                appendLine("Based on these high-frequency domain concepts from codebase analysis:")
+                topConcepts.forEach { concept ->
+                    appendLine("- ${concept.name} (${concept.type}, ${concept.occurrences} occurrences)")
+                    if (concept.usageContext.isNotEmpty()) {
+                        appendLine("  Context: ${concept.usageContext.take(100)}")
+                    }
+                }
+                appendLine()
+                appendLine("Generate domain dictionary entries in CSV format (Chinese|CodeTranslation|Description):")
+                appendLine("Focus on technical accuracy and practical usage in code.")
+            }
+            
+            try {
+                val response = llmService.sendPrompt(conceptsPrompt)
+                val entries = parseEntriesFromCsvResponse(response)
+                enrichedEntries.addAll(entries)
+            } catch (e: Exception) {
+                // Fallback: create basic entries
+                for (concept in topConcepts.take(5)) {
+                    enrichedEntries.add(DomainEntry(
+                        chinese = concept.name,
+                        codeTranslation = concept.name,
+                        description = "Domain concept (${concept.type}, ${concept.occurrences} usages)"
+                    ))
+                }
+            }
+        }
+        
+        // 2. Add entries from co-change patterns (files that frequently change together)
+        val topCoChangeFiles = insights.coChangePatterns.entries
+            .sortedByDescending { it.value.size }
+            .take(10)
+        
+        for ((filePath, coChangedFiles) in topCoChangeFiles) {
+            val className = filePath.substringAfterLast("/").substringBeforeLast(".")
+            if (className.length > 2 && 
+                className.lowercase() !in existingTerms && 
+                className.lowercase() !in existingNewTerms &&
+                !enrichedEntries.any { it.chinese.equals(className, ignoreCase = true) }) {
+                enrichedEntries.add(DomainEntry(
+                    chinese = className,
+                    codeTranslation = className,
+                    description = "Frequently changed with ${coChangedFiles.size} other files"
+                ))
+            }
+        }
+        
+        // 3. Add entries from hot files' function signatures
+        val hotFilesWithSignatures = insights.hotFiles
+            .filter { it.functions.isNotEmpty() }
+            .take(10)
+        
+        for (hotFile in hotFilesWithSignatures) {
+            hotFile.className?.let { className ->
+                if (className.lowercase() !in existingTerms && 
+                    className.lowercase() !in existingNewTerms &&
+                    !enrichedEntries.any { it.chinese.equals(className, ignoreCase = true) }) {
+                    enrichedEntries.add(DomainEntry(
+                        chinese = className,
+                        codeTranslation = className,
+                        description = "Hot file class with ${hotFile.functions.size} functions"
+                    ))
+                }
+            }
+        }
+        
+        return enrichedEntries.distinctBy { it.chinese.lowercase() }
+    }
+    
+    /**
+     * Start async codebase analysis using CodebaseInsightsTool
+     * This runs in parallel with the main research process and is used in Step 7
+     */
+    private fun startAsyncCodebaseAnalysis(focusArea: String?) {
+        val scope = CoroutineScope(Dispatchers.Default)
+        asyncInsightsJob = scope.async {
+            try {
+                val params = CodebaseInsightsParams(
+                    analysisType = "full",
+                    maxFiles = 50,
+                    focusArea = focusArea
+                )
+                codebaseInsightsTool.startAsyncAnalysis(params, scope).await()
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+    
+    /**
+     * Get codebase insights result (for external use)
+     */
+    suspend fun getCodebaseInsights(): CodebaseInsightsResult? {
+        return asyncInsightsJob?.await()
+    }
+    
+    /**
+     * Check if codebase analysis is complete
+     */
+    fun isCodebaseAnalysisComplete(): Boolean {
+        return asyncInsightsJob?.isCompleted == true
     }
 
     // ============= Helper Methods =============
@@ -1082,6 +1249,42 @@ class DomainDictAgent(
         }
 
         return entries.take(10)
+    }
+    
+    /**
+     * Parse domain entries from CSV-like response (Chinese|CodeTranslation|Description)
+     */
+    private fun parseEntriesFromCsvResponse(response: String): List<DomainEntry> {
+        val entries = mutableListOf<DomainEntry>()
+        
+        // Try to parse CSV format: Chinese|CodeTranslation|Description
+        val lines = response.lines()
+        for (line in lines) {
+            val trimmed = line.trim()
+            if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith("//")) {
+                continue
+            }
+            
+            // Try pipe separator first
+            val parts = if (trimmed.contains("|")) {
+                trimmed.split("|").map { it.trim() }
+            } else if (trimmed.contains(",")) {
+                // Fallback to comma
+                trimmed.split(",").map { it.trim() }
+            } else {
+                continue
+            }
+            
+            if (parts.size >= 2) {
+                entries.add(DomainEntry(
+                    chinese = parts[0],
+                    codeTranslation = parts[1],
+                    description = if (parts.size >= 3) parts[2] else ""
+                ))
+            }
+        }
+        
+        return entries.take(20)
     }
 
     private fun parseSecondOrderInsights(response: String): SecondOrderInsights {
