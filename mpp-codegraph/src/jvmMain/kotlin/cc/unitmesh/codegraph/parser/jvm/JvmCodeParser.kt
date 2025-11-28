@@ -6,6 +6,7 @@ import cc.unitmesh.codegraph.parser.Language
 import org.treesitter.TSNode
 import org.treesitter.TSParser
 import org.treesitter.TreeSitterCSharp
+import org.treesitter.TreeSitterGo
 import org.treesitter.TreeSitterJava
 import org.treesitter.TreeSitterKotlin
 import org.treesitter.TreeSitterJavascript
@@ -18,6 +19,488 @@ import java.util.*
  * Based on SASK project implementation.
  */
 class JvmCodeParser : CodeParser {
+    
+    override suspend fun parseImports(
+        sourceCode: String,
+        filePath: String,
+        language: Language
+    ): List<ImportInfo> {
+        val parser = createParser(language)
+        val tree = parser.parseString(null, sourceCode)
+        val rootNode = tree.rootNode
+        
+        return extractImports(rootNode, sourceCode, filePath, language)
+    }
+    
+    /**
+     * Extract import statements from AST using TreeSitter
+     */
+    private fun extractImports(
+        rootNode: TSNode,
+        sourceCode: String,
+        filePath: String,
+        language: Language
+    ): List<ImportInfo> {
+        val imports = mutableListOf<ImportInfo>()
+        
+        when (language) {
+            Language.JAVA -> extractJavaImports(rootNode, sourceCode, filePath, imports)
+            Language.KOTLIN -> extractKotlinImports(rootNode, sourceCode, filePath, imports)
+            Language.PYTHON -> extractPythonImports(rootNode, sourceCode, filePath, imports)
+            Language.JAVASCRIPT, Language.TYPESCRIPT -> extractJsImports(rootNode, sourceCode, filePath, imports)
+            Language.RUST -> extractRustImports(rootNode, sourceCode, filePath, imports)
+            Language.GO -> extractGoImports(rootNode, sourceCode, filePath, imports)
+            else -> { /* Unsupported language */ }
+        }
+        
+        return imports
+    }
+    
+    /**
+     * Extract Java imports from AST
+     * TreeSitter node types: import_declaration
+     */
+    private fun extractJavaImports(
+        node: TSNode,
+        sourceCode: String,
+        filePath: String,
+        imports: MutableList<ImportInfo>
+    ) {
+        when (node.type) {
+            "import_declaration" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                val isStatic = rawText.contains("static")
+                
+                // Find the scoped_identifier or identifier child
+                val pathNode = findChildByType(node, "scoped_identifier") 
+                    ?: findChildByType(node, "identifier")
+                
+                if (pathNode != null) {
+                    val path = extractNodeText(pathNode, sourceCode)
+                    val isWildcard = rawText.endsWith(".*") || rawText.endsWith(". *")
+                    
+                    imports.add(ImportInfo(
+                        path = path.removeSuffix(".*").trim(),
+                        type = ImportType.MODULE,
+                        isWildcard = isWildcard,
+                        isStatic = isStatic,
+                        filePath = filePath,
+                        startLine = node.startPoint.row + 1,
+                        endLine = node.endPoint.row + 1,
+                        rawText = rawText.trim()
+                    ))
+                }
+            }
+            else -> {
+                // Recursively process children
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractJavaImports(child, sourceCode, filePath, imports)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Extract Kotlin imports from AST
+     * TreeSitter node types: import_header, import_list
+     */
+    private fun extractKotlinImports(
+        node: TSNode,
+        sourceCode: String,
+        filePath: String,
+        imports: MutableList<ImportInfo>
+    ) {
+        when (node.type) {
+            "import_header" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                
+                // Find the identifier child (import path)
+                val identifierNode = findChildByType(node, "identifier")
+                if (identifierNode != null) {
+                    val path = extractNodeText(identifierNode, sourceCode)
+                    val isWildcard = rawText.contains(".*")
+                    
+                    // Check for alias (import X as Y)
+                    val aliasNode = findChildByType(node, "import_alias")
+                    val alias = aliasNode?.let { extractNodeText(it, sourceCode).removePrefix("as").trim() }
+                    
+                    imports.add(ImportInfo(
+                        path = path.removeSuffix(".*").trim(),
+                        type = ImportType.MODULE,
+                        alias = alias,
+                        isWildcard = isWildcard,
+                        filePath = filePath,
+                        startLine = node.startPoint.row + 1,
+                        endLine = node.endPoint.row + 1,
+                        rawText = rawText.trim()
+                    ))
+                }
+            }
+            else -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractKotlinImports(child, sourceCode, filePath, imports)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Extract Python imports from AST
+     * TreeSitter node types: import_statement, import_from_statement
+     */
+    private fun extractPythonImports(
+        node: TSNode,
+        sourceCode: String,
+        filePath: String,
+        imports: MutableList<ImportInfo>
+    ) {
+        when (node.type) {
+            "import_statement" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                
+                // Find dotted_name or aliased_import children
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    when (child.type) {
+                        "dotted_name" -> {
+                            val path = extractNodeText(child, sourceCode)
+                            imports.add(ImportInfo(
+                                path = path,
+                                type = ImportType.MODULE,
+                                filePath = filePath,
+                                startLine = node.startPoint.row + 1,
+                                endLine = node.endPoint.row + 1,
+                                rawText = rawText.trim()
+                            ))
+                        }
+                        "aliased_import" -> {
+                            val pathNode = findChildByType(child, "dotted_name")
+                            val aliasNode = findChildByType(child, "identifier")
+                            if (pathNode != null) {
+                                val path = extractNodeText(pathNode, sourceCode)
+                                val alias = aliasNode?.let { extractNodeText(it, sourceCode) }
+                                imports.add(ImportInfo(
+                                    path = path,
+                                    type = ImportType.MODULE,
+                                    alias = alias,
+                                    filePath = filePath,
+                                    startLine = node.startPoint.row + 1,
+                                    endLine = node.endPoint.row + 1,
+                                    rawText = rawText.trim()
+                                ))
+                            }
+                        }
+                    }
+                }
+            }
+            "import_from_statement" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                
+                // Extract module path
+                val moduleNode = findChildByType(node, "dotted_name")
+                    ?: findChildByType(node, "relative_import")
+                
+                val modulePath = moduleNode?.let { extractNodeText(it, sourceCode) } ?: ""
+                val isRelative = rawText.trimStart().startsWith("from .")
+                
+                // Extract imported names
+                val importedNames = mutableListOf<String>()
+                var isWildcard = false
+                
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    when (child.type) {
+                        "wildcard_import" -> isWildcard = true
+                        "identifier", "dotted_name" -> {
+                            if (child != moduleNode) {
+                                importedNames.add(extractNodeText(child, sourceCode))
+                            }
+                        }
+                        "aliased_import" -> {
+                            val nameNode = findChildByType(child, "identifier")
+                            nameNode?.let { importedNames.add(extractNodeText(it, sourceCode)) }
+                        }
+                    }
+                }
+                
+                imports.add(ImportInfo(
+                    path = modulePath,
+                    type = if (isRelative) ImportType.RELATIVE else ImportType.SELECTIVE,
+                    importedNames = importedNames,
+                    isWildcard = isWildcard,
+                    filePath = filePath,
+                    startLine = node.startPoint.row + 1,
+                    endLine = node.endPoint.row + 1,
+                    rawText = rawText.trim()
+                ))
+            }
+            else -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractPythonImports(child, sourceCode, filePath, imports)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Extract JavaScript/TypeScript imports from AST
+     * TreeSitter node types: import_statement, import_declaration
+     */
+    private fun extractJsImports(
+        node: TSNode,
+        sourceCode: String,
+        filePath: String,
+        imports: MutableList<ImportInfo>
+    ) {
+        when (node.type) {
+            "import_statement", "import_declaration" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                
+                // Find the source (string literal with path)
+                val sourceNode = findChildByType(node, "string")
+                if (sourceNode != null) {
+                    val path = extractNodeText(sourceNode, sourceCode)
+                        .trim('"', '\'', '`')
+                    
+                    val isRelative = path.startsWith(".")
+                    val isSideEffect = !rawText.contains("from") && 
+                                       !rawText.contains("{") && 
+                                       !rawText.contains("*")
+                    
+                    // Extract imported names
+                    val importedNames = mutableListOf<String>()
+                    var defaultImport: String? = null
+                    var isWildcard = false
+                    
+                    for (i in 0 until node.childCount) {
+                        val child = node.getChild(i) ?: continue
+                        when (child.type) {
+                            "identifier" -> defaultImport = extractNodeText(child, sourceCode)
+                            "namespace_import" -> isWildcard = true
+                            "named_imports", "import_specifier" -> {
+                                extractJsNamedImports(child, sourceCode, importedNames)
+                            }
+                        }
+                    }
+                    
+                    val type = when {
+                        isSideEffect -> ImportType.SIDE_EFFECT
+                        isRelative -> ImportType.RELATIVE
+                        importedNames.isNotEmpty() -> ImportType.SELECTIVE
+                        else -> ImportType.MODULE
+                    }
+                    
+                    imports.add(ImportInfo(
+                        path = path,
+                        type = type,
+                        alias = defaultImport,
+                        importedNames = importedNames,
+                        isWildcard = isWildcard,
+                        filePath = filePath,
+                        startLine = node.startPoint.row + 1,
+                        endLine = node.endPoint.row + 1,
+                        rawText = rawText.trim()
+                    ))
+                }
+            }
+            // CommonJS require
+            "call_expression" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                if (rawText.contains("require")) {
+                    val argNode = findChildByType(node, "arguments")
+                    if (argNode != null) {
+                        val stringNode = findChildByType(argNode, "string")
+                        if (stringNode != null) {
+                            val path = extractNodeText(stringNode, sourceCode)
+                                .trim('"', '\'', '`')
+                            
+                            imports.add(ImportInfo(
+                                path = path,
+                                type = if (path.startsWith(".")) ImportType.RELATIVE else ImportType.MODULE,
+                                filePath = filePath,
+                                startLine = node.startPoint.row + 1,
+                                endLine = node.endPoint.row + 1,
+                                rawText = rawText.trim()
+                            ))
+                        }
+                    }
+                }
+            }
+            else -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractJsImports(child, sourceCode, filePath, imports)
+                }
+            }
+        }
+    }
+    
+    private fun extractJsNamedImports(
+        node: TSNode,
+        sourceCode: String,
+        names: MutableList<String>
+    ) {
+        when (node.type) {
+            "identifier" -> names.add(extractNodeText(node, sourceCode))
+            "import_specifier" -> {
+                val nameNode = findChildByType(node, "identifier")
+                nameNode?.let { names.add(extractNodeText(it, sourceCode)) }
+            }
+            else -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractJsNamedImports(child, sourceCode, names)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Extract Go imports from AST
+     * TreeSitter node types: import_declaration, import_spec
+     */
+    private fun extractGoImports(
+        node: TSNode,
+        sourceCode: String,
+        filePath: String,
+        imports: MutableList<ImportInfo>
+    ) {
+        when (node.type) {
+            "import_declaration" -> {
+                // Process children (import_spec_list or single import_spec)
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractGoImports(child, sourceCode, filePath, imports)
+                }
+            }
+            "import_spec" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                
+                val pathNode = findChildByType(node, "interpreted_string_literal")
+                if (pathNode != null) {
+                    val path = extractNodeText(pathNode, sourceCode).trim('"')
+                    
+                    // Check for alias (identifier before path)
+                    var alias: String? = null
+                    for (i in 0 until node.childCount) {
+                        val child = node.getChild(i) ?: continue
+                        if (child.type == "package_identifier" || child.type == "identifier") {
+                            alias = extractNodeText(child, sourceCode)
+                            break
+                        }
+                    }
+                    
+                    imports.add(ImportInfo(
+                        path = path,
+                        type = ImportType.MODULE,
+                        alias = alias,
+                        filePath = filePath,
+                        startLine = node.startPoint.row + 1,
+                        endLine = node.endPoint.row + 1,
+                        rawText = rawText.trim()
+                    ))
+                }
+            }
+            "import_spec_list" -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractGoImports(child, sourceCode, filePath, imports)
+                }
+            }
+            else -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractGoImports(child, sourceCode, filePath, imports)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Extract Rust imports from AST
+     * TreeSitter node types: use_declaration
+     */
+    private fun extractRustImports(
+        node: TSNode,
+        sourceCode: String,
+        filePath: String,
+        imports: MutableList<ImportInfo>
+    ) {
+        when (node.type) {
+            "use_declaration" -> {
+                val rawText = extractNodeText(node, sourceCode)
+                
+                // Find the use path (scoped_identifier, use_wildcard, use_list, etc.)
+                val pathNode = findChildByType(node, "scoped_identifier")
+                    ?: findChildByType(node, "identifier")
+                    ?: findChildByType(node, "use_wildcard")
+                
+                if (pathNode != null) {
+                    val path = extractNodeText(pathNode, sourceCode)
+                        .removeSuffix("::*")
+                        .removeSuffix("::{")
+                    
+                    val isWildcard = rawText.contains("::*")
+                    
+                    // Check for use list (use std::{a, b})
+                    val useList = findChildByType(node, "use_list")
+                    val importedNames = if (useList != null) {
+                        extractRustUseListNames(useList, sourceCode)
+                    } else {
+                        emptyList()
+                    }
+                    
+                    imports.add(ImportInfo(
+                        path = path,
+                        type = if (importedNames.isNotEmpty()) ImportType.SELECTIVE else ImportType.MODULE,
+                        importedNames = importedNames,
+                        isWildcard = isWildcard,
+                        filePath = filePath,
+                        startLine = node.startPoint.row + 1,
+                        endLine = node.endPoint.row + 1,
+                        rawText = rawText.trim()
+                    ))
+                }
+            }
+            else -> {
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    extractRustImports(child, sourceCode, filePath, imports)
+                }
+            }
+        }
+    }
+    
+    private fun extractRustUseListNames(node: TSNode, sourceCode: String): List<String> {
+        val names = mutableListOf<String>()
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            when (child.type) {
+                "identifier", "scoped_identifier" -> {
+                    names.add(extractNodeText(child, sourceCode))
+                }
+                "use_as_clause" -> {
+                    val nameNode = findChildByType(child, "identifier")
+                    nameNode?.let { names.add(extractNodeText(it, sourceCode)) }
+                }
+            }
+        }
+        return names
+    }
+    
+    /**
+     * Find first child with matching type
+     */
+    private fun findChildByType(node: TSNode, type: String): TSNode? {
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            if (child.type == type) return child
+        }
+        return null
+    }
     
     override suspend fun parseNodes(
         sourceCode: String,
@@ -81,6 +564,8 @@ class JvmCodeParser : CodeParser {
             Language.CSHARP -> TreeSitterCSharp()
             Language.RUST -> TreeSitterRust()
             Language.PYTHON -> TreeSitterPython()
+            Language.GO -> TreeSitterGo()
+            // GO: TreeSitter Go binding not included in dependencies yet
             else -> throw IllegalArgumentException("Unsupported language: $language")
         }
         return parser

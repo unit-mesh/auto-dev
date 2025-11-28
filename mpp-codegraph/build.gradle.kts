@@ -82,6 +82,7 @@ kotlin {
                 implementation("io.github.bonede:tree-sitter-javascript:0.23.1")
                 implementation("io.github.bonede:tree-sitter-python:0.23.4")
                 implementation("io.github.bonede:tree-sitter-rust:0.23.1")
+                implementation("io.github.bonede:tree-sitter-go:0.23.3")
             }
         }
 
