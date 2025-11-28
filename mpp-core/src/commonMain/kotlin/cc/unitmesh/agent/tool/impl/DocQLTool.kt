@@ -73,19 +73,7 @@ data class DocQLParams(
 
 object DocQLSchema : DeclarativeToolSchema(
     description = """
-        Executes a DocQL query against available documents (both in-memory and indexed).
-        
-        ## SMART SEARCH (Recommended)
-        Simply provide a keyword or phrase, and the tool will automatically:
-        1. Search for Classes and Functions matching the keyword (High Priority)
-        2. Search for Headings and Content matching the keyword (Medium Priority)
-        3. Rerank results to show the most relevant code and documentation first.
-        4. If user's language search yields no results, try alternative encodings (pinyin, English, etc.)
-        
-        **Example:** `{"query": "Auth"}` -> Finds `AuthService` class, `authenticate` function, and "Authentication" sections.
-        
-        ## ADVANCED: DIRECT DOCQL QUERIES
-        For precise control, use standard DocQL syntax (starts with `$.`):
+        Query documents using keywords or DocQL syntax.
         
         ### 1. Document Queries ($.content.*, $.toc[*])
         **For:** Markdown, text files, documentation (.md, .txt, README)
@@ -117,13 +105,6 @@ object DocQLSchema : DeclarativeToolSchema(
         - $.files[?(@.name~="Service")] - Filter files by name
         - $.structure - Get tree view of all file paths
         
-        ## Parameters
-        - **query** (required): The keyword (Smart Search) or DocQL query string (Advanced)
-        - **documentPath** (optional): Target specific document by path
-        - **maxResults** (optional): Limit results (default: 20)
-        - **secondaryKeyword** (optional): Additional keyword for filtering when results are too many
-        - **returnAll** (optional): When true, return all results without truncation (useful for $.code.class("*"))
-        
         ## Multi-Level Keyword Strategy
         The tool automatically expands keywords when needed:
         - **Level 1**: Original query + phrase variations (e.g., "base64 encoding" -> "base64 encoder")
@@ -134,58 +115,27 @@ object DocQLSchema : DeclarativeToolSchema(
     """.trimIndent(),
     properties = mapOf(
         "query" to string(
-            description = "The keyword to search for (Smart Search) or a specific DocQL query (e.g., '$.content.heading(\"Introduction\")').",
+            description = "Keyword for smart search or DocQL query starting with '$.' (e.g., '$.content.heading(\"Introduction\")').",
             required = true
         ),
         "documentPath" to string(
-            description = """
-                The path of the document to query (e.g., 'design-system-color.md').
-                Use this to target specific documents when their names match your keywords.
-                Check the available documents list and match keywords before querying.
-                If omitted, searches all registered documents.
-            """.trimIndent(),
+            description = "Optional path to query a specific document (e.g., 'design-system-color.md'). Omit to search all documents.",
             required = false
         ),
         "maxResults" to integer(
-            description = """
-                Maximum number of results to return. Default is 20.
-                Use lower values for quick overview, higher values for comprehensive search.
-                Note: Very high values may exceed context limits for large result sets.
-            """.trimIndent(),
+            description = "Max results to return (default: 20). Higher values may exceed context limits.",
             required = false
         ),
         "secondaryKeyword" to string(
-            description = """
-                Optional secondary keyword for multi-level filtering.
-                When the primary query returns too many results (>20), the secondary keyword
-                is used to filter and prioritize the most relevant results.
-                
-                Example: query="Auth", secondaryKeyword="Service" 
-                  → Finds AuthService, AuthenticationService with higher priority
-            """.trimIndent(),
+            description = "Optional secondary filter when primary query returns too many results. Example: query=\"Auth\", secondaryKeyword=\"Service\" prioritizes AuthService.",
             required = false
         ),
         "rerankerType" to string(
-            description = """
-                Reranker algorithm to use for ordering results.
-                
-                Options:
-                - "heuristic" (default): Fast BM25 + type + name matching. Best for quick searches.
-                - "rrf_composite": RRF fusion with composite scoring. Better for multi-source results.
-                - "llm_metadata": LLM-based intelligent reranking using document metadata.
-                  Considers file paths, headings, modification time, references. Slower but smarter.
-                - "hybrid": Heuristic pre-filter + LLM rerank. Balance of speed and quality.
-            """.trimIndent(),
+            description = "Reranking strategy: \"heuristic\" (fast, default), \"rrf_composite\" (multi-source), \"llm_metadata\" (smart, slower), \"hybrid\" (balanced).",
             required = false
         ),
         "returnAll" to boolean(
-            description = """
-                When true, return all results without truncation.
-                Useful for queries like $.code.class("*") or $.code.classes[*] where you want to see all items.
-                
-                WARNING: May return very large results for big codebases. Use with caution.
-                Default: false (results are truncated to maxResults)
-            """.trimIndent(),
+            description = "Return all results without truncation. WARNING: May be very large. Default: false.",
             required = false
         )
     )
