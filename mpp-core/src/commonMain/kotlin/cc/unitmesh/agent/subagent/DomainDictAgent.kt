@@ -14,7 +14,6 @@ import cc.unitmesh.agent.tool.impl.HotFileInfo
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.codegraph.model.CodeElementType
-import cc.unitmesh.codegraph.model.CodeNode
 import cc.unitmesh.codegraph.parser.CodeParser
 import cc.unitmesh.codegraph.parser.Language
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
@@ -73,14 +72,14 @@ data class DomainDictCallbacks(
 
 /**
  * DomainDictAgent - DDD-focused domain dictionary generator
- * 
+ *
  * Design Principles (DDD perspective):
  * 1. Extract REAL business entities from code (not technical infrastructure)
  * 2. Focus on HOT FILES (frequently changed = core business logic)
  * 3. Use TreeSitter to parse class/function names from important files
  * 4. Filter out technical suffixes (Controller, Service, Repository, etc.)
  * 5. AI only translates business concepts, NOT implementation details
- * 
+ *
  * 3-Step Process:
  * 1. Analyze: Scan Git history for hot files, use TreeSitter to extract class/function names
  * 2. Generate: Use AI with DDD principles to translate business concepts
@@ -111,7 +110,7 @@ class DomainDictAgent(
 
     private var currentJob: Job? = null
     private var callbacks: DomainDictCallbacks = DomainDictCallbacks()
-    
+
     override fun getParameterClass(): String = "DomainDictContext"
 
     override fun validateInput(input: Map<String, Any>): DomainDictContext {
@@ -131,71 +130,67 @@ class DomainDictAgent(
     ): ToolResult.AgentResult {
         return executeWithCallbacks(input, DomainDictCallbacks(onProgress = onProgress))
     }
-    
+
     suspend fun executeWithCallbacks(
         input: DomainDictContext,
         callbacks: DomainDictCallbacks
     ): ToolResult.AgentResult {
         this.callbacks = callbacks
         val onProgress = callbacks.onProgress
-        
+
         onProgress("🔬 Domain Dictionary Generator")
-        onProgress("=" .repeat(50))
-        
+        onProgress("=".repeat(50))
+
         try {
             // Load current dictionary
             val currentDict = input.currentDict ?: domainDictService.loadContent() ?: ""
             val existingTerms = parseExistingTerms(currentDict)
             onProgress("📚 Current: ${existingTerms.size} entries")
-            
+
             // ============= Step 1: Analyze Codebase =============
             onProgress("\n## Step 1/3: Analyzing Codebase")
-            
-            val insights = analyzeCodebase(input.focusArea, onProgress)
-            if (insights == null) {
-                return ToolResult.AgentResult(
-                    success = false,
-                    content = "Codebase analysis failed"
-                )
-            }
-            
+
+            val insights = analyzeCodebase(input.focusArea, onProgress) ?: return ToolResult.AgentResult(
+                success = false,
+                content = "Codebase analysis failed"
+            )
+
             callbacks.onCodebaseStats(
                 insights.hotFiles.size,
                 insights.coChangePatterns.size,
                 insights.domainConcepts.size
             )
-            
+
             // Extract meaningful names from hot files
             val codebaseNames = extractMeaningfulNames(insights, onProgress)
             onProgress("   📋 Found ${codebaseNames.size} candidate names")
-            
+
             // Filter out existing terms
             val newNames = codebaseNames.filter { name ->
                 existingTerms.none { it.equals(name, ignoreCase = true) }
             }
             onProgress("   ✅ ${newNames.size} new names to process")
-            
+
             callbacks.onStepComplete(1, "Analyze", "${newNames.size} new names")
-            
+
             if (newNames.isEmpty()) {
                 onProgress("\n✅ Dictionary is up to date!")
-            return ToolResult.AgentResult(
-                success = true,
+                return ToolResult.AgentResult(
+                    success = true,
                     content = "No new entries needed",
                     metadata = mapOf("newEntries" to "0")
                 )
             }
-            
+
             // ============= Step 2: Generate Entries =============
             onProgress("\n## Step 2/3: Generating Entries")
-            
-            // Limit to 20 names per batch for faster response
-            val namesToProcess = newNames.take(20)
-            onProgress("   💭 Translating ${namesToProcess.size} terms...")
-            
+
+            val namesToProcess = newNames.take(3000)
+            onProgress("   💭 Translating ${namesToProcess.size} terms (of ${newNames.size} total)...")
+
             val newEntries = generateEntries(namesToProcess, callbacks)
             onProgress("   ✅ Generated ${newEntries.size} entries")
-            
+
             // Show generated entries
             newEntries.take(10).forEach { entry ->
                 onProgress("      • ${entry.chinese} → ${entry.codeTranslation}")
@@ -204,26 +199,26 @@ class DomainDictAgent(
             if (newEntries.size > 10) {
                 onProgress("      ... and ${newEntries.size - 10} more")
             }
-            
+
             callbacks.onStepComplete(2, "Generate", "${newEntries.size} entries")
-            
+
             // ============= Step 3: Save =============
             onProgress("\n## Step 3/3: Saving")
-            
+
             val updatedDict = mergeEntries(currentDict, newEntries)
             val saved = domainDictService.saveContent(updatedDict)
-            
+
             val finalCount = updatedDict.lines().count { it.contains(",") }
-            
+
             if (saved) {
                 onProgress("   💾 Saved to prompts/domain.csv")
             }
-            
-            onProgress("\n" + "=" .repeat(50))
+
+            onProgress("\n" + "=".repeat(50))
             onProgress("✅ Done! Added ${newEntries.size} entries (total: $finalCount)")
-            
+
             callbacks.onStepComplete(3, "Save", "$finalCount total")
-            
+
             return ToolResult.AgentResult(
                 success = true,
                 content = buildReport(existingTerms.size, finalCount, newEntries),
@@ -232,7 +227,7 @@ class DomainDictAgent(
                     "totalEntries" to finalCount.toString()
                 )
             )
-            
+
         } catch (e: CancellationException) {
             onProgress("⏹️ Cancelled")
             return ToolResult.AgentResult(success = false, content = "Cancelled")
@@ -241,87 +236,133 @@ class DomainDictAgent(
             return ToolResult.AgentResult(success = false, content = "Error: ${e.message}")
         }
     }
-    
+
     fun cancel() {
         currentJob?.cancel()
     }
-    
+
     // ============= Step 1: Analyze =============
-    
+
     private suspend fun analyzeCodebase(
         focusArea: String?,
         onProgress: (String) -> Unit
     ): CodebaseInsightsResult? {
         onProgress("   🔍 Scanning Git history and code structure...")
-        
+
         val params = CodebaseInsightsParams(
             analysisType = "full",
-            maxFiles = 100,
+            maxFiles = 3000,
             focusArea = focusArea
         )
-        
+
         val result = codebaseInsightsTool.analyze(params)
-        
+
         if (!result.success) {
             onProgress("   ⚠️ Analysis failed: ${result.errorMessage}")
             return null
         }
-        
+
         onProgress("   📊 Found ${result.hotFiles.size} hot files")
-        
+
         // Show top hot files
         result.hotFiles.take(10).forEachIndexed { idx, file ->
             val name = file.path.substringAfterLast("/")
             onProgress("      ${idx + 1}. $name (${file.changeCount} changes)")
         }
-        
+
         return result
     }
-    
+
     /**
-     * Extract meaningful names using TreeSitter parsing on hot files
-     * Priority: Hot files (frequently changed) contain core business logic
+     * Extract meaningful names from TWO sources:
+     * 1. Hot files (TreeSitter parsing) - core business logic
+     * 2. All domain concepts (480+ concepts from full codebase analysis)
      */
     private suspend fun extractMeaningfulNames(
         insights: CodebaseInsightsResult,
         onProgress: (String) -> Unit
     ): List<String> {
-        val names = mutableSetOf<String>()
-        
-        // 1. Use TreeSitter to parse hot files and extract class/function names
+        val hotFileNames = mutableSetOf<String>()
+        val allConceptNames = mutableSetOf<String>()
+
+        // ========== Source 1: Hot Files (TreeSitter deep parsing) ==========
         if (codeParser != null) {
             onProgress("   🌲 Using TreeSitter to parse hot files...")
             val hotFilesWithCode = parseHotFilesWithTreeSitter(insights.hotFiles, onProgress)
-            names.addAll(hotFilesWithCode)
+            hotFileNames.addAll(hotFilesWithCode)
         }
-        
-        // 2. Fallback: Extract from file names
+
+        // Also extract from hot file names
         for (file in insights.hotFiles) {
             val fileName = file.path.substringAfterLast("/").substringBeforeLast(".")
             val domainName = extractDomainFromFileName(fileName)
             if (domainName != null && isValidDomainName(domainName)) {
-                names.add(domainName)
+                hotFileNames.add(domainName)
             }
-            
+
             // Extract class name if available
             file.className?.let { className ->
                 val extracted = extractDomainFromClassName(className)
                 if (extracted != null && isValidDomainName(extracted)) {
-                    names.add(extracted)
+                    hotFileNames.add(extracted)
                 }
             }
         }
-        
-        // 3. Extract from domain concepts (filtered)
-        for (concept in insights.domainConcepts) {
-            if (isValidDomainName(concept.name) && concept.occurrences >= 2) {
-                names.add(concept.name)
+
+        onProgress("   🔥 Hot files: ${hotFileNames.size} concepts")
+
+        // ========== Source 2: All Domain Concepts (from full codebase) ==========
+        onProgress("   📚 Processing ${insights.domainConcepts.size} codebase concepts...")
+
+        // Sort by occurrences (more frequent = more important)
+        val sortedConcepts = insights.domainConcepts.sortedByDescending { it.occurrences }
+
+        for (concept in sortedConcepts) {
+            val name = concept.name
+            // Less strict filter for domain concepts (they're already extracted from code)
+            if (isValidDomainConceptName(name)) {
+                allConceptNames.add(name)
             }
         }
-        
-        return names.toList().sortedBy { it }
+
+        onProgress("   📋 All concepts: ${allConceptNames.size} valid names")
+
+        // Merge: Hot files first (priority), then all concepts
+        val result = mutableListOf<String>()
+        result.addAll(hotFileNames.sorted())
+        result.addAll(allConceptNames.filter { it !in hotFileNames }.sorted())
+
+        onProgress("   ✅ Total: ${result.size} candidate names")
+
+        return result
     }
-    
+
+    /**
+     * Less strict validation for domain concepts (already extracted from code)
+     */
+    private fun isValidDomainConceptName(name: String): Boolean {
+        if (name.length < 3) return false
+        if (name.length > 60) return false
+
+        val lowerName = name.lowercase()
+
+        // Skip very common/generic names
+        val skipExact = setOf(
+            "unknown", "init", "test", "main", "app", "get", "set", "is", "has",
+            "string", "int", "list", "map", "object", "class", "function",
+            "true", "false", "null", "void", "return", "if", "else", "for", "while"
+        )
+        if (lowerName in skipExact) return false
+
+        // Skip if starts with lowercase and is a single word method
+        if (name[0].isLowerCase() && !name.contains(Regex("[A-Z]"))) return false
+
+        // Skip special characters
+        if (name.contains("<") || name.contains(">") || name.contains("$")) return false
+
+        return true
+    }
+
     /**
      * Parse hot files using TreeSitter to extract class and function names
      * These are the REAL important concepts in the codebase
@@ -332,18 +373,18 @@ class DomainDictAgent(
     ): Set<String> {
         val names = mutableSetOf<String>()
         val parser = codeParser ?: return names
-        
+
         // Take top 30 hot files for deep analysis
         val topHotFiles = hotFiles.take(30)
         var parsedCount = 0
-        
+
         for (file in topHotFiles) {
             val language = detectLanguage(file.path) ?: continue
-            
+
             try {
                 val content = fileSystem.readFile(file.path) ?: continue
                 val nodes = parser.parseNodes(content, file.path, language)
-                
+
                 // Extract class names and function names
                 for (node in nodes) {
                     when (node.type) {
@@ -353,6 +394,7 @@ class DomainDictAgent(
                                 names.add(domainName)
                             }
                         }
+
                         CodeElementType.METHOD, CodeElementType.FUNCTION -> {
                             // Extract domain concepts from method names
                             val methodDomain = extractDomainFromMethodName(node.name)
@@ -360,6 +402,7 @@ class DomainDictAgent(
                                 names.add(methodDomain)
                             }
                         }
+
                         else -> {}
                     }
                 }
@@ -368,14 +411,14 @@ class DomainDictAgent(
                 // Skip files that fail to parse
             }
         }
-        
+
         if (parsedCount > 0) {
             onProgress("   📦 Parsed $parsedCount hot files, found ${names.size} domain concepts")
         }
-        
+
         return names
     }
-    
+
     /**
      * Detect programming language from file extension
      */
@@ -392,7 +435,7 @@ class DomainDictAgent(
             else -> null
         }
     }
-    
+
     /**
      * Extract domain concept from file name (remove technical suffixes)
      * e.g., "DomainDictAgent" -> "DomainDict"
@@ -406,7 +449,7 @@ class DomainDictAgent(
             "Agent", "Tool", "Config", "Configuration", "Settings",
             "Test", "Spec", "Mock", "Fake", "Stub"
         )
-        
+
         var name = fileName
         for (suffix in suffixes) {
             if (name.endsWith(suffix) && name.length > suffix.length) {
@@ -414,17 +457,17 @@ class DomainDictAgent(
                 break
             }
         }
-        
+
         return if (name.length >= 3) name else null
     }
-    
+
     /**
      * Extract domain concept from class name
      */
     private fun extractDomainFromClassName(className: String): String? {
         return extractDomainFromFileName(className)
     }
-    
+
     /**
      * Extract domain concept from method name
      * e.g., "createBlogPost" -> "BlogPost"
@@ -439,7 +482,7 @@ class DomainDictAgent(
             "check", "process", "handle", "execute", "run", "init",
             "on", "to", "from"
         )
-        
+
         var name = methodName
         for (prefix in prefixes) {
             if (name.startsWith(prefix) && name.length > prefix.length) {
@@ -450,10 +493,10 @@ class DomainDictAgent(
                 }
             }
         }
-        
+
         return if (name.length >= 4 && name[0].isUpperCase()) name else null
     }
-    
+
     /**
      * Check if a name is a valid domain concept (not a generic term)
      * Using DDD principles to filter out technical infrastructure
@@ -461,9 +504,9 @@ class DomainDictAgent(
     private fun isValidDomainName(name: String): Boolean {
         if (name.length < 4) return false  // Skip very short names
         if (name.length > 50) return false
-        
+
         val lowerName = name.lowercase()
-        
+
         // Skip generic/common terms (infrastructure, not domain)
         val skipTerms = setOf(
             // Testing
@@ -492,10 +535,10 @@ class DomainDictAgent(
             "exception", "error", "warning", "message",
             "checks", "diff", "check", "unknown"
         )
-        
+
         // Exact match skip
         if (lowerName in skipTerms) return false
-        
+
         // Skip IntelliJ platform concepts (infrastructure)
         val platformTerms = setOf(
             "anaction", "applicationmanager", "project", "psifile", "psielement",
@@ -511,7 +554,7 @@ class DomainDictAgent(
             "swing", "awt", "graphics"
         )
         if (platformTerms.any { lowerName.contains(it) }) return false
-        
+
         // Skip technical suffixes that indicate infrastructure
         val technicalSuffixes = setOf(
             "controller", "service", "repository", "dao", "mapper",
@@ -525,35 +568,35 @@ class DomainDictAgent(
             "capable", "aware", "enabled", "disabled"
         )
         if (technicalSuffixes.any { lowerName.endsWith(it) }) return false
-        
+
         // Contains skip (for compound names like "TestHelper")
         val containsSkip = setOf("test", "spec", "mock", "fake", "stub", "factory", "util")
         if (containsSkip.any { lowerName.contains(it) }) return false
-        
+
         // Skip if all uppercase (likely constants)
         if (name.all { it.isUpperCase() || it == '_' }) return false
-        
+
         // Skip if contains underscore (likely generated/config)
         if (name.contains("_")) return false
-        
+
         // Must start with uppercase (class name convention)
         if (!name.first().isUpperCase()) return false
-        
+
         // Must have at least 2 capital letters (compound name like DocQLTool)
         val capitalCount = name.count { it.isUpperCase() }
         if (capitalCount < 2) return false
-        
+
         return true
     }
-    
+
     // ============= Step 2: Generate =============
-    
+
     private suspend fun generateEntries(
         names: List<String>,
         callbacks: DomainDictCallbacks
     ): List<DomainEntry> {
         if (names.isEmpty()) return emptyList()
-        
+
         val namesList = names.joinToString("\n") { "- $it" }
 
         // DDD-focused prompt, inspired by indexer.vm
@@ -605,17 +648,17 @@ $namesList
         val response = streamLLMPrompt(prompt, callbacks)
         return parseEntries(response)
     }
-    
+
     private suspend fun streamLLMPrompt(prompt: String, callbacks: DomainDictCallbacks): String {
         val response = StringBuilder()
-        
+
         if (enableStreaming) {
             try {
                 llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
                     response.append(chunk)
                     callbacks.onAIThinking(chunk)
-            }
-        } catch (e: Exception) {
+                }
+            } catch (e: Exception) {
                 val result = llmService.sendPrompt(prompt)
                 response.append(result)
             }
@@ -623,33 +666,34 @@ $namesList
             val result = llmService.sendPrompt(prompt)
             response.append(result)
         }
-        
+
         return response.toString()
     }
-    
+
     private fun parseEntries(response: String): List<DomainEntry> {
         val entries = mutableListOf<DomainEntry>()
-        
+
         val json = CodeFence.parse(response).text.ifBlank { response }
-        
+
         // Parse entries using regex (simple approach)
-        val pattern = """"chinese"\s*:\s*"([^"]+)"[^}]*"codeTranslation"\s*:\s*"([^"]+)"[^}]*"description"\s*:\s*"([^"]+)"""".toRegex()
-        
+        val pattern =
+            """"chinese"\s*:\s*"([^"]+)"[^}]*"codeTranslation"\s*:\s*"([^"]+)"[^}]*"description"\s*:\s*"([^"]+)"""".toRegex()
+
         pattern.findAll(json).forEach { match ->
             val chinese = match.groupValues[1].trim()
             val code = match.groupValues[2].trim()
             val desc = match.groupValues[3].trim()
-            
+
             if (chinese.isNotBlank() && code.isNotBlank()) {
                 entries.add(DomainEntry(chinese, code, desc))
             }
         }
-        
+
         return entries
     }
-    
+
     // ============= Step 3: Save =============
-    
+
     private fun parseExistingTerms(csv: String): Set<String> {
         return csv.lines()
             .filter { it.contains(",") }
@@ -661,36 +705,36 @@ $namesList
             .filter { it.isNotBlank() }
             .toSet()
     }
-    
+
     private fun mergeEntries(currentDict: String, newEntries: List<DomainEntry>): String {
         val existingLines = currentDict.lines().toMutableList()
-        
+
         // Ensure header exists
         if (existingLines.isEmpty() || !existingLines[0].contains("Chinese")) {
             existingLines.add(0, "Chinese,Code Translation,Description")
         }
-        
+
         // Remove empty first line if exists
         if (existingLines.isNotEmpty() && existingLines[0].isBlank()) {
             existingLines.removeAt(0)
         }
-        
+
         // Get existing code translations to avoid duplicates
         val existingCodes = existingLines
             .filter { it.contains(",") }
             .mapNotNull { line -> line.split(",").getOrNull(1)?.trim()?.lowercase() }
             .toSet()
-        
+
         // Add new entries
         for (entry in newEntries) {
             if (entry.codeTranslation.lowercase() !in existingCodes) {
                 existingLines.add(entry.toCsvRow())
             }
         }
-        
+
         return existingLines.joinToString("\n")
     }
-    
+
     private fun buildReport(before: Int, after: Int, newEntries: List<DomainEntry>): String {
         return buildString {
             appendLine("# Domain Dictionary Update")
@@ -714,17 +758,17 @@ $namesList
         question: String,
         context: Map<String, Any>
     ): ToolResult.AgentResult {
-            return ToolResult.AgentResult(
-                success = false,
+        return ToolResult.AgentResult(
+            success = false,
             content = "Use execute() to generate dictionary"
         )
     }
-    
+
     override fun getStateSummary(): Map<String, Any> = mapOf("name" to name)
 
     override fun shouldTrigger(context: Map<String, Any>): Boolean {
         val query = context["query"] as? String ?: return false
         return query.contains("domain", ignoreCase = true) ||
-               query.contains("dictionary", ignoreCase = true)
+                query.contains("dictionary", ignoreCase = true)
     }
 }

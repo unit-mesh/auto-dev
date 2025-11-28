@@ -94,12 +94,12 @@ data class DomainConcept(
 
 /**
  * CodebaseInsightsTool - Analyzes codebase to extract domain concepts
- * 
+ *
  * Combines:
  * - Git co-change analysis using GitOperations (frequently changed files)
  * - Import dependency analysis (code structure and relationships)
  * - Code structure analysis (class/function signatures)
- * 
+ *
  * Designed to be run asynchronously at agent startup and used
  * for domain dictionary enrichment.
  */
@@ -133,18 +133,18 @@ class CodebaseInsightsTool(
     private val suffixRules = CommonSuffixRules()
     private val gitOperations = GitOperations(projectPath)
     private val codeParser: CodeParser = createCodeParser()
-    
+
     // ProjectFileSystem adapter for file operations
     private val projectFileSystem: ProjectFileSystem = DefaultFileSystem(projectPath)
-    
+
     // Cached results for async analysis
     private var cachedResult: CodebaseInsightsResult? = null
     private var analysisJob: Deferred<CodebaseInsightsResult>? = null
-    
+
     val name: String = "codebase-insights"
-    
+
     fun getSchema() = CodebaseInsightsSchema
-    
+
     /**
      * Start async analysis (call at agent startup)
      */
@@ -153,7 +153,7 @@ class CodebaseInsightsTool(
         scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     ): Deferred<CodebaseInsightsResult> {
         logger.info { "Starting async codebase analysis..." }
-        
+
         analysisJob = scope.async {
             try {
                 analyze(params)
@@ -165,62 +165,62 @@ class CodebaseInsightsTool(
                 )
             }
         }
-        
+
         return analysisJob!!
     }
-    
+
     /**
      * Get cached result or wait for async analysis to complete
      */
     suspend fun getOrAwaitResult(): CodebaseInsightsResult? {
         cachedResult?.let { return it }
-        
+
         return analysisJob?.await()?.also {
             cachedResult = it
         }
     }
-    
+
     /**
      * Check if analysis is complete
      */
     fun isAnalysisComplete(): Boolean {
         return cachedResult != null || (analysisJob?.isCompleted == true)
     }
-    
+
     /**
      * Main analysis logic
      */
     suspend fun analyze(params: CodebaseInsightsParams): CodebaseInsightsResult {
         logger.info { "Starting codebase analysis with params: $params" }
-        
+
         val hotFiles = mutableListOf<HotFileInfo>()
         val coChangePatterns = mutableMapOf<String, List<String>>()
         val domainConcepts = mutableListOf<DomainConcept>()
         val functionSignatures = mutableMapOf<String, List<String>>()
-        
+
         try {
             // Step 1: Analyze Git history using GitOperations
             if (params.analysisType == "full" || params.analysisType == "git") {
                 analyzeGitHistory(params, hotFiles, coChangePatterns)
             }
-            
+
             // Step 2: Collect source files and analyze structure
             val sourceFiles = collectSourceFiles(params.maxFiles, params.focusArea)
-            
+
             if (params.analysisType == "full" || params.analysisType == "code") {
                 analyzeCodeStructure(sourceFiles, params.focusArea, hotFiles, functionSignatures, domainConcepts)
             }
-            
+
             if (params.analysisType == "full" || params.analysisType == "imports") {
                 analyzeImports(sourceFiles, domainConcepts)
             }
-            
+
             // Step 3: Extract domain concepts from all sources
             extractDomainConceptsFromFiles(sourceFiles, domainConcepts)
-            
+
             // Build statistics
             val statistics = buildStatistics(hotFiles, coChangePatterns, domainConcepts)
-            
+
             val result = CodebaseInsightsResult(
                 success = true,
                 hotFiles = hotFiles.sortedByDescending { it.changeCount }.take(params.maxFiles),
@@ -230,15 +230,15 @@ class CodebaseInsightsTool(
                 functionSignatures = functionSignatures,
                 statistics = statistics
             )
-            
+
             logger.info { "Codebase analysis completed: ${result.domainConcepts.size} concepts, ${result.functionSignatures.size} files with signatures" }
             if (result.domainConcepts.isNotEmpty()) {
                 logger.info { "Top concepts: ${result.domainConcepts.take(5).joinToString { it.name }}" }
             }
-            
+
             cachedResult = result
             return result
-            
+
         } catch (e: Exception) {
             logger.error(e) { "Codebase analysis failed" }
             return CodebaseInsightsResult(
@@ -247,11 +247,11 @@ class CodebaseInsightsTool(
             )
         }
     }
-    
+
     /**
      * Analyze Git history using GitOperations
      */
-    private suspend fun analyzeGitHistory(
+    suspend fun analyzeGitHistory(
         params: CodebaseInsightsParams,
         hotFiles: MutableList<HotFileInfo>,
         coChangePatterns: MutableMap<String, List<String>>
@@ -260,34 +260,28 @@ class CodebaseInsightsTool(
             logger.warn { "Git operations not supported on this platform" }
             return
         }
-        
+
         try {
-            // Get recent commits
-            val commits = gitOperations.getRecentCommits(100)
+            val commitCount = gitOperations.getTotalCommitCount()
+            val commits = gitOperations.getRecentCommits(commitCount?.div(2) ?: 10)
             logger.debug { "Retrieved ${commits.size} commits for analysis" }
-            
-            // Build file change frequency map
+
             val fileChangeCount = mutableMapOf<String, Int>()
-            
+
             for (commit in commits) {
-                // Get files from commit diff
                 val commitDiff = gitOperations.getCommitDiff(commit.hash)
                 val diffFiles = commitDiff?.files?.map { it.path } ?: emptyList()
-                
-                // Count file changes
+
                 for (file in diffFiles) {
-                    // Filter by focus area if specified
                     if (params.focusArea != null && !file.contains(params.focusArea, ignoreCase = true)) {
                         continue
                     }
-                    
-                    // Only count source files
+
                     if (isSourceFile(file)) {
                         fileChangeCount[file] = (fileChangeCount[file] ?: 0) + 1
                     }
                 }
-                
-                // Build co-change patterns (files changed together)
+
                 if (diffFiles.size in 2..10) {  // Reasonable co-change size
                     for (file in diffFiles) {
                         if (isSourceFile(file)) {
@@ -300,45 +294,47 @@ class CodebaseInsightsTool(
                     }
                 }
             }
-            
+
             // Create hot files from change frequency
             for ((file, count) in fileChangeCount.entries.sortedByDescending { it.value }) {
                 if (count >= 2) {  // At least 2 changes to be considered "hot"
-                    hotFiles.add(HotFileInfo(
-                        path = file,
-                        changeCount = count,
-                        className = extractClassName(file)
-                    ))
+                    hotFiles.add(
+                        HotFileInfo(
+                            path = file,
+                            changeCount = count,
+                            className = extractClassName(file)
+                        )
+                    )
                 }
             }
-            
+
             logger.info { "Found ${hotFiles.size} hot files and ${coChangePatterns.size} co-change patterns" }
-            
+
         } catch (e: Exception) {
             logger.warn { "Git history analysis failed: ${e.message}" }
         }
     }
-    
+
     /**
      * Collect source files from project using ProjectFileSystem
      */
     private fun collectSourceFiles(maxFiles: Int, focusArea: String?): List<String> {
         val pattern = focusArea?.let { "*$it*" } ?: "*"
-        
+
         return projectFileSystem.searchFiles(pattern, maxDepth = 10, maxResults = maxFiles * 2)
             .filter { file ->
                 // Exclude test files and generated code
                 !file.contains("/test/") &&
-                !file.contains("/tests/") &&
-                !file.contains("Test.") &&
-                !file.contains("Spec.") &&
-                !file.contains("/generated/") &&
-                !file.contains("/build/")
+                        !file.contains("/tests/") &&
+                        !file.contains("Test.") &&
+                        !file.contains("Spec.") &&
+                        !file.contains("/generated/") &&
+                        !file.contains("/build/")
             }
             .distinct()
             .take(maxFiles)
     }
-    
+
     /**
      * Analyze code structure to extract class/function signatures
      */
@@ -353,10 +349,10 @@ class CodebaseInsightsTool(
             try {
                 val content = fileSystem.readFile(filePath) ?: continue
                 val signatures = extractSignatures(content, filePath)
-                
+
                 if (signatures.isNotEmpty()) {
                     functionSignatures[filePath] = signatures
-                    
+
                     // Update or create hot file info
                     val existingHotFile = hotFiles.find { it.path == filePath }
                     if (existingHotFile != null) {
@@ -366,18 +362,20 @@ class CodebaseInsightsTool(
                             className = extractClassName(filePath)
                         )
                     } else {
-                        hotFiles.add(HotFileInfo(
-                            path = filePath,
-                            changeCount = 1,
-                            className = extractClassName(filePath),
-                            functions = signatures
-                        ))
+                        hotFiles.add(
+                            HotFileInfo(
+                                path = filePath,
+                                changeCount = 1,
+                                className = extractClassName(filePath),
+                                functions = signatures
+                            )
+                        )
                     }
-                    
+
                     // Extract concepts from CodeNodes directly
                     val extension = filePath.substringAfterLast(".").lowercase()
                     val language = getLanguageFromExtension(extension)
-                    
+
                     if (language != Language.UNKNOWN) {
                         try {
                             val nodes = codeParser.parseNodes(content, filePath, language)
@@ -408,7 +406,7 @@ class CodebaseInsightsTool(
             }
         }
     }
-    
+
     /**
      * Analyze imports to find dependencies
      */
@@ -420,29 +418,29 @@ class CodebaseInsightsTool(
             try {
                 val content = fileSystem.readFile(filePath) ?: continue
                 val imports = extractImports(content, filePath)
-                
+
                 // Extract concepts from imports using rich ImportInfo metadata
                 for (importInfo in imports) {
                     // Extract from main import path
                     val lastPart = importInfo.getSimpleName()
                     if (lastPart.length > 2 && !lastPart.all { it.isLowerCase() }) {
                         addOrIncrementConcept(
-                            domainConcepts, 
-                            lastPart, 
-                            "import", 
-                            1, 
+                            domainConcepts,
+                            lastPart,
+                            "import",
+                            1,
                             "Import: ${importInfo.path}"
                         )
                     }
-                    
+
                     // Extract from imported names (for selective imports)
                     for (importedName in importInfo.importedNames) {
                         if (importedName.length > 2 && !importedName.all { it.isLowerCase() }) {
                             addOrIncrementConcept(
-                                domainConcepts, 
-                                importedName, 
-                                "import", 
-                                1, 
+                                domainConcepts,
+                                importedName,
+                                "import",
+                                1,
                                 "Import: ${importInfo.path}.${importedName}"
                             )
                         }
@@ -453,7 +451,7 @@ class CodebaseInsightsTool(
             }
         }
     }
-    
+
     /**
      * Extract domain concepts from file names and structure
      */
@@ -464,7 +462,7 @@ class CodebaseInsightsTool(
         for (filePath in files) {
             val fileName = filePath.substringAfterLast("/").substringBeforeLast(".")
             val normalized = suffixRules.normalize(fileName)
-            
+
             if (normalized.length > 2) {
                 val words = CamelCaseSplitter.splitAndFilter(normalized, suffixRules)
                 for (word in words.filter { it.length > 2 }) {
@@ -473,19 +471,19 @@ class CodebaseInsightsTool(
             }
         }
     }
-    
+
     /**
      * Extract imports from file content using TreeSitter AST parsing
      */
     private suspend fun extractImports(content: String, filePath: String): List<ImportInfo> {
         val extension = filePath.substringAfterLast(".").lowercase()
         val language = getLanguageFromExtension(extension)
-        
+
         // Return empty list for unsupported languages
         if (language == Language.UNKNOWN) {
             return emptyList()
         }
-        
+
         return try {
             codeParser.parseImports(content, filePath, language)
         } catch (e: Exception) {
@@ -493,18 +491,18 @@ class CodebaseInsightsTool(
             emptyList()
         }
     }
-    
+
     /**
      * Extract class/function signatures using TreeSitter AST parsing
      */
     private suspend fun extractSignatures(content: String, filePath: String): List<String> {
         val extension = filePath.substringAfterLast(".").lowercase()
         val language = getLanguageFromExtension(extension)
-        
+
         if (language == Language.UNKNOWN) {
             return emptyList()
         }
-        
+
         return try {
             val nodes = codeParser.parseNodes(content, filePath, language)
             nodes.mapNotNull { node ->
@@ -521,7 +519,7 @@ class CodebaseInsightsTool(
             emptyList()
         }
     }
-    
+
     private fun addOrIncrementConcept(
         concepts: MutableList<DomainConcept>,
         name: String,
@@ -539,25 +537,27 @@ class CodebaseInsightsTool(
                 } else existing.usageContext
             )
         } else {
-            concepts.add(DomainConcept(
-                name = name,
-                type = type,
-                occurrences = count,
-                usageContext = context
-            ))
+            concepts.add(
+                DomainConcept(
+                    name = name,
+                    type = type,
+                    occurrences = count,
+                    usageContext = context
+                )
+            )
         }
     }
-    
+
     private fun extractClassName(filePath: String): String? {
         val fileName = filePath.substringAfterLast("/").substringBeforeLast(".")
         return if (fileName.isNotEmpty()) fileName else null
     }
-    
+
     private fun isSourceFile(filePath: String): Boolean {
         val extension = filePath.substringAfterLast(".").lowercase()
         return extension in setOf("kt", "java", "py", "ts", "tsx", "js", "jsx", "go", "rs", "cs")
     }
-    
+
     private fun buildStatistics(
         hotFiles: List<HotFileInfo>,
         coChangePatterns: Map<String, List<String>>,
@@ -570,21 +570,21 @@ class CodebaseInsightsTool(
             "topConcepts" to concepts.take(10).joinToString(", ") { "${it.name}(${it.occurrences})" }
         )
     }
-    
+
     /**
      * Get domain concepts for enriching domain dictionary
      */
     fun getDomainConceptsForDictionary(): List<DomainConcept> {
         return cachedResult?.domainConcepts?.filter { it.occurrences >= 2 } ?: emptyList()
     }
-    
+
     /**
      * Get function signatures for a specific file
      */
     fun getFunctionSignatures(filePath: String): List<String> {
         return cachedResult?.functionSignatures?.get(filePath) ?: emptyList()
     }
-    
+
     /**
      * Reset cached results
      */
