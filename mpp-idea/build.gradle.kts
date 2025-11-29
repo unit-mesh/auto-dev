@@ -9,7 +9,8 @@ plugins {
 }
 
 group = "cc.unitmesh.devins"
-version = project.findProperty("mppVersion") as String? ?: "0.3.2"
+val mppVersion = project.findProperty("mppVersion") as String? ?: "0.3.2"
+version = mppVersion
 
 kotlin {
     jvmToolchain(21)
@@ -69,7 +70,7 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         name = "AutoDev Compose UI"
-        version = project.findProperty("mppVersion") as String? ?: "0.3.2"
+        version = mppVersion
 
         ideaVersion {
             sinceBuild = "252"

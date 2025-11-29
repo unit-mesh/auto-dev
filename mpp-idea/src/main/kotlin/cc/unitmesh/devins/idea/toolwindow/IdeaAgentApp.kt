@@ -256,22 +256,20 @@ private fun AgentTab(
         JewelTheme.globalColors.panelBackground
     }
 
-    Box(
+    OutlinedButton(
+        onClick = onClick,
         modifier = Modifier
             .height(28.dp)
             .background(backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
-        OutlinedButton(onClick = onClick) {
-            Text(
-                text = type.displayName,
-                style = JewelTheme.defaultTextStyle.copy(
-                    fontSize = 12.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                )
+        Text(
+            text = type.displayName,
+            style = JewelTheme.defaultTextStyle.copy(
+                fontSize = 12.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )
-        }
+        )
     }
 }
 

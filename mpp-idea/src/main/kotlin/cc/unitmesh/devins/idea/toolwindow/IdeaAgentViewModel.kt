@@ -121,9 +121,18 @@ class IdeaAgentViewModel(
 
     /**
      * Abort the current request.
+     * Preserves partial streaming output if any.
      */
     fun abortRequest() {
         currentJob?.cancel()
+        // Preserve partial output if any
+        if (_streamingOutput.value.isNotEmpty()) {
+            val partialMessage = ModelChatMessage(
+                content = _streamingOutput.value + "\n\n[Interrupted]",
+                role = MessageRole.ASSISTANT
+            )
+            _messages.value = _messages.value + listOf(partialMessage)
+        }
         _isProcessing.value = false
         _streamingOutput.value = ""
     }

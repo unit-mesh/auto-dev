@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.idea.services
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.Service.Level
 import com.intellij.openapi.project.Project
@@ -7,16 +8,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 
 /**
  * A service-level class that provides and manages coroutine scopes for a given project.
+ * Implements [Disposable] to properly cancel all coroutines when the project is closed.
  *
  * @constructor Initializes the [CoroutineScopeHolder] with a project instance.
  * @param project The project this service is associated with.
  */
 @Service(Level.PROJECT)
-class CoroutineScopeHolder(private val project: Project) {
+class CoroutineScopeHolder(private val project: Project) : Disposable {
 
     private val parentJob = SupervisorJob()
     private val projectWideCoroutineScope: CoroutineScope = CoroutineScope(parentJob + Dispatchers.Default)
@@ -36,6 +38,13 @@ class CoroutineScopeHolder(private val project: Project) {
     fun createScope(name: String): CoroutineScope {
         val childJob = SupervisorJob(parentJob)
         return CoroutineScope(childJob + Dispatchers.Default + CoroutineName(name))
+    }
+
+    /**
+     * Cancels all coroutines when the project is disposed.
+     */
+    override fun dispose() {
+        parentJob.cancel()
     }
 }
 
