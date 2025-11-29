@@ -9,13 +9,13 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.devins.idea.model.AgentType
-import cc.unitmesh.devins.idea.model.ChatMessage as ModelChatMessage
-import cc.unitmesh.devins.idea.model.MessageRole
+import cc.unitmesh.agent.AgentType
+import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
@@ -24,27 +24,29 @@ import org.jetbrains.jewel.ui.theme.defaultBannerStyle
 
 /**
  * Main Compose application for Agent ToolWindow.
- * 
+ *
  * Features:
  * - Tab-based agent type switching (Agentic, Review, Knowledge, Remote)
- * - Chat interface with message history
- * - LLM configuration support
+ * - Timeline-based chat interface with tool calls
+ * - LLM configuration support via mpp-ui's ConfigManager
+ * - Real agent execution using mpp-core's CodingAgent
  */
 @Composable
 fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
     val currentAgentType by viewModel.currentAgentType.collectAsState()
-    val messages by viewModel.messages.collectAsState()
-    val streamingOutput by viewModel.streamingOutput.collectAsState()
+    val timeline by viewModel.renderer.timeline.collectAsState()
+    val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
     val isProcessing by viewModel.isProcessing.collectAsState()
     val showConfigDialog by viewModel.showConfigDialog.collectAsState()
     val listState = rememberLazyListState()
 
-    // Auto-scroll to bottom when new messages arrive
-    LaunchedEffect(messages.size, streamingOutput) {
-        if (messages.isNotEmpty() || streamingOutput.isNotEmpty()) {
-            listState.animateScrollToItem(
-                if (streamingOutput.isNotEmpty()) messages.size else messages.lastIndex.coerceAtLeast(0)
-            )
+    // Auto-scroll to bottom when new items arrive
+    LaunchedEffect(timeline.size, streamingOutput) {
+        if (timeline.isNotEmpty() || streamingOutput.isNotEmpty()) {
+            val targetIndex = if (streamingOutput.isNotEmpty()) timeline.size else timeline.lastIndex.coerceAtLeast(0)
+            if (targetIndex >= 0) {
+                listState.animateScrollToItem(targetIndex)
+            }
         }
     }
 
@@ -70,9 +72,9 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
                 .weight(1f)
         ) {
             when (currentAgentType) {
-                AgentType.CODING, AgentType.REMOTE -> {
-                    ChatContent(
-                        messages = messages,
+                AgentType.CODING, AgentType.REMOTE, AgentType.LOCAL_CHAT -> {
+                    TimelineContent(
+                        timeline = timeline,
                         streamingOutput = streamingOutput,
                         listState = listState
                     )
@@ -89,7 +91,7 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
         Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
 
         // Input area (only for chat-based modes)
-        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE) {
+        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
             ChatInputArea(
                 isProcessing = isProcessing,
                 onSend = { viewModel.sendMessage(it) },
@@ -100,12 +102,12 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
 }
 
 @Composable
-private fun ChatContent(
-    messages: List<ModelChatMessage>,
+private fun TimelineContent(
+    timeline: List<JewelRenderer.TimelineItem>,
     streamingOutput: String,
     listState: androidx.compose.foundation.lazy.LazyListState
 ) {
-    if (messages.isEmpty() && streamingOutput.isEmpty()) {
+    if (timeline.isEmpty() && streamingOutput.isEmpty()) {
         EmptyStateMessage("Start a conversation with your AI Assistant!")
     } else {
         LazyColumn(
@@ -114,8 +116,8 @@ private fun ChatContent(
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(messages, key = { it.id }) { message ->
-                MessageBubble(message)
+            items(timeline, key = { it.timestamp }) { item ->
+                TimelineItemView(item)
             }
 
             // Show streaming output
@@ -124,6 +126,27 @@ private fun ChatContent(
                     StreamingMessageBubble(streamingOutput)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TimelineItemView(item: JewelRenderer.TimelineItem) {
+    when (item) {
+        is JewelRenderer.TimelineItem.MessageItem -> {
+            MessageBubble(
+                role = item.role,
+                content = item.content
+            )
+        }
+        is JewelRenderer.TimelineItem.ToolCallItem -> {
+            ToolCallBubble(item)
+        }
+        is JewelRenderer.TimelineItem.ErrorItem -> {
+            ErrorBubble(item.message)
+        }
+        is JewelRenderer.TimelineItem.TaskCompleteItem -> {
+            TaskCompleteBubble(item)
         }
     }
 }
@@ -155,15 +178,15 @@ private fun EmptyStateMessage(text: String) {
 }
 
 @Composable
-private fun MessageBubble(message: ModelChatMessage) {
-    val isUser = message.role == MessageRole.USER
+private fun MessageBubble(role: JewelRenderer.MessageRole, content: String) {
+    val isUser = role == JewelRenderer.MessageRole.USER
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         Box(
             modifier = Modifier
-                .widthIn(max = 400.dp)
+                .widthIn(max = 500.dp)
                 .background(
                     if (isUser)
                         JewelTheme.defaultBannerStyle.information.colors.background.copy(alpha = 0.75f)
@@ -173,8 +196,116 @@ private fun MessageBubble(message: ModelChatMessage) {
                 .padding(8.dp)
         ) {
             Text(
-                text = message.content,
+                text = content,
                 style = JewelTheme.defaultTextStyle
+            )
+        }
+    }
+}
+
+@Composable
+private fun ToolCallBubble(item: JewelRenderer.TimelineItem.ToolCallItem) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .widthIn(max = 500.dp)
+                .background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.5f))
+                .padding(8.dp)
+        ) {
+            Column {
+                // Tool name with icon
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val statusIcon = when (item.success) {
+                        true -> "✓"
+                        false -> "✗"
+                        null -> "⏳"
+                    }
+                    val statusColor = when (item.success) {
+                        true -> Color(0xFF4CAF50) // Green
+                        false -> Color(0xFFF44336) // Red
+                        null -> JewelTheme.globalColors.text.info
+                    }
+                    Text(
+                        text = statusIcon,
+                        style = JewelTheme.defaultTextStyle.copy(color = statusColor)
+                    )
+                    Text(
+                        text = "🔧 ${item.toolName}",
+                        style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                // Tool parameters (truncated)
+                if (item.params.isNotEmpty()) {
+                    Text(
+                        text = item.params.take(200) + if (item.params.length > 200) "..." else "",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontSize = 12.sp,
+                            color = JewelTheme.globalColors.text.info
+                        )
+                    )
+                }
+
+                // Tool output (if available)
+                item.output?.let { output ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = output.take(300) + if (output.length > 300) "..." else "",
+                        style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ErrorBubble(message: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .widthIn(max = 500.dp)
+                .background(Color(0x33F44336)) // Light red background
+                .padding(8.dp)
+        ) {
+            Text(
+                text = "❌ $message",
+                style = JewelTheme.defaultTextStyle.copy(
+                    color = Color(0xFFF44336)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun TaskCompleteBubble(item: JewelRenderer.TimelineItem.TaskCompleteItem) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .background(
+                    if (item.success) Color(0x334CAF50) else Color(0x33F44336)
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            val icon = if (item.success) "✅" else "❌"
+            Text(
+                text = "$icon ${item.message} (${item.iterations} iterations)",
+                style = JewelTheme.defaultTextStyle.copy(
+                    fontWeight = FontWeight.Bold
+                )
             )
         }
     }
@@ -188,7 +319,7 @@ private fun StreamingMessageBubble(content: String) {
     ) {
         Box(
             modifier = Modifier
-                .widthIn(max = 400.dp)
+                .widthIn(max = 500.dp)
                 .background(JewelTheme.globalColors.panelBackground)
                 .padding(8.dp)
         ) {
@@ -215,12 +346,13 @@ private fun AgentTabsHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left: Agent Type Tabs
+        // Left: Agent Type Tabs (show main agent types, skip LOCAL_CHAT as it's similar to CODING)
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AgentType.entries.forEach { type ->
+            // Show only main agent types for cleaner UI
+            listOf(AgentType.CODING, AgentType.CODE_REVIEW, AgentType.KNOWLEDGE, AgentType.REMOTE).forEach { type ->
                 AgentTab(
                     type = type,
                     isSelected = type == currentAgentType,
@@ -264,7 +396,7 @@ private fun AgentTab(
             .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
         Text(
-            text = type.displayName,
+            text = type.getDisplayName(),
             style = JewelTheme.defaultTextStyle.copy(
                 fontSize = 12.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
