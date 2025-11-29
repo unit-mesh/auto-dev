@@ -40,9 +40,10 @@ repositories {
 dependencies {
     // Depend on mpp-ui and mpp-core JVM targets for shared UI components and ConfigManager
     // For KMP projects, we need to depend on the JVM target specifically
-    // IMPORTANT: Exclude Compose dependencies to avoid classloader conflicts with IntelliJ's bundled Compose
+    // IMPORTANT: Exclude ALL transitive dependencies that conflict with IntelliJ's bundled libraries
     implementation("cc.unitmesh.devins:mpp-ui-jvm") {
         // Exclude all Compose dependencies - IntelliJ provides its own via bundledModules
+        exclude(group = "org.jetbrains.compose")
         exclude(group = "org.jetbrains.compose.runtime")
         exclude(group = "org.jetbrains.compose.foundation")
         exclude(group = "org.jetbrains.compose.material3")
@@ -52,6 +53,18 @@ dependencies {
         exclude(group = "org.jetbrains.compose.components")
         exclude(group = "org.jetbrains.compose.animation")
         exclude(group = "org.jetbrains.skiko")
+        // Exclude kotlinx libraries - IntelliJ provides its own
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-swing")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-io")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-io-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-io-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-io-core-jvm")
         // Exclude webview/KCEF - not needed in IntelliJ and causes issues
         exclude(group = "io.github.kevinnzou")
         exclude(group = "dev.datlag")
@@ -62,15 +75,29 @@ dependencies {
         exclude(group = "org.jetbrains.jediterm")
         exclude(group = "org.jetbrains.pty4j")
         exclude(group = "io.github.vinceglb")
+        // Exclude SQLDelight - not needed in IntelliJ plugin
+        exclude(group = "app.cash.sqldelight")
     }
     implementation("cc.unitmesh.devins:mpp-core-jvm") {
         // Exclude Compose dependencies from mpp-core as well
+        exclude(group = "org.jetbrains.compose")
         exclude(group = "org.jetbrains.compose.runtime")
         exclude(group = "org.jetbrains.compose.foundation")
         exclude(group = "org.jetbrains.compose.material3")
         exclude(group = "org.jetbrains.compose.material")
         exclude(group = "org.jetbrains.compose.ui")
         exclude(group = "org.jetbrains.skiko")
+        // Exclude kotlinx libraries - IntelliJ provides its own
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-io")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-io-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-io-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-io-core-jvm")
     }
 
     // Use platform-provided kotlinx libraries to avoid classloader conflicts
@@ -123,5 +150,52 @@ intellijPlatform {
 tasks {
     test {
         useJUnitPlatform()
+    }
+
+    // Task to verify no conflicting dependencies are included
+    register("verifyNoDuplicateDependencies") {
+        group = "verification"
+        description = "Verifies that no Compose/Kotlinx dependencies are included that would conflict with IntelliJ's bundled versions"
+
+        doLast {
+            val forbiddenPatterns = listOf(
+                "org.jetbrains.compose",
+                "org.jetbrains.skiko",
+                "kotlinx-coroutines-core",
+                "kotlinx-coroutines-swing",
+                "kotlinx-serialization-json",
+                "kotlinx-serialization-core"
+            )
+
+            val runtimeClasspath = configurations.getByName("runtimeClasspath")
+            val violations = mutableListOf<String>()
+
+            runtimeClasspath.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+                val id = artifact.moduleVersion.id
+                val fullName = "${id.group}:${id.name}:${id.version}"
+                forbiddenPatterns.forEach { pattern ->
+                    if (fullName.contains(pattern)) {
+                        violations.add(fullName)
+                    }
+                }
+            }
+
+            if (violations.isNotEmpty()) {
+                throw GradleException("""
+                    |DEPENDENCY CONFLICT DETECTED!
+                    |The following dependencies will conflict with IntelliJ's bundled libraries:
+                    |${violations.joinToString("\n") { "  - $it" }}
+                    |
+                    |These dependencies must be excluded from mpp-ui and mpp-core.
+                """.trimMargin())
+            } else {
+                println("✓ No conflicting dependencies found in runtime classpath")
+            }
+        }
+    }
+
+    // Run verification before build
+    named("build") {
+        dependsOn("verifyNoDuplicateDependencies")
     }
 }
