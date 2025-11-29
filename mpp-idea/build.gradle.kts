@@ -2,10 +2,10 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.2.0"
-    id("org.jetbrains.intellij.platform") version "2.10.2"
-    kotlin("plugin.compose") version "2.2.0"
-    kotlin("plugin.serialization") version "2.2.0"
+    kotlin("jvm")
+    id("org.jetbrains.intellij.platform")
+    kotlin("plugin.compose")
+    kotlin("plugin.serialization")
 }
 
 group = "cc.unitmesh.devins"
@@ -26,14 +26,23 @@ kotlin {
 
 repositories {
     mavenCentral()
+    google()
+    // Required for mpp-ui's webview dependencies (jogamp)
+    maven("https://jogamp.org/deployment/maven")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/")
 
     intellijPlatform {
         defaultRepositories()
     }
-    google()
 }
 
 dependencies {
+    // Depend on mpp-ui and mpp-core JVM targets for shared UI components and ConfigManager
+    // For KMP projects, we need to depend on the JVM target specifically
+    implementation("cc.unitmesh.devins:mpp-ui-jvm")
+    implementation("cc.unitmesh.devins:mpp-core-jvm")
+
     // Use platform-provided kotlinx libraries to avoid classloader conflicts
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")

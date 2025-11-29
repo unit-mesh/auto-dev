@@ -1,9 +1,12 @@
 package cc.unitmesh.devins.idea.toolwindow
 
-import cc.unitmesh.devins.idea.model.AgentType
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.idea.model.ChatMessage as ModelChatMessage
-import cc.unitmesh.devins.idea.model.LLMConfig
 import cc.unitmesh.devins.idea.model.MessageRole
+import cc.unitmesh.devins.ui.config.AutoDevConfigWrapper
+import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.*
@@ -14,13 +17,16 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * ViewModel for the Agent ToolWindow.
  * Manages agent type tabs, chat messages, and LLM integration.
+ *
+ * Uses mpp-ui's ConfigManager for configuration management to ensure
+ * cross-platform consistency with CLI and Desktop apps.
  */
 class IdeaAgentViewModel(
     private val project: Project,
     private val coroutineScope: CoroutineScope
 ) : Disposable {
 
-    // Current agent type tab
+    // Current agent type tab (using mpp-core's AgentType)
     private val _currentAgentType = MutableStateFlow(AgentType.CODING)
     val currentAgentType: StateFlow<AgentType> = _currentAgentType.asStateFlow()
 
@@ -36,9 +42,13 @@ class IdeaAgentViewModel(
     private val _isProcessing = MutableStateFlow(false)
     val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
 
-    // LLM Configuration
-    private val _llmConfig = MutableStateFlow(LLMConfig())
-    val llmConfig: StateFlow<LLMConfig> = _llmConfig.asStateFlow()
+    // LLM Configuration from mpp-ui's ConfigManager
+    private val _configWrapper = MutableStateFlow<AutoDevConfigWrapper?>(null)
+    val configWrapper: StateFlow<AutoDevConfigWrapper?> = _configWrapper.asStateFlow()
+
+    // Current model config (derived from configWrapper)
+    private val _currentModelConfig = MutableStateFlow<ModelConfig?>(null)
+    val currentModelConfig: StateFlow<ModelConfig?> = _currentModelConfig.asStateFlow()
 
     // Show config dialog
     private val _showConfigDialog = MutableStateFlow(false)
@@ -46,6 +56,38 @@ class IdeaAgentViewModel(
 
     // Current streaming job (for cancellation)
     private var currentJob: Job? = null
+
+    init {
+        // Load configuration on initialization
+        loadConfiguration()
+    }
+
+    /**
+     * Load configuration from ConfigManager (~/.autodev/config.yaml)
+     */
+    private fun loadConfiguration() {
+        coroutineScope.launch {
+            try {
+                val wrapper = ConfigManager.load()
+                _configWrapper.value = wrapper
+                _currentModelConfig.value = wrapper.getActiveModelConfig()
+
+                // Set agent type from config
+                _currentAgentType.value = wrapper.getAgentType()
+            } catch (e: Exception) {
+                // Config file doesn't exist or is invalid, use defaults
+                _configWrapper.value = null
+                _currentModelConfig.value = null
+            }
+        }
+    }
+
+    /**
+     * Reload configuration from file
+     */
+    fun reloadConfiguration() {
+        loadConfiguration()
+    }
 
     /**
      * Change the current agent type tab.
@@ -73,7 +115,7 @@ class IdeaAgentViewModel(
 
         currentJob = coroutineScope.launch {
             try {
-                // TODO: Integrate with actual LLM service
+                // TODO: Integrate with actual LLM service using _currentModelConfig
                 // For now, simulate a response
                 simulateResponse(content)
             } catch (e: CancellationException) {
@@ -92,11 +134,15 @@ class IdeaAgentViewModel(
     }
 
     private suspend fun simulateResponse(userMessage: String) {
+        val configInfo = _currentModelConfig.value?.let { config ->
+            "Using model: ${config.modelName} (${config.provider})"
+        } ?: "No LLM configured. Please configure in ~/.autodev/config.yaml"
+
         val response = """
             This is a simulated response for: "$userMessage"
-            
-            To enable real LLM responses, please configure your API key in the settings.
-            
+
+            $configInfo
+
             Supported features:
             - **Agentic**: Full coding agent with file operations
             - **Review**: Code review and analysis
@@ -146,10 +192,18 @@ class IdeaAgentViewModel(
     }
 
     /**
-     * Update LLM configuration.
+     * Save a new LLM configuration using ConfigManager
      */
-    fun updateLLMConfig(config: LLMConfig) {
-        _llmConfig.value = config
+    fun saveModelConfig(config: NamedModelConfig, setActive: Boolean = true) {
+        coroutineScope.launch {
+            try {
+                ConfigManager.saveConfig(config, setActive)
+                // Reload configuration after saving
+                loadConfiguration()
+            } catch (e: Exception) {
+                // Handle save error
+            }
+        }
     }
 
     /**
@@ -157,6 +211,13 @@ class IdeaAgentViewModel(
      */
     fun setShowConfigDialog(show: Boolean) {
         _showConfigDialog.value = show
+    }
+
+    /**
+     * Check if configuration is valid for LLM calls
+     */
+    fun isConfigValid(): Boolean {
+        return _configWrapper.value?.isValid() == true
     }
 
     override fun dispose() {

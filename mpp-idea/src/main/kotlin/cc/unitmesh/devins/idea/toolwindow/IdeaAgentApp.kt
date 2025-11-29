@@ -13,7 +13,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.devins.idea.model.AgentType
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.idea.model.ChatMessage as ModelChatMessage
 import cc.unitmesh.devins.idea.model.MessageRole
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -70,7 +70,7 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
                 .weight(1f)
         ) {
             when (currentAgentType) {
-                AgentType.CODING, AgentType.REMOTE -> {
+                AgentType.CODING, AgentType.REMOTE, AgentType.LOCAL_CHAT -> {
                     ChatContent(
                         messages = messages,
                         streamingOutput = streamingOutput,
@@ -89,7 +89,7 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
         Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
 
         // Input area (only for chat-based modes)
-        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE) {
+        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
             ChatInputArea(
                 isProcessing = isProcessing,
                 onSend = { viewModel.sendMessage(it) },
@@ -215,12 +215,13 @@ private fun AgentTabsHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left: Agent Type Tabs
+        // Left: Agent Type Tabs (show main agent types, skip LOCAL_CHAT as it's similar to CODING)
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AgentType.entries.forEach { type ->
+            // Show only main agent types for cleaner UI
+            listOf(AgentType.CODING, AgentType.CODE_REVIEW, AgentType.KNOWLEDGE, AgentType.REMOTE).forEach { type ->
                 AgentTab(
                     type = type,
                     isSelected = type == currentAgentType,
@@ -264,7 +265,7 @@ private fun AgentTab(
             .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
         Text(
-            text = type.displayName,
+            text = type.getDisplayName(),
             style = JewelTheme.defaultTextStyle.copy(
                 fontSize = 12.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
