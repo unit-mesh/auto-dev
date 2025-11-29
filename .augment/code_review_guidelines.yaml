@@ -1,0 +1,79 @@
+# Code Review Guidelines for AutoDev - IntelliJ Plugin
+
+areas:
+  kotlin_code_quality:
+    description: "Kotlin code quality and IntelliJ plugin best practices"
+    globs:
+      - "**/*.kt"
+    rules:
+      - id: "no_memory_leaks"
+        description: "Ensure proper disposal of resources and avoid memory leaks in IntelliJ components. Check for proper use of Disposer."
+        severity: "high"
+      - id: "thread_safety"
+        description: "Ensure thread-safe access to shared resources. Use proper synchronization or IntelliJ's read/write actions."
+        severity: "high"
+      - id: "null_safety"
+        description: "Avoid nullable types where possible. Use proper null handling patterns."
+        severity: "medium"
+
+  security:
+    description: "Security-related rules for handling sensitive data and API communications"
+    globs:
+      - "**"
+    rules:
+      - id: "no_hardcoded_credentials"
+        description: "Never hardcode API keys, tokens, or credentials. Use secure credential storage."
+        severity: "high"
+      - id: "secure_api_communication"
+        description: "Ensure all API communications use HTTPS and validate SSL certificates."
+        severity: "high"
+      - id: "no_sensitive_logging"
+        description: "Do not log sensitive information such as API keys, tokens, or user credentials."
+        severity: "high"
+
+  llm_integration:
+    description: "Rules for LLM provider integrations"
+    globs:
+      - "**/llm/**"
+      - "**/provider/**"
+      - "**/ai/**"
+    rules:
+      - id: "handle_api_errors"
+        description: "Properly handle LLM API errors and rate limiting. Provide meaningful error messages."
+        severity: "high"
+      - id: "token_limit_awareness"
+        description: "Be aware of token limits when sending prompts to LLM providers."
+        severity: "medium"
+      - id: "streaming_cleanup"
+        description: "Ensure proper cleanup of streaming connections on cancellation or error."
+        severity: "high"
+
+  plugin_compatibility:
+    description: "IntelliJ platform compatibility rules"
+    globs:
+      - "**/*.kt"
+      - "**/*.java"
+    rules:
+      - id: "deprecated_api_usage"
+        description: "Avoid using deprecated IntelliJ platform APIs. Check for alternatives."
+        severity: "medium"
+      - id: "edt_violations"
+        description: "Ensure UI operations are performed on the Event Dispatch Thread (EDT)."
+        severity: "high"
+      - id: "background_task_handling"
+        description: "Long-running operations should be executed in background tasks with proper progress indicators."
+        severity: "medium"
+
+  testing:
+    description: "Testing best practices"
+    globs:
+      - "**/test/**"
+      - "**/tests/**"
+    rules:
+      - id: "meaningful_test_names"
+        description: "Test names should clearly describe what is being tested and expected behavior."
+        severity: "low"
+      - id: "test_isolation"
+        description: "Tests should be independent and not rely on shared mutable state."
+        severity: "medium"
+
