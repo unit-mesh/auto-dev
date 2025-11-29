@@ -40,8 +40,38 @@ repositories {
 dependencies {
     // Depend on mpp-ui and mpp-core JVM targets for shared UI components and ConfigManager
     // For KMP projects, we need to depend on the JVM target specifically
-    implementation("cc.unitmesh.devins:mpp-ui-jvm")
-    implementation("cc.unitmesh.devins:mpp-core-jvm")
+    // IMPORTANT: Exclude Compose dependencies to avoid classloader conflicts with IntelliJ's bundled Compose
+    implementation("cc.unitmesh.devins:mpp-ui-jvm") {
+        // Exclude all Compose dependencies - IntelliJ provides its own via bundledModules
+        exclude(group = "org.jetbrains.compose.runtime")
+        exclude(group = "org.jetbrains.compose.foundation")
+        exclude(group = "org.jetbrains.compose.material3")
+        exclude(group = "org.jetbrains.compose.material")
+        exclude(group = "org.jetbrains.compose.ui")
+        exclude(group = "org.jetbrains.compose.desktop")
+        exclude(group = "org.jetbrains.compose.components")
+        exclude(group = "org.jetbrains.compose.animation")
+        exclude(group = "org.jetbrains.skiko")
+        // Exclude webview/KCEF - not needed in IntelliJ and causes issues
+        exclude(group = "io.github.kevinnzou")
+        exclude(group = "dev.datlag")
+        // Exclude other UI libraries that may conflict
+        exclude(group = "com.mohamedrejeb.richeditor")
+        exclude(group = "cafe.adriel.bonsai")
+        exclude(group = "com.mikepenz")
+        exclude(group = "org.jetbrains.jediterm")
+        exclude(group = "org.jetbrains.pty4j")
+        exclude(group = "io.github.vinceglb")
+    }
+    implementation("cc.unitmesh.devins:mpp-core-jvm") {
+        // Exclude Compose dependencies from mpp-core as well
+        exclude(group = "org.jetbrains.compose.runtime")
+        exclude(group = "org.jetbrains.compose.foundation")
+        exclude(group = "org.jetbrains.compose.material3")
+        exclude(group = "org.jetbrains.compose.material")
+        exclude(group = "org.jetbrains.compose.ui")
+        exclude(group = "org.jetbrains.skiko")
+    }
 
     // Use platform-provided kotlinx libraries to avoid classloader conflicts
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
