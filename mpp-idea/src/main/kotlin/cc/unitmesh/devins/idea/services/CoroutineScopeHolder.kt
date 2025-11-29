@@ -2,17 +2,25 @@ package cc.unitmesh.devins.idea.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.Service.Level
-import com.intellij.platform.util.coroutines.childScope
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Job
 
 /**
  * A service-level class that provides and manages coroutine scopes for a given project.
  *
- * @constructor Initializes the [CoroutineScopeHolder] with a project-wide coroutine scope.
- * @param projectWideCoroutineScope A [CoroutineScope] defining the lifecycle of project-wide coroutines.
+ * @constructor Initializes the [CoroutineScopeHolder] with a project instance.
+ * @param project The project this service is associated with.
  */
 @Service(Level.PROJECT)
-class CoroutineScopeHolder(private val projectWideCoroutineScope: CoroutineScope) {
+class CoroutineScopeHolder(private val project: Project) {
+
+    private val parentJob = SupervisorJob()
+    private val projectWideCoroutineScope: CoroutineScope = CoroutineScope(parentJob + Dispatchers.Default)
+
     /**
      * Creates a new coroutine scope as a child of the project-wide coroutine scope with the specified name.
      *
@@ -25,7 +33,9 @@ class CoroutineScopeHolder(private val projectWideCoroutineScope: CoroutineScope
      * then it should be canceled explicitly when not needed,
      * otherwise, it will continue to live in the Job hierarchy until termination of the CoroutineScopeHolder service.
      */
-    @Suppress("UnstableApiUsage")
-    fun createScope(name: String): CoroutineScope = projectWideCoroutineScope.childScope(name)
+    fun createScope(name: String): CoroutineScope {
+        val childJob = SupervisorJob(parentJob)
+        return CoroutineScope(childJob + Dispatchers.Default + CoroutineName(name))
+    }
 }
 

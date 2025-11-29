@@ -33,9 +33,16 @@ repositories {
 }
 
 dependencies {
-    // Kotlinx serialization for JSON
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    // Use platform-provided kotlinx libraries to avoid classloader conflicts
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+
+    // Ktor HTTP Client for LLM API calls - use compileOnly for libraries that may conflict
+    compileOnly("io.ktor:ktor-client-core:3.2.2")
+    compileOnly("io.ktor:ktor-client-cio:3.2.2")
+    compileOnly("io.ktor:ktor-client-content-negotiation:3.2.2")
+    compileOnly("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
+    compileOnly("io.ktor:ktor-client-logging:3.2.2")
 
     testImplementation(kotlin("test"))
 
