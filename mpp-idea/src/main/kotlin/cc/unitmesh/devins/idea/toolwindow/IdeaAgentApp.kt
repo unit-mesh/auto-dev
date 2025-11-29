@@ -9,13 +9,13 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
@@ -226,9 +226,10 @@ private fun ToolCallBubble(item: JewelRenderer.TimelineItem.ToolCallItem) {
                         false -> "✗"
                         null -> "⏳"
                     }
+                    // Use AutoDevColors design system - use lighter colors for dark theme compatibility
                     val statusColor = when (item.success) {
-                        true -> Color(0xFF4CAF50) // Green
-                        false -> Color(0xFFF44336) // Red
+                        true -> AutoDevColors.Green.c400 // Success color from design system
+                        false -> AutoDevColors.Red.c400 // Error color from design system
                         null -> JewelTheme.globalColors.text.info
                     }
                     Text(
@@ -274,13 +275,13 @@ private fun ErrorBubble(message: String) {
         Box(
             modifier = Modifier
                 .widthIn(max = 500.dp)
-                .background(Color(0x33F44336)) // Light red background
+                .background(AutoDevColors.Red.c400.copy(alpha = 0.2f)) // Error background from design system
                 .padding(8.dp)
         ) {
             Text(
                 text = "❌ $message",
                 style = JewelTheme.defaultTextStyle.copy(
-                    color = Color(0xFFF44336)
+                    color = AutoDevColors.Red.c400 // Error text color from design system
                 )
             )
         }
@@ -296,7 +297,11 @@ private fun TaskCompleteBubble(item: JewelRenderer.TimelineItem.TaskCompleteItem
         Box(
             modifier = Modifier
                 .background(
-                    if (item.success) Color(0x334CAF50) else Color(0x33F44336)
+                    // Use AutoDevColors design system with alpha for background
+                    if (item.success)
+                        AutoDevColors.Green.c400.copy(alpha = 0.2f)
+                    else
+                        AutoDevColors.Red.c400.copy(alpha = 0.2f)
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
