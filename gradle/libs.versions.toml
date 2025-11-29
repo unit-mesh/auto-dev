@@ -2,7 +2,7 @@
 dokka = "1.9.10"
 kotlin = "2.2.0"
 changelog = "2.2.1"
-gradleIntelliJPlugin = "2.1.0"
+gradleIntelliJPlugin = "2.10.2"
 qodana = "0.1.13"
 kover = "0.7.5"
 compose = "1.9.2"
@@ -11,6 +11,10 @@ ktor = "3.3.0"
 
 chapi = "2.1.2"
 jtokkit = "1.1.0"
+
+# test libraries
+junit = "4.13.2"
+opentest4j = "1.3.0"
 
 [libraries]
 jtokkit = { module = "com.knuddels:jtokkit", version.ref = "jtokkit" }
@@ -22,6 +26,9 @@ ktor-serializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm
 ktor-serverCors = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktor" }
 ktor-serverSse = { module = "io.ktor:ktor-server-sse-jvm", version.ref = "ktor" }
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
+
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
