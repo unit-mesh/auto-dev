@@ -17,6 +17,7 @@ include("mpp-codegraph")
 include("mpp-server")
 include("mpp-viewer")
 include("mpp-viewer-web")
+includeBuild("mpp-idea")
 
 include("core")
 

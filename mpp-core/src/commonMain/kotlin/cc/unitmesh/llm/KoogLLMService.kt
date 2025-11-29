@@ -46,7 +46,7 @@ class KoogLLMService(
     private var hasFailedCompressionAttempt = false
 
     fun streamPrompt(
-        userPrompt: String, 
+        userPrompt: String,
         fileSystem: ProjectFileSystem = EmptyFileSystem(),
         historyMessages: List<Message> = emptyList(),
         compileDevIns: Boolean = true,
@@ -58,37 +58,61 @@ class KoogLLMService(
         } else {
             userPrompt
         }
-        
+
+        val promptLength = finalPrompt.length
+        logger.info { "🚀 [LLM] Starting stream request - prompt length: $promptLength chars, model: ${config.modelName}" }
+        val startTime = Clock.System.now().toEpochMilliseconds()
+
         val prompt = buildPrompt(finalPrompt, historyMessages)
-        executor.executeStreaming(prompt, model)
-            .cancellable()
-            .collect { frame ->
-                when (frame) {
-                    is StreamFrame.Append -> emit(frame.text)
-                    is StreamFrame.End -> {
-                        logger.debug { "StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}" }
-                        frame.metaInfo?.let { metaInfo ->
-                            lastTokenInfo = TokenInfo(
-                                totalTokens = metaInfo.totalTokensCount ?: 0,
-                                inputTokens = metaInfo.inputTokensCount ?: 0,
-                                outputTokens = metaInfo.outputTokensCount ?: 0,
-                                timestamp = Clock.System.now().toEpochMilliseconds()
-                            )
-                            
-                            onTokenUpdate?.invoke(lastTokenInfo)
-                            if (compressionConfig.autoCompressionEnabled) {
-                                val maxTokens = getMaxTokens()
-                                if (lastTokenInfo.needsCompression(maxTokens, compressionConfig.contextPercentageThreshold)) {
-                                    onCompressionNeeded?.invoke(lastTokenInfo.inputTokens, maxTokens)
+        var chunkCount = 0
+        var totalChars = 0
+
+        try {
+            executor.executeStreaming(prompt, model)
+                .cancellable()
+                .collect { frame ->
+                    when (frame) {
+                        is StreamFrame.Append -> {
+                            chunkCount++
+                            totalChars += frame.text.length
+                            if (chunkCount == 1) {
+                                val ttfb = Clock.System.now().toEpochMilliseconds() - startTime
+                                logger.info { "📥 [LLM] First chunk received - TTFB: ${ttfb}ms" }
+                            }
+                            emit(frame.text)
+                        }
+                        is StreamFrame.End -> {
+                            val elapsed = Clock.System.now().toEpochMilliseconds() - startTime
+                            logger.info { "✅ [LLM] Stream completed - chunks: $chunkCount, chars: $totalChars, time: ${elapsed}ms" }
+                            logger.debug { "StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}" }
+                            frame.metaInfo?.let { metaInfo ->
+                                lastTokenInfo = TokenInfo(
+                                    totalTokens = metaInfo.totalTokensCount ?: 0,
+                                    inputTokens = metaInfo.inputTokensCount ?: 0,
+                                    outputTokens = metaInfo.outputTokensCount ?: 0,
+                                    timestamp = Clock.System.now().toEpochMilliseconds()
+                                )
+                                logger.info { "📊 [LLM] Token usage - input: ${lastTokenInfo.inputTokens}, output: ${lastTokenInfo.outputTokens}, total: ${lastTokenInfo.totalTokens}" }
+
+                                onTokenUpdate?.invoke(lastTokenInfo)
+                                if (compressionConfig.autoCompressionEnabled) {
+                                    val maxTokens = getMaxTokens()
+                                    if (lastTokenInfo.needsCompression(maxTokens, compressionConfig.contextPercentageThreshold)) {
+                                        onCompressionNeeded?.invoke(lastTokenInfo.inputTokens, maxTokens)
+                                    }
                                 }
                             }
+
+                            messagesSinceLastCompression++
                         }
-                        
-                        messagesSinceLastCompression++
+                        is StreamFrame.ToolCall -> { /* Tool calls (可以后续扩展) */ }
                     }
-                    is StreamFrame.ToolCall -> { /* Tool calls (可以后续扩展) */ }
                 }
-            }
+        } catch (e: Exception) {
+            val elapsed = Clock.System.now().toEpochMilliseconds() - startTime
+            logger.error { "❌ [LLM] Stream error after ${elapsed}ms - chunks: $chunkCount, error: ${e.message}" }
+            throw e
+        }
     }
 
     suspend fun sendPrompt(prompt: String): String {
