@@ -185,7 +185,7 @@ class DomainDictAgent(
             // ============= Step 2: Generate Entries =============
             onProgress("\n## Step 2/3: Generating Entries")
 
-            val namesToProcess = newNames.take(1000)
+            val namesToProcess = newNames.take(500)
             onProgress("   💭 Translating ${namesToProcess.size} terms (of ${newNames.size} total)...")
 
             val newEntries = generateEntries(namesToProcess, callbacks)
@@ -699,14 +699,28 @@ $namesList
     private fun mergeEntries(currentDict: String, newEntries: List<DomainEntry>): String {
         val existingLines = currentDict.lines().toMutableList()
 
-        // Ensure header exists
-        if (existingLines.isEmpty() || !existingLines[0].contains("Chinese")) {
-            existingLines.add(0, "Chinese,Code Translation,Description")
+        // Remove empty lines and duplicate headers
+        existingLines.removeAll { it.isBlank() }
+
+        // Remove duplicate headers (keep only the first one)
+        val headerLine = "Chinese,Code Translation,Description"
+        var foundHeader = false
+        existingLines.removeAll { line ->
+            if (line.trim().equals(headerLine, ignoreCase = true)) {
+                if (foundHeader) {
+                    true // remove duplicate header
+                } else {
+                    foundHeader = true
+                    false // keep first header
+                }
+            } else {
+                false
+            }
         }
 
-        // Remove empty first line if exists
-        if (existingLines.isNotEmpty() && existingLines[0].isBlank()) {
-            existingLines.removeAt(0)
+        // Ensure header exists at the beginning
+        if (existingLines.isEmpty() || !existingLines[0].contains("Chinese", ignoreCase = true)) {
+            existingLines.add(0, headerLine)
         }
 
         // Get existing code translations to avoid duplicates
