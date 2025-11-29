@@ -161,8 +161,11 @@ class DomainDictAgent(
                 insights.domainConcepts.size
             )
 
+            // Analyze package structure to find important business packages
+            val importantPackages = analyzePackageStructure(insights, onProgress)
+
             // Extract meaningful names from hot files
-            val codebaseNames = extractMeaningfulNames(insights, onProgress)
+            val codebaseNames = extractMeaningfulNames(insights, onProgress, importantPackages)
             onProgress("   📋 Found ${codebaseNames.size} candidate names")
 
             // Filter out existing terms
@@ -185,11 +188,21 @@ class DomainDictAgent(
             // ============= Step 2: Generate Entries =============
             onProgress("\n## Step 2/3: Generating Entries")
 
-            val namesToProcess = newNames.take(500)
-            onProgress("   💭 Translating ${namesToProcess.size} terms (of ${newNames.size} total)...")
+            // Process in smaller batches for faster LLM responses
+            val batchSize = 100
+            val maxBatches = 3  // Process at most 3 batches = 300 terms
+            val namesToProcess = newNames.take(batchSize * maxBatches)
+            val allNewEntries = mutableListOf<DomainEntry>()
 
-            val newEntries = generateEntries(namesToProcess, callbacks)
-            onProgress("   ✅ Generated ${newEntries.size} entries")
+            namesToProcess.chunked(batchSize).forEachIndexed { index, batch ->
+                onProgress("   💭 Batch ${index + 1}: Translating ${batch.size} terms...")
+                val batchEntries = generateEntries(batch, callbacks)
+                allNewEntries.addAll(batchEntries)
+                onProgress("   ✅ Batch ${index + 1}: Got ${batchEntries.size} entries")
+            }
+
+            val newEntries = allNewEntries
+            onProgress("   📊 Total: ${newEntries.size} entries from ${namesToProcess.size} terms")
 
             // Show generated entries
             newEntries.take(10).forEach { entry ->
@@ -274,21 +287,95 @@ class DomainDictAgent(
         return result
     }
 
-    suspend fun extractMeaningfulNames(
+    /**
+     * Analyze package structure to identify important business packages
+     * Uses heuristics to prioritize domain/business packages over infrastructure
+     */
+    private fun analyzePackageStructure(
         insights: CodebaseInsightsResult,
         onProgress: (String) -> Unit
+    ): Set<String> {
+        onProgress("   📦 Analyzing package structure...")
+
+        // Extract unique packages from hot files
+        val packageCounts = mutableMapOf<String, Int>()
+
+        for (file in insights.hotFiles) {
+            val path = file.path
+            // Extract package-like path (e.g., cc/unitmesh/agent from path)
+            val packagePath = extractPackagePath(path)
+            if (packagePath.isNotEmpty()) {
+                packageCounts[packagePath] = (packageCounts[packagePath] ?: 0) + file.changeCount
+            }
+        }
+
+        // Filter out infrastructure packages
+        val infrastructurePatterns = setOf(
+            "test", "config", "util", "utils", "helper", "common",
+            "generated", "build", "gradle", "node_modules", "target"
+        )
+
+        val businessPackages = packageCounts.filterKeys { pkg ->
+            val lowerPkg = pkg.lowercase()
+            infrastructurePatterns.none { lowerPkg.contains(it) }
+        }
+
+        // Sort by change count and take top packages
+        val topPackages = businessPackages.entries
+            .sortedByDescending { it.value }
+            .take(20)
+            .map { it.key }
+            .toSet()
+
+        if (topPackages.isNotEmpty()) {
+            onProgress("   📁 Top business packages:")
+            topPackages.take(5).forEach { pkg ->
+                val count = packageCounts[pkg] ?: 0
+                onProgress("      • $pkg (${count} changes)")
+            }
+        }
+
+        return topPackages
+    }
+
+    /**
+     * Extract package path from file path
+     * e.g., "src/main/kotlin/cc/unitmesh/agent/Tool.kt" -> "cc/unitmesh/agent"
+     */
+    private fun extractPackagePath(filePath: String): String {
+        // Remove common source prefixes
+        val cleanPath = filePath
+            .replace(Regex("^.*/src/(main|common)/(kotlin|java|scala)/"), "")
+            .replace(Regex("^.*/src/"), "")
+            .replace(Regex("^src/(main|common)/(kotlin|java|scala)/"), "")
+            .replace(Regex("^src/"), "")
+
+        // Get directory path (without filename)
+        val dirPath = cleanPath.substringBeforeLast("/", "")
+
+        return dirPath
+    }
+
+    suspend fun extractMeaningfulNames(
+        insights: CodebaseInsightsResult,
+        onProgress: (String) -> Unit,
+        importantPackages: Set<String> = emptySet()
     ): List<String> {
         val hotFileNames = mutableSetOf<String>()
         val allConceptNames = mutableSetOf<String>()
-// since it's lowly we just disable it
-//        if (codeParser != null) {
-//            onProgress("   🌲 Using TreeSitter to parse hot files...")
-//            val hotFilesWithCode = parseHotFilesWithTreeSitter(insights.hotFiles, onProgress)
-//            hotFileNames.addAll(hotFilesWithCode)
-//        }
+
+        // Prioritize files from important packages
+        val prioritizedFiles = if (importantPackages.isNotEmpty()) {
+            insights.hotFiles.sortedByDescending { file ->
+                val pkg = extractPackagePath(file.path)
+                if (importantPackages.any { pkg.startsWith(it) || it.startsWith(pkg) }) 2 else 1
+            }
+        } else {
+            insights.hotFiles
+        }
 
         // Also extract from hot file names
-        for (file in insights.hotFiles) {
+        for (file in prioritizedFiles) {
             val fileName = file.path.substringAfterLast("/").substringBeforeLast(".")
             val domainName = extractDomainFromFileName(fileName)
             if (domainName != null && isValidDomainName(domainName)) {
@@ -327,7 +414,8 @@ class DomainDictAgent(
     }
 
     /**
-     * Less strict validation for domain concepts (already extracted from code)
+     * Validation for domain concepts - must be compound names (like "DomainDict", not "Agent")
+     * Single words are too generic and don't provide business context
      */
     private fun isValidDomainConceptName(name: String): Boolean {
         if (name.length < 3) return false
@@ -335,11 +423,17 @@ class DomainDictAgent(
 
         val lowerName = name.lowercase()
 
-        // Skip very common/generic names
+        // Skip only pure technical/programming terms (let AI decide business relevance)
         val skipExact = setOf(
-            "unknown", "init", "test", "main", "app", "get", "set", "is", "has",
+            // Language keywords & primitives
+            "unknown", "init", "test", "main", "get", "set", "is", "has",
             "string", "int", "list", "map", "object", "class", "function",
-            "true", "false", "null", "void", "return", "if", "else", "for", "while"
+            "true", "false", "null", "void", "return", "if", "else", "for", "while",
+            // Pure infrastructure patterns
+            "impl", "util", "utils", "helper", "helpers", "base", "abstract",
+            "interface", "default", "common", "internal", "private", "public",
+            // Build/test artifacts
+            "spec", "mock", "stub", "fake", "gradle", "build", "index"
         )
         if (lowerName in skipExact) return false
 
@@ -348,6 +442,11 @@ class DomainDictAgent(
 
         // Skip special characters
         if (name.contains("<") || name.contains(">") || name.contains("$")) return false
+
+        // IMPORTANT: Require at least 2 capital letters (compound name)
+        // This ensures we get "DomainDict" not "Agent"
+        val capitalCount = name.count { it.isUpperCase() }
+        if (capitalCount < 2) return false
 
         return true
     }
@@ -496,65 +595,34 @@ class DomainDictAgent(
 
         val lowerName = name.lowercase()
 
-        // Skip generic/common terms (infrastructure, not domain)
+        // Skip only pure technical/infrastructure terms
         val skipTerms = setOf(
-            // Testing
+            // Testing artifacts
             "test", "tests", "spec", "mock", "stub", "fake",
-            // Implementation details
-            "impl", "util", "utils", "helper", "helpers", "factory",
-            "base", "abstract", "interface", "default", "common",
-            // Build/config
-            "main", "app", "application", "index",
-            "run", "build", "gradle", "config", "settings",
-            // Generic programming concepts (too common)
-            "activity", "action", "event", "listener", "handler", "callback",
-            "model", "data", "item", "entry", "node", "element",
-            "list", "map", "set", "array", "collection", "queue",
-            "context", "state", "status", "type", "kind", "mode",
-            "info", "detail", "result", "response", "request",
-            "color", "border", "icon", "image", "font", "style",
-            "file", "path", "name", "key", "value", "id",
-            "size", "width", "height", "offset", "padding", "margin",
-            "consumer", "producer", "provider", "service", "manager",
-            "builder", "creator", "generator", "loader", "reader", "writer",
-            "parser", "formatter", "converter", "adapter", "wrapper",
-            "view", "panel", "dialog", "screen", "page", "component",
-            "button", "text", "label", "field", "input", "output",
-            "editor", "renderer", "painter", "drawer",
-            "exception", "error", "warning", "message",
-            "checks", "diff", "check", "unknown"
+            // Pure implementation details
+            "impl", "util", "utils", "helper", "helpers",
+            "base", "abstract", "interface", "default", "common", "internal",
+            // Build/config files
+            "main", "index", "build", "gradle"
         )
 
         // Exact match skip
         if (lowerName in skipTerms) return false
 
-        // Skip IntelliJ platform concepts (infrastructure)
+        // Skip IntelliJ/JetBrains platform internals (framework-specific, not business)
         val platformTerms = setOf(
-            "anaction", "applicationmanager", "project", "psifile", "psielement",
-            "virtualfile", "document", "editor", "intention", "inspection",
-            "psiclass", "psimethod", "psifield", "psitype", "psivariable",
-            "language", "filetype", "module", "facet", "artifact",
-            "toolwindow", "notification", "progress", "indicator",
-            "runnable", "callable", "future", "promise", "deferred",
-            // JetBrains specific
+            "anaction", "psifile", "psielement", "psiclass", "psimethod",
+            "psifield", "psitype", "psivariable", "virtualfile",
+            // JetBrains UI components
             "jbcolor", "jbinsets", "jbui", "jbpopup", "jblist",
-            // Java Swing/AWT
-            "jcomponent", "jpanel", "jbutton", "jlabel", "jframe",
-            "swing", "awt", "graphics"
+            // Java Swing/AWT internals
+            "jcomponent", "jpanel", "jbutton", "jlabel", "jframe"
         )
         if (platformTerms.any { lowerName.contains(it) }) return false
 
-        // Skip technical suffixes that indicate infrastructure
+        // Skip pure infrastructure suffixes
         val technicalSuffixes = setOf(
-            "controller", "service", "repository", "dao", "mapper",
-            "dto", "vo", "po", "entity", "request", "response",
-            "config", "configuration", "settings", "properties",
-            "handler", "listener", "callback", "adapter", "wrapper",
-            "factory", "builder", "provider", "manager", "registry",
-            "helper", "util", "utils", "tool", "tools",
-            "impl", "implementation", "abstract", "base", "default",
-            "exception", "error", "filter", "interceptor",
-            "capable", "aware", "enabled", "disabled"
+            "impl", "implementation", "dto", "vo", "po"
         )
         if (technicalSuffixes.any { lowerName.endsWith(it) }) return false
 
@@ -588,29 +656,27 @@ class DomainDictAgent(
 
         val namesList = names.joinToString("\n") { "- $it" }
 
-        // DDD-focused prompt, inspired by indexer.vm
+        // DDD-focused prompt - extract compound domain concepts only
         val prompt = """
-你是一个 DDD（领域驱动设计）专家，负责构建业务导向的中英文词典。请从以下代码名称中提取重要的业务概念。
+你是一个 DDD（领域驱动设计）专家，负责构建业务导向的中英文词典。请从以下代码名称中提取**复合业务概念**。
 
-**提取原则：**
+**核心规则：只提取复合词（至少包含2个有意义的单词）**
 
-✅ 应该提取的内容：
-- 核心业务实体（如：Blog、Comment、Payment、User 等名词）
-- 业务概念和领域模型（如：Member、Points、Order）
-- 难以理解的词汇或拼音缩写
-- 领域特定术语
+✅ 应该提取的内容（复合词示例）：
+- DomainDict（领域词典）- 由 Domain + Dict 组成
+- CodeReview（代码审查）- 由 Code + Review 组成
+- ChatContext（聊天上下文）- 由 Chat + Context 组成
+- AgentTask（代理任务）- 由 Agent + Task 组成
 
-❌ 应该排除的内容：
-1. 技术词汇：Controller、Service、Repository、Mapper、DTO、VO、PO、Entity、Request、Response、Config 等
-2. 实现细节和数据传输对象：包含 "Request"、"Response"、"Dto"、"Entity" 后缀的条目
-3. 技术操作动词：validate、check、convert、deserialize、serialize、encode、decode 等
-4. 方法名中的技术操作：如 "checkIfVipAccount" 应只提取 "VIP Account"
-5. 通用库 API（如 Spring、OkHttp）和通用类名（如 List、Map）
+❌ 绝对不要提取的内容（单个通用词）：
+- Agent、Chat、Code、Task、Model、Service、Config、Handler、Manager
+- File、Path、Node、Item、Event、Action、State、Context、Message
+- User、Role、Session、Token、Request、Response、Error、Result
+- 任何只有一个单词的通用技术术语
 
-**处理规则：**
-1. 如果提取的条目包含技术后缀（如 "CreateCommentDto"），转换为纯业务概念（如 "Comment"）
-2. 如果方法名包含技术操作（如 "checkIfVipAccount"），提取业务含义（"VIP Account"）
-3. 如果类名包含技术词汇后缀，移除后缀再添加到词典
+❌ 也要排除：
+1. 技术后缀词：Controller、Service、Repository、Mapper、DTO、Handler 等
+2. 通用库 API 和框架类名
 
 ## 要分析的名称:
 $namesList
@@ -619,17 +685,17 @@ $namesList
 ```json
 {
   "entries": [
-    {"chinese": "博客", "codeTranslation": "Blog", "description": "博客文章"}
+    {"chinese": "领域词典", "codeTranslation": "DomainDict", "description": "业务术语词典"}
   ]
 }
 ```
 
 ## 输出规则:
-1. chinese: 简洁的中文术语（2-6个字）
-2. codeTranslation: 纯业务概念名（移除技术后缀）
-3. description: 一句话业务描述（不超过20字）
-4. 只输出有意义的业务概念，跳过技术实现细节
-5. 如果无法理解或太通用，直接跳过不输出
+1. codeTranslation 必须是**复合词**（包含至少2个大写字母开头的单词）
+2. 不要拆分复合词！保持原样（如 AgentTask 不要拆成 Agent 和 Task）
+3. 如果输入是单个通用词，直接跳过不输出
+4. chinese: 简洁的中文术语（2-6个字）
+5. description: 一句话业务描述（不超过20字）
 
 请直接输出JSON，不要其他解释。
         """.trimIndent()
@@ -674,12 +740,30 @@ $namesList
             val code = match.groupValues[2].trim()
             val desc = match.groupValues[3].trim()
 
-            if (chinese.isNotBlank() && code.isNotBlank()) {
+            if (chinese.isNotBlank() && code.isNotBlank() && isValidOutputEntry(code)) {
                 entries.add(DomainEntry(chinese, code, desc))
             }
         }
 
         return entries
+    }
+
+    /**
+     * Validate LLM output entries - filter out pure technical infrastructure words
+     */
+    private fun isValidOutputEntry(code: String): Boolean {
+        // Must have at least 2 capital letters (compound word)
+        val capitalCount = code.count { it.isUpperCase() }
+        if (capitalCount < 2) return false
+
+        // Skip only pure technical terms (let AI decide business relevance)
+        val technicalSkip = setOf(
+            "impl", "util", "utils", "helper", "helpers",
+            "test", "tests", "spec", "mock", "stub", "fake"
+        )
+        if (code.lowercase() in technicalSkip) return false
+
+        return true
     }
 
     // ============= Step 3: Save =============
