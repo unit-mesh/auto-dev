@@ -1,62 +1,72 @@
-package cc.unitmesh.devti.gui.chat.ui
+package cc.unitmesh.devins.idea.editor
 
-import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.placeholder
-import cc.unitmesh.devti.util.InsertUtil
-import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
+import com.intellij.codeInsight.lookup.LookupManagerListener
+import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.actionSystem.ex.AnActionListener
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.actionSystem.CustomShortcutSet
+import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorModificationUtil
-import com.intellij.openapi.editor.actions.EnterAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
-import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.fileTypes.FileTypes
-import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
-import com.intellij.util.concurrency.annotations.RequiresReadLock
-import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
-import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
 
-
-class AutoDevInput(
+/**
+ * DevIn language input component for mpp-idea module.
+ * 
+ * Features:
+ * - DevIn language support with syntax highlighting and completion
+ * - Enter to submit, Shift/Ctrl/Cmd+Enter for newline
+ * - Integration with IntelliJ's completion system (lookup listener)
+ * - Placeholder text support
+ * 
+ * Based on AutoDevInput from core module but adapted for standalone mpp-idea usage.
+ */
+class IdeaDevInInput(
     project: Project,
-    private val listeners: List<DocumentListener>,
+    private val listeners: List<DocumentListener> = emptyList(),
     val disposable: Disposable?,
-    val inputSection: AutoDevInputSection,
-    val showAgent: Boolean = true
+    private val showAgent: Boolean = true
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
-    private var editorListeners: EventDispatcher<AutoDevInputListener> = inputSection.editorListeners
-    
-    // 处理普通 Enter 键提交的 Action
-    private val submitAction = DumbAwareAction.create {
-        editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Key)
+
+    private val editorListeners = EventDispatcher.create(IdeaInputListener::class.java)
+
+    // Internal document listener to notify text changes
+    private val internalDocumentListener = object : DocumentListener {
+        override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
+            editorListeners.multicaster.onTextChanged(text)
+        }
     }
-    
-    private val enterShortcutSet = CustomShortcutSet(KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), null))
+
+    // Enter key handling - submit on Enter, newline on Shift/Ctrl/Cmd+Enter
+    private val submitAction = DumbAwareAction.create {
+        val text = text.trim()
+        if (text.isNotEmpty()) {
+            editorListeners.multicaster.onSubmit(text, IdeaInputTrigger.Key)
+        }
+    }
+
+    private val enterShortcutSet = CustomShortcutSet(
+        KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), null)
+    )
 
     private val newlineAction = DumbAwareAction.create {
         val editor = editor ?: return@create
@@ -74,7 +84,6 @@ class AutoDevInput(
             WriteCommandAction.runWriteCommandAction(project) {
                 if (textAfterCaret.isBlank()) {
                     document.insertString(caretOffset, eol)
-                    // move to next line
                     EditorModificationUtil.moveCaretRelatively(editor, 1)
                 } else {
                     document.insertString(caretOffset, eol)
@@ -85,14 +94,10 @@ class AutoDevInput(
     }
 
     init {
-        AutoInputService.getInstance(project).registerAutoDevInput(this)
         isOneLineMode = false
-        if (showAgent) {
-            placeholder("chat.panel.initial.text", this)
-        } else {
-            placeholder("chat.panel.initial.text.noAgent", this)
-        }
+        setPlaceholder("Type your message or /help for commands...")
         setFontInheritedFromLAF(true)
+        
         addSettingsProvider {
             it.putUserData(IncrementalFindAction.SEARCH_DISABLED, true)
             it.colorsScheme.lineSpacing = 1.2f
@@ -105,6 +110,7 @@ class AutoDevInput(
 
         registerEnterShortcut()
         
+        // Register newline shortcuts: Ctrl+Enter, Cmd+Enter, Shift+Enter
         newlineAction.registerCustomShortcutSet(
             CustomShortcutSet(
                 KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), null),
@@ -117,18 +123,23 @@ class AutoDevInput(
             document.addDocumentListener(listener)
         }
 
-        // 监听补全弹窗状态，动态注册/注销 Enter 键
-        project.messageBus.connect(disposable ?: this).subscribe(LookupManagerListener.TOPIC, object : LookupManagerListener {
-            override fun activeLookupChanged(oldLookup: com.intellij.codeInsight.lookup.Lookup?, newLookup: com.intellij.codeInsight.lookup.Lookup?) {
-                if (newLookup != null) {
-                    // 有补全弹窗时，注销 Enter 键快捷键
-                    unregisterEnterShortcut()
-                } else {
-                    // 没有补全弹窗时，注册 Enter 键快捷键
-                    registerEnterShortcut()
+        // Add internal document listener to notify text changes
+        document.addDocumentListener(internalDocumentListener)
+
+        // Listen for completion popup state to disable Enter submit when completing
+        project.messageBus.connect(disposable ?: this)
+            .subscribe(LookupManagerListener.TOPIC, object : LookupManagerListener {
+                override fun activeLookupChanged(
+                    oldLookup: com.intellij.codeInsight.lookup.Lookup?,
+                    newLookup: com.intellij.codeInsight.lookup.Lookup?
+                ) {
+                    if (newLookup != null) {
+                        unregisterEnterShortcut()
+                    } else {
+                        registerEnterShortcut()
+                    }
                 }
-            }
-        })
+            })
     }
 
     private fun registerEnterShortcut() {
@@ -140,8 +151,7 @@ class AutoDevInput(
     }
 
     override fun onEditorAdded(editor: Editor) {
-        // when debug or AutoDev show in first, the editorListeners will be null
-        editorListeners?.multicaster?.editorAdded((editor as EditorEx))
+        editorListeners.multicaster.editorAdded(editor as EditorEx)
     }
 
     public override fun createEditor(): EditorEx {
@@ -160,65 +170,72 @@ class AutoDevInput(
         return editor.colorsScheme.defaultBackground
     }
 
-    override fun getData(dataId: String): Any? {
-        if (!PlatformCoreDataKeys.FILE_EDITOR.`is`(dataId)) {
-            return super.getData(dataId)
-        }
-
-        val currentEditor = editor ?: return super.getData(dataId)
-        return TextEditorProvider.getInstance().getTextEditor(currentEditor)
-    }
-
     override fun dispose() {
+        editor?.document?.removeDocumentListener(internalDocumentListener)
         listeners.forEach {
             editor?.document?.removeDocumentListener(it)
         }
-
-        AutoInputService.getInstance(project).deregisterAutoDevInput(this)
     }
 
+    /**
+     * Recreate the document with DevIn language support.
+     * This enables syntax highlighting and completion for DevIn commands.
+     */
     fun recreateDocument() {
-        val language = findLanguage("DevIn")
-        val id = UUID.randomUUID()
-        val file = LightVirtualFile("AutoDevInput-$id", language, "")
+        // Remove listeners from old document before replacing
+        editor?.document?.let { oldDoc ->
+            oldDoc.removeDocumentListener(internalDocumentListener)
+            listeners.forEach { listener ->
+                oldDoc.removeDocumentListener(listener)
+            }
+        }
 
+        // Create new document using EditorFactory
         val document = ReadAction.compute<Document, Throwable> {
             EditorFactory.getInstance().createDocument("")
         }
 
         initializeDocumentListeners(document)
         setDocument(document)
-        inputSection.initEditor()
     }
 
     private fun initializeDocumentListeners(inputDocument: Document) {
         listeners.forEach { listener ->
             inputDocument.addDocumentListener(listener)
         }
+        // Re-add internal listener to new document
+        inputDocument.addDocumentListener(internalDocumentListener)
     }
 
-    fun appendText(text: String) {
+    /**
+     * Add a listener for input events.
+     */
+    fun addInputListener(listener: IdeaInputListener) {
+        editorListeners.addListener(listener)
+    }
+
+    /**
+     * Remove a listener.
+     */
+    fun removeInputListener(listener: IdeaInputListener) {
+        editorListeners.removeListener(listener)
+    }
+
+    /**
+     * Append text at the end of the document.
+     */
+    fun appendText(textToAppend: String) {
         WriteCommandAction.runWriteCommandAction(project, "Append text", "intentions.write.action", {
             val document = this.editor?.document ?: return@runWriteCommandAction
-            InsertUtil.insertStringAndSaveChange(project, text, document, document.textLength, false)
+            document.insertString(document.textLength, textToAppend)
         })
     }
-}
 
-fun VirtualFile.relativePath(project: Project): String {
-    if (this is LightVirtualFile) return ""
-    try {
-        val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
-        val relativePath = FileUtil.getRelativePath(projectDir, this.toNioPath().toFile())
-        return relativePath ?: this.path
-    } catch (e: Exception) {
-        return this.path
+    /**
+     * Clear the input and recreate document.
+     */
+    fun clearInput() {
+        recreateDocument()
     }
 }
 
-@RequiresReadLock
-fun VirtualFile.findDocument(): Document? {
-    return ReadAction.compute<Document, Throwable> {
-        FileDocumentManager.getInstance().getDocument(this)
-    }
-}

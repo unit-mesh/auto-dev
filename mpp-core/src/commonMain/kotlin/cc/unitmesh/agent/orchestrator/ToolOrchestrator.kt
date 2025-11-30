@@ -585,13 +585,28 @@ class ToolOrchestrator(
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
         return try {
-            // Cast to ExecutableTool (all new tools should implement this)
+            // For SubAgent, we need to validate input first
+            if (tool is cc.unitmesh.agent.core.SubAgent<*, *>) {
+                @Suppress("UNCHECKED_CAST")
+                val subAgent = tool as cc.unitmesh.agent.core.SubAgent<Any, ToolResult>
+
+                // Validate and convert Map to proper input type
+                val validatedInput = subAgent.validateInput(params)
+
+                // Create invocation with validated input
+                val invocation = subAgent.createInvocation(validatedInput)
+
+                // Execute the tool
+                return invocation.execute(context)
+            }
+
+            // For other ExecutableTools, use params directly
             @Suppress("UNCHECKED_CAST")
             val executableTool = tool as? ExecutableTool<Any, ToolResult>
                 ?: return ToolResult.Error("Tool ${tool.name} does not implement ExecutableTool interface")
 
             val invocation = executableTool.createInvocation(params)
-            
+
             // Execute the tool
             invocation.execute(context)
         } catch (e: Exception) {

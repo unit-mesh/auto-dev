@@ -10,23 +10,35 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.AgentType
+import cc.unitmesh.devins.idea.editor.IdeaBottomToolbar
+import cc.unitmesh.devins.idea.editor.IdeaDevInInput
+import cc.unitmesh.devins.idea.editor.IdeaInputListener
+import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.*
 import org.jetbrains.jewel.ui.theme.defaultBannerStyle
+import java.awt.BorderLayout
+import java.awt.Dimension
+import javax.swing.JPanel
 
 /**
  * Main Compose application for Agent ToolWindow.
@@ -128,10 +140,18 @@ fun IdeaAgentApp(
 
         // Input area (only for chat-based modes)
         if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
-            ChatInputArea(
+            DevInInputArea(
+                project = project,
+                parentDisposable = viewModel,
                 isProcessing = isExecuting,
                 onSend = { viewModel.sendMessage(it) },
-                onAbort = { viewModel.cancelTask() }
+                onAbort = { viewModel.cancelTask() },
+                workspacePath = project.basePath,
+                totalTokens = null, // TODO: integrate token counting from renderer
+                onSettingsClick = { viewModel.setShowConfigDialog(true) },
+                onAtClick = {
+                    // @ click triggers agent completion - placeholder for now
+                }
             )
         }
 
@@ -158,7 +178,7 @@ private fun TimelineContent(
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(timeline, key = { it.timestamp }) { item ->
+            items(timeline, key = { it.id }) { item ->
                 TimelineItemView(item)
             }
 
@@ -276,8 +296,14 @@ private fun ToolCallBubble(item: JewelRenderer.TimelineItem.ToolCallItem) {
                         text = statusIcon,
                         style = JewelTheme.defaultTextStyle.copy(color = statusColor)
                     )
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Build,
+                        contentDescription = "Tool",
+                        modifier = Modifier.size(14.dp),
+                        tint = JewelTheme.globalColors.text.normal
+                    )
                     Text(
-                        text = "🔧 ${item.toolName}",
+                        text = item.toolName,
                         style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -318,12 +344,23 @@ private fun ErrorBubble(message: String) {
                 .background(AutoDevColors.Red.c400.copy(alpha = 0.2f)) // Error background from design system
                 .padding(8.dp)
         ) {
-            Text(
-                text = "❌ $message",
-                style = JewelTheme.defaultTextStyle.copy(
-                    color = AutoDevColors.Red.c400 // Error text color from design system
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Error,
+                    contentDescription = "Error",
+                    modifier = Modifier.size(16.dp),
+                    tint = AutoDevColors.Red.c400
                 )
-            )
+                Text(
+                    text = message,
+                    style = JewelTheme.defaultTextStyle.copy(
+                        color = AutoDevColors.Red.c400 // Error text color from design system
+                    )
+                )
+            }
         }
     }
 }
@@ -345,13 +382,23 @@ private fun TaskCompleteBubble(item: JewelRenderer.TimelineItem.TaskCompleteItem
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            val icon = if (item.success) "✅" else "❌"
-            Text(
-                text = "$icon ${item.message} (${item.iterations} iterations)",
-                style = JewelTheme.defaultTextStyle.copy(
-                    fontWeight = FontWeight.Bold
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (item.success) AutoDevComposeIcons.CheckCircle else AutoDevComposeIcons.Error,
+                    contentDescription = if (item.success) "Success" else "Failed",
+                    modifier = Modifier.size(16.dp),
+                    tint = if (item.success) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
                 )
-            )
+                Text(
+                    text = "${item.message} (${item.iterations} iterations)",
+                    style = JewelTheme.defaultTextStyle.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
         }
     }
 }
@@ -415,7 +462,12 @@ private fun AgentTabsHeader(
                 Text("+", style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold))
             }
             IconButton(onClick = onSettings) {
-                Text("⚙", style = JewelTheme.defaultTextStyle)
+                Icon(
+                    imageVector = AutoDevComposeIcons.Settings,
+                    contentDescription = "Settings",
+                    modifier = Modifier.size(16.dp),
+                    tint = JewelTheme.globalColors.text.normal
+                )
             }
         }
     }
@@ -608,64 +660,109 @@ private fun ToolStatusChip(
     }
 }
 
+/**
+ * Advanced chat input area with full DevIn language support.
+ *
+ * Uses IdeaDevInInput (EditorTextField-based) embedded via SwingPanel for:
+ * - DevIn language syntax highlighting and completion
+ * - IntelliJ's native completion popup integration
+ * - Enter to submit, Shift+Enter for newline
+ * - @ trigger for agent completion
+ * - Token usage display
+ * - Settings access
+ * - Stop/Send button based on execution state
+ */
 @Composable
-private fun ChatInputArea(
+private fun DevInInputArea(
+    project: Project,
+    parentDisposable: Disposable,
     isProcessing: Boolean,
     onSend: (String) -> Unit,
-    onAbort: () -> Unit
+    onAbort: () -> Unit,
+    workspacePath: String? = null,
+    totalTokens: Int? = null,
+    onSettingsClick: () -> Unit = {},
+    onAtClick: () -> Unit = {}
 ) {
-    val textFieldState = rememberTextFieldState()
     var inputText by remember { mutableStateOf("") }
+    var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
 
-    LaunchedEffect(Unit) {
-        snapshotFlow { textFieldState.text.toString() }
-            .distinctUntilChanged()
-            .collect { inputText = it }
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(8.dp)
     ) {
-        TextField(
-            state = textFieldState,
-            placeholder = { Text("Type your message or /help for commands...") },
+        // DevIn Editor via SwingPanel
+        SwingPanel(
             modifier = Modifier
-                .weight(1f)
-                .onPreviewKeyEvent { keyEvent ->
-                    if (keyEvent.key == Key.Enter && keyEvent.type == KeyEventType.KeyDown && !isProcessing) {
-                        if (inputText.isNotBlank()) {
-                            onSend(inputText)
-                            textFieldState.edit { replace(0, length, "") }
+                .fillMaxWidth()
+                .height(120.dp),
+            factory = {
+                val input = IdeaDevInInput(
+                    project = project,
+                    disposable = parentDisposable,
+                    showAgent = true
+                ).apply {
+                    recreateDocument()
+
+                    addInputListener(object : IdeaInputListener {
+                        override fun editorAdded(editor: EditorEx) {
+                            // Editor is ready
                         }
-                        true
-                    } else {
-                        false
-                    }
-                },
-            enabled = !isProcessing
+
+                        override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
+                            if (text.isNotBlank() && !isProcessing) {
+                                onSend(text)
+                                clearInput()
+                                inputText = ""
+                            }
+                        }
+
+                        override fun onStop() {
+                            onAbort()
+                        }
+
+                        override fun onTextChanged(text: String) {
+                            inputText = text
+                        }
+                    })
+                }
+
+                // Register for disposal
+                Disposer.register(parentDisposable, input)
+                devInInput = input
+
+                // Wrap in a JPanel to handle sizing
+                JPanel(BorderLayout()).apply {
+                    add(input, BorderLayout.CENTER)
+                    preferredSize = Dimension(800, 120)
+                    minimumSize = Dimension(200, 80)
+                }
+            },
+            update = { panel ->
+                // Update panel if needed
+            }
         )
 
-        if (isProcessing) {
-            DefaultButton(onClick = onAbort) {
-                Text("Stop")
-            }
-        } else {
-            DefaultButton(
-                onClick = {
-                    if (inputText.isNotBlank()) {
-                        onSend(inputText)
-                        textFieldState.edit { replace(0, length, "") }
-                    }
-                },
-                enabled = inputText.isNotBlank()
-            ) {
-                Text("Send")
-            }
-        }
+        // Bottom toolbar with Compose
+        IdeaBottomToolbar(
+            onSendClick = {
+                val text = devInInput?.text?.trim() ?: inputText.trim()
+                if (text.isNotBlank() && !isProcessing) {
+                    onSend(text)
+                    devInInput?.clearInput()
+                    inputText = ""
+                }
+            },
+            sendEnabled = inputText.isNotBlank() && !isProcessing,
+            isExecuting = isProcessing,
+            onStopClick = onAbort,
+            onAtClick = {
+                devInInput?.appendText("@")
+                onAtClick()
+            },
+            onSettingsClick = onSettingsClick,
+            workspacePath = workspacePath,
+            totalTokens = totalTokens
+        )
     }
 }
 
