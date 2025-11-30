@@ -12,9 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.*
@@ -94,6 +97,22 @@ private fun DocumentListPanel(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val searchTextFieldState = rememberTextFieldState(searchQuery)
+
+    // Sync text field state changes to callback
+    LaunchedEffect(Unit) {
+        snapshotFlow { searchTextFieldState.text.toString() }
+            .distinctUntilChanged()
+            .collect { onSearchQueryChange(it) }
+    }
+
+    // Sync external searchQuery changes to text field state
+    LaunchedEffect(searchQuery) {
+        if (searchTextFieldState.text.toString() != searchQuery) {
+            searchTextFieldState.setTextAndPlaceCursorAtEnd(searchQuery)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxHeight()
@@ -127,8 +146,7 @@ private fun DocumentListPanel(
 
         // Search input
         TextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
+            state = searchTextFieldState,
             placeholder = { Text("Search documents...") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -386,7 +404,7 @@ private fun DocumentContentPanel(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    if (isHighlighted) AutoDevColors.Yellow.c400.copy(alpha = 0.2f)
+                                    if (isHighlighted) AutoDevColors.Amber.c400.copy(alpha = 0.2f)
                                     else JewelTheme.globalColors.panelBackground
                                 )
                         ) {
@@ -438,8 +456,16 @@ private fun AIChatPanel(
     onClearHistory: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val inputTextFieldState = rememberTextFieldState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+
+    // Sync text field state to inputText
+    LaunchedEffect(Unit) {
+        snapshotFlow { inputTextFieldState.text.toString() }
+            .distinctUntilChanged()
+            .collect { inputText = it }
+    }
 
     // Auto-scroll to bottom when new messages arrive
     LaunchedEffect(timeline.size, streamingOutput) {
@@ -550,8 +576,7 @@ private fun AIChatPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = inputText,
-                onValueChange = { inputText = it },
+                state = inputTextFieldState,
                 placeholder = { Text("Ask about your documents...") },
                 modifier = Modifier.weight(1f),
                 enabled = !isGenerating
@@ -566,7 +591,7 @@ private fun AIChatPanel(
                     onClick = {
                         if (inputText.isNotBlank()) {
                             onSendMessage(inputText)
-                            inputText = ""
+                            inputTextFieldState.edit { replace(0, length, "") }
                         }
                     },
                     enabled = inputText.isNotBlank()
