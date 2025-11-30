@@ -340,8 +340,10 @@ private fun DocumentContentPanel(
                         modifier = Modifier.heightIn(max = 150.dp)
                     ) {
                         items(document.toc) { tocItem ->
+                            // Guard against zero or negative levels to prevent IllegalArgumentException
+                            val safeLevel = tocItem.level.coerceAtLeast(1)
                             Text(
-                                text = "${"  ".repeat(tocItem.level - 1)}• ${tocItem.title}",
+                                text = "${"  ".repeat(safeLevel - 1)}• ${tocItem.title}",
                                 style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp),
                                 modifier = Modifier
                                     .fillMaxWidth()
