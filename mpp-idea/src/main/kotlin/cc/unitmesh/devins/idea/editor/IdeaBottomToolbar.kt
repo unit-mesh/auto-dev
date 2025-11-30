@@ -12,15 +12,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.llm.NamedModelConfig
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
 import org.jetbrains.jewel.ui.component.Icon
 
 /**
  * Bottom toolbar for the input section.
- * Provides send/stop buttons, @ trigger for agent completion, / command trigger, settings, and token info.
+ * Provides send/stop buttons, @ trigger for agent completion, / command trigger, model selector, settings, and token info.
  *
- * Layout: Workspace - Token Info - @ Symbol - / Symbol - Settings - Send Button
+ * Layout: Workspace - Token Info - ModelSelector - @ Symbol - / Symbol - Settings - Send Button
  *
  * Uses Jewel components for native IntelliJ IDEA look and feel.
  */
@@ -35,6 +36,11 @@ fun IdeaBottomToolbar(
     onSettingsClick: () -> Unit = {},
     workspacePath: String? = null,
     totalTokens: Int? = null,
+    // Model selector props
+    availableConfigs: List<NamedModelConfig> = emptyList(),
+    currentConfigName: String? = null,
+    onConfigSelect: (NamedModelConfig) -> Unit = {},
+    onConfigureClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -116,6 +122,14 @@ fun IdeaBottomToolbar(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Model selector
+            IdeaModelSelector(
+                availableConfigs = availableConfigs,
+                currentConfigName = currentConfigName,
+                onConfigSelect = onConfigSelect,
+                onConfigureClick = onConfigureClick
+            )
+
             // @ trigger button for agent completion
             IconButton(
                 onClick = onAtClick,

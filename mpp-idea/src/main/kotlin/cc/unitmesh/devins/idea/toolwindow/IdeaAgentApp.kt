@@ -12,6 +12,7 @@ import cc.unitmesh.devins.idea.editor.IdeaBottomToolbar
 import cc.unitmesh.devins.idea.editor.IdeaDevInInput
 import cc.unitmesh.devins.idea.editor.IdeaInputListener
 import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
+import cc.unitmesh.devins.idea.editor.IdeaModelConfigDialog
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
 import cc.unitmesh.devins.idea.toolwindow.header.IdeaAgentTabsHeader
@@ -20,6 +21,8 @@ import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeViewModel
 import cc.unitmesh.devins.idea.toolwindow.status.IdeaToolLoadingStatusBar
 import cc.unitmesh.devins.idea.toolwindow.timeline.IdeaEmptyStateMessage
 import cc.unitmesh.devins.idea.toolwindow.timeline.IdeaTimelineContent
+import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
@@ -56,7 +59,17 @@ fun IdeaAgentApp(
     val isExecuting by viewModel.isExecuting.collectAsState()
     val showConfigDialog by viewModel.showConfigDialog.collectAsState()
     val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
+    val configWrapper by viewModel.configWrapper.collectAsState()
+    val currentModelConfig by viewModel.currentModelConfig.collectAsState()
     val listState = rememberLazyListState()
+
+    // Get available configs and current config name
+    val availableConfigs = remember(configWrapper) {
+        configWrapper?.getAllConfigs() ?: emptyList()
+    }
+    val currentConfigName = remember(configWrapper) {
+        configWrapper?.getActiveName()
+    }
 
     // Code Review ViewModel (created lazily when needed)
     var codeReviewViewModel by remember { mutableStateOf<IdeaCodeReviewViewModel?>(null) }
@@ -155,7 +168,13 @@ fun IdeaAgentApp(
                 onSettingsClick = { viewModel.setShowConfigDialog(true) },
                 onAtClick = {
                     // @ click triggers agent completion - placeholder for now
-                }
+                },
+                availableConfigs = availableConfigs,
+                currentConfigName = currentConfigName,
+                onConfigSelect = { config ->
+                    viewModel.setActiveConfig(config.name)
+                },
+                onConfigureClick = { viewModel.setShowConfigDialog(true) }
             )
         }
 
@@ -163,6 +182,21 @@ fun IdeaAgentApp(
         IdeaToolLoadingStatusBar(
             viewModel = viewModel,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+
+    // Model Configuration Dialog
+    if (showConfigDialog) {
+        val dialogConfig = currentModelConfig ?: ModelConfig()
+        IdeaModelConfigDialog(
+            currentConfig = dialogConfig,
+            currentConfigName = currentConfigName,
+            onDismiss = { viewModel.setShowConfigDialog(false) },
+            onSave = { name, config ->
+                val namedConfig = NamedModelConfig.fromModelConfig(name, config)
+                viewModel.saveModelConfig(namedConfig, setActive = true)
+                viewModel.setShowConfigDialog(false)
+            }
         )
     }
 }
@@ -178,6 +212,7 @@ fun IdeaAgentApp(
  * - Token usage display
  * - Settings access
  * - Stop/Send button based on execution state
+ * - Model selector for switching between LLM configurations
  */
 @Composable
 private fun IdeaDevInInputArea(
@@ -189,7 +224,11 @@ private fun IdeaDevInInputArea(
     workspacePath: String? = null,
     totalTokens: Int? = null,
     onSettingsClick: () -> Unit = {},
-    onAtClick: () -> Unit = {}
+    onAtClick: () -> Unit = {},
+    availableConfigs: List<NamedModelConfig> = emptyList(),
+    currentConfigName: String? = null,
+    onConfigSelect: (NamedModelConfig) -> Unit = {},
+    onConfigureClick: () -> Unit = {}
 ) {
     var inputText by remember { mutableStateOf("") }
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
@@ -272,7 +311,11 @@ private fun IdeaDevInInputArea(
             },
             onSettingsClick = onSettingsClick,
             workspacePath = workspacePath,
-            totalTokens = totalTokens
+            totalTokens = totalTokens,
+            availableConfigs = availableConfigs,
+            currentConfigName = currentConfigName,
+            onConfigSelect = onConfigSelect,
+            onConfigureClick = onConfigureClick
         )
     }
 }

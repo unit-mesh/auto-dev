@@ -431,6 +431,21 @@ class IdeaAgentViewModel(
     }
 
     /**
+     * Set the active configuration by name
+     */
+    fun setActiveConfig(configName: String) {
+        coroutineScope.launch {
+            try {
+                ConfigManager.setActive(configName)
+                // Reload configuration after changing active config
+                reloadConfiguration()
+            } catch (e: Exception) {
+                renderer.renderError("Failed to set active configuration: ${e.message}")
+            }
+        }
+    }
+
+    /**
      * Check if configuration is valid for LLM calls
      */
     fun isConfigValid(): Boolean {
