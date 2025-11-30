@@ -329,5 +329,120 @@ object IdeaComposeIcons {
             }
         }.build()
     }
+
+    /**
+     * PlayArrow icon (triangle pointing right)
+     */
+    val PlayArrow: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "PlayArrow",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(8f, 5f)
+                verticalLineToRelative(14f)
+                lineToRelative(11f, -7f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * ExpandLess icon (chevron up)
+     */
+    val ExpandLess: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "ExpandLess",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(12f, 8f)
+                lineToRelative(-6f, 6f)
+                lineToRelative(1.41f, 1.41f)
+                lineTo(12f, 10.83f)
+                lineToRelative(4.59f, 4.58f)
+                lineTo(18f, 14f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * ExpandMore icon (chevron down)
+     */
+    val ExpandMore: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "ExpandMore",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(16.59f, 8.59f)
+                lineTo(12f, 13.17f)
+                lineTo(7.41f, 8.59f)
+                lineTo(6f, 10f)
+                lineToRelative(6f, 6f)
+                lineToRelative(6f, -6f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * ContentCopy icon (two overlapping rectangles)
+     */
+    val ContentCopy: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "ContentCopy",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(16f, 1f)
+                lineTo(4f, 1f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(14f)
+                horizontalLineToRelative(2f)
+                lineTo(4f, 3f)
+                horizontalLineToRelative(12f)
+                lineTo(16f, 1f)
+                close()
+                moveTo(19f, 5f)
+                lineTo(8f, 5f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(14f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(11f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                lineTo(21f, 7f)
+                curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                close()
+                moveTo(19f, 21f)
+                lineTo(8f, 21f)
+                lineTo(8f, 7f)
+                horizontalLineToRelative(11f)
+                verticalLineToRelative(14f)
+                close()
+            }
+        }.build()
+    }
 }
 
