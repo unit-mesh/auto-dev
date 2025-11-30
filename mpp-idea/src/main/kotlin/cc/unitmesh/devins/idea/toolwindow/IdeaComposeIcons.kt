@@ -795,10 +795,10 @@ object IdeaComposeIcons {
             viewportWidth = 24f,
             viewportHeight = 24f
         ).apply {
+            // Magnifying glass (fill path only, checkmark is drawn separately as stroke)
             path(
                 fill = SolidColor(Color.Black)
             ) {
-                // Magnifying glass
                 moveTo(15.5f, 14f)
                 horizontalLineToRelative(-0.79f)
                 lineToRelative(-0.28f, -0.27f)
@@ -820,11 +820,8 @@ object IdeaComposeIcons {
                 reflectiveCurveTo(14f, 7.01f, 14f, 9.5f)
                 reflectiveCurveTo(11.99f, 14f, 9.5f, 14f)
                 close()
-                // Checkmark inside
-                moveTo(7.5f, 9.5f)
-                lineToRelative(1.5f, 1.5f)
-                lineToRelative(3f, -3f)
             }
+            // Checkmark inside (stroke only to avoid visual artifacts)
             path(
                 stroke = SolidColor(Color.Black),
                 strokeLineWidth = 1.5f,

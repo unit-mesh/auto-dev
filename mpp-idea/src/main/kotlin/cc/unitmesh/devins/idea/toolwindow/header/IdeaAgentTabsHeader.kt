@@ -54,7 +54,7 @@ fun IdeaAgentTabsHeader(
             onAgentTypeChange = onAgentTypeChange
         )
 
-        // Right: Actions with tooltips
+        // Right: Action buttons
         Row(
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -86,6 +86,9 @@ private fun SegmentedAgentTabs(
     onAgentTypeChange: (AgentType) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Note: LOCAL_CHAT is intentionally excluded from the tabs as it represents
+    // a different interaction mode (direct local chat without agent routing).
+    // It's handled separately in IdeaAgentApp but not exposed as a user-selectable tab.
     val agentTypes = listOf(AgentType.CODING, AgentType.CODE_REVIEW, AgentType.KNOWLEDGE, AgentType.REMOTE)
 
     Row(
