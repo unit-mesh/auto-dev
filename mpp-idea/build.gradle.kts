@@ -78,8 +78,6 @@ dependencies {
         exclude(group = "org.jetbrains.jediterm")
         exclude(group = "org.jetbrains.pty4j")
         exclude(group = "io.github.vinceglb")
-        // Exclude SQLDelight - not needed in IntelliJ plugin
-        exclude(group = "app.cash.sqldelight")
     }
     implementation("cc.unitmesh:mpp-core:$mppVersion") {
         // Exclude Compose dependencies from mpp-core as well
@@ -106,6 +104,9 @@ dependencies {
     // Use platform-provided kotlinx libraries to avoid classloader conflicts
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+
+    // SQLite JDBC driver for SQLDelight (required at runtime)
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
 
     // Ktor HTTP Client for LLM API calls - use compileOnly for libraries that may conflict
     compileOnly("io.ktor:ktor-client-core:3.2.2")
