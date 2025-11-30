@@ -2,6 +2,7 @@ package cc.unitmesh.devins.idea.toolwindow.timeline
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,10 +31,11 @@ fun IdeaTaskCompleteBubble(
         Box(
             modifier = Modifier
                 .background(
-                    if (item.success)
+                    color = if (item.success)
                         AutoDevColors.Green.c400.copy(alpha = 0.2f)
                     else
-                        AutoDevColors.Red.c400.copy(alpha = 0.2f)
+                        AutoDevColors.Red.c400.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {

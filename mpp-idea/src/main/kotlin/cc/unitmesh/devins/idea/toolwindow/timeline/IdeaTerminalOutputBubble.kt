@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.ide.CopyPasteManager
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
-import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 
 /**
@@ -60,8 +60,7 @@ fun IdeaTerminalOutputBubble(
                 expanded = expanded,
                 onExpandToggle = { expanded = !expanded },
                 onCopy = {
-                    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                    clipboard.setContents(StringSelection(item.output), null)
+                    CopyPasteManager.getInstance().setContents(StringSelection(item.output))
                 }
             )
 

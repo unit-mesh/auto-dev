@@ -72,7 +72,7 @@ fun IdeaToolLoadingStatusBar(
             )
         } else if (!toolStatus.isLoading && toolStatus.mcpServersLoaded > 0) {
             Text(
-                text = "+ All tools ready",
+                text = "✓ All tools ready",
                 style = JewelTheme.defaultTextStyle.copy(
                     fontSize = 11.sp,
                     color = AutoDevColors.Green.c400

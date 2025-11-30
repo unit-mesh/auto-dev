@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.ide.CopyPasteManager
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.IconButton
 import org.jetbrains.jewel.ui.component.Text
-import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 
 /**
@@ -364,36 +364,25 @@ fun IdeaCurrentToolCallItem(
 }
 
 /**
- * Copy text to system clipboard (JVM implementation)
+ * Copy text to system clipboard using IntelliJ CopyPasteManager
  */
 private fun copyToClipboard(text: String) {
     try {
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(StringSelection(text), null)
+        CopyPasteManager.getInstance().setContents(StringSelection(text))
     } catch (e: Exception) {
         // Ignore clipboard errors
     }
 }
 
 /**
- * Format tool output for better readability
+ * Format tool output for better readability.
+ * Returns output as-is to avoid breaking valid JSON/table formats.
  */
 private fun formatToolOutput(output: String): String {
     return when {
-        output.trim().startsWith("{") || output.trim().startsWith("[") -> {
-            try {
-                output.replace(",", ",\n")
-                    .replace("{", "{\n  ")
-                    .replace("}", "\n}")
-                    .replace("[", "[\n  ")
-                    .replace("]", "\n]")
-            } catch (e: Exception) {
-                output
-            }
-        }
         output.contains("|") -> output // Table format
-        output.contains("\n") -> output
-        output.length > 100 -> "${output.take(100)}..."
+        output.contains("\n") -> output // Already formatted
+        output.length > 100 -> "${output.take(100)}..." // Truncate long single-line output
         else -> output
     }
 }
