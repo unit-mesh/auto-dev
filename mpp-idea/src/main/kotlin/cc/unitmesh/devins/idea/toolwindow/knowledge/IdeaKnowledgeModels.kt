@@ -105,16 +105,18 @@ enum class IndexingStatus {
     ERROR
 }
 
-/**
- * Document index record for tracking indexed documents.
- */
-data class IdeaDocumentIndexRecord(
-    val path: String,
-    val hash: String,
-    val lastModified: Long,
-    val status: String,
-    val content: String? = null,
-    val error: String? = null,
-    val indexedAt: Long
-)
+// TODO: Implement document indexing feature using IdeaDocumentIndexRecord
+// /**
+//  * Document index record for tracking indexed documents.
+//  * Reserved for future indexing features.
+//  */
+// data class IdeaDocumentIndexRecord(
+//     val path: String,
+//     val hash: String,
+//     val lastModified: Long,
+//     val status: String,
+//     val content: String? = null,
+//     val error: String? = null,
+//     val indexedAt: Long
+// )
 

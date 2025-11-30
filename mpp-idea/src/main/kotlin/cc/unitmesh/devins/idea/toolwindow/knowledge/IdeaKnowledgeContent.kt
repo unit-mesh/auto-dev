@@ -193,7 +193,7 @@ private fun DocumentListItem(
     onClick: () -> Unit
 ) {
     val backgroundColor = if (isSelected) {
-        JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f)
+        AutoDevColors.Blue.c400.copy(alpha = 0.15f)
     } else {
         JewelTheme.globalColors.panelBackground
     }

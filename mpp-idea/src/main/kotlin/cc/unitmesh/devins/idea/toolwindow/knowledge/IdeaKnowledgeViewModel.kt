@@ -38,6 +38,7 @@ class IdeaKnowledgeViewModel(
     val state: StateFlow<IdeaKnowledgeState> = _state.asStateFlow()
 
     // Control execution
+    private var initJob: Job? = null
     private var currentJob: Job? = null
     private var documentAgent: DocumentAgent? = null
     private var llmService: KoogLLMService? = null
@@ -50,10 +51,13 @@ class IdeaKnowledgeViewModel(
         if (projectPath.isEmpty()) {
             updateState { it.copy(error = "No project path available") }
         } else {
-            coroutineScope.launch {
+            // Launch initialization on IO dispatcher to avoid EDT violations
+            initJob = coroutineScope.launch(Dispatchers.IO) {
                 try {
                     initializeLLMService()
                     loadDocuments()
+                } catch (e: CancellationException) {
+                    // Intentional cancellation - no error message needed
                 } catch (e: Exception) {
                     updateState { it.copy(error = "Failed to initialize: ${e.message}") }
                 }
@@ -183,19 +187,20 @@ class IdeaKnowledgeViewModel(
      * Select a document
      */
     fun selectDocument(document: IdeaDocumentFile) {
-        coroutineScope.launch {
+        // Launch on IO dispatcher to avoid EDT violations
+        coroutineScope.launch(Dispatchers.IO) {
             loadDocumentContent(document)
         }
     }
 
     /**
-     * Load document content
+     * Load document content - runs on IO dispatcher
      */
     private suspend fun loadDocumentContent(document: IdeaDocumentFile) {
         updateState { it.copy(isLoading = true, error = null) }
 
         try {
-            val file = File(projectPath, document.path)
+            val file = withContext(Dispatchers.IO) { File(projectPath, document.path) }
             if (!file.exists()) {
                 updateState {
                     it.copy(isLoading = false, error = "File not found: ${document.path}")
@@ -224,14 +229,17 @@ class IdeaKnowledgeViewModel(
                 )
             )
 
-            val (content, parsedDoc) = if (isBinary) {
-                val bytes = file.readBytes()
-                val parsed = parser.parseBytes(docFile, bytes)
-                null to parsed
-            } else {
-                val textContent = file.readText()
-                val parsed = parser.parse(docFile, textContent)
-                textContent to parsed
+            // Read and parse file content on IO dispatcher
+            val (content, parsedDoc) = withContext(Dispatchers.IO) {
+                if (isBinary) {
+                    val bytes = file.readBytes()
+                    val parsed = parser.parseBytes(docFile, bytes)
+                    null to parsed
+                } else {
+                    val textContent = file.readText()
+                    val parsed = parser.parse(docFile, textContent)
+                    textContent to parsed
+                }
             }
 
             // Register document with DocumentRegistry for DocQL queries
@@ -297,7 +305,7 @@ class IdeaKnowledgeViewModel(
                 agent.execute(task) { _ -> }
             } catch (e: CancellationException) {
                 renderer.forceStop()
-                renderer.renderError("Generation cancelled by user")
+                // Intentional cancellation - no error message needed
             } catch (e: Exception) {
                 renderer.renderError("Error: ${e.message}")
             } finally {
@@ -374,7 +382,8 @@ class IdeaKnowledgeViewModel(
      * Refresh documents list
      */
     fun refreshDocuments() {
-        coroutineScope.launch {
+        // Launch on IO dispatcher to avoid EDT violations
+        coroutineScope.launch(Dispatchers.IO) {
             loadDocuments()
         }
     }
@@ -384,6 +393,7 @@ class IdeaKnowledgeViewModel(
     }
 
     override fun dispose() {
+        initJob?.cancel()
         currentJob?.cancel()
     }
 }
