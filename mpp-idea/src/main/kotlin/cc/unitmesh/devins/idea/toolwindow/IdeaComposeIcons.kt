@@ -444,5 +444,73 @@ object IdeaComposeIcons {
             }
         }.build()
     }
+
+    /**
+     * Terminal icon (command prompt)
+     */
+    val Terminal: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Terminal",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(20f, 4f)
+                lineTo(4f, 4f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(12f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(16f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                lineTo(22f, 6f)
+                curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                close()
+                moveTo(20f, 18f)
+                lineTo(4f, 18f)
+                lineTo(4f, 8f)
+                horizontalLineToRelative(16f)
+                verticalLineToRelative(10f)
+                close()
+                // Terminal prompt arrow
+                moveTo(5.5f, 11.5f)
+                lineToRelative(3f, 2.5f)
+                lineToRelative(-3f, 2.5f)
+                close()
+                // Cursor line
+                moveTo(10f, 15f)
+                horizontalLineToRelative(8f)
+                verticalLineToRelative(1.5f)
+                horizontalLineToRelative(-8f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Stop icon (square)
+     */
+    val Stop: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Stop",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(6f, 6f)
+                horizontalLineToRelative(12f)
+                verticalLineToRelative(12f)
+                lineTo(6f, 18f)
+                close()
+            }
+        }.build()
+    }
 }
 
