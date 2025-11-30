@@ -24,6 +24,8 @@ import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
+import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeContent
+import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeViewModel
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
@@ -68,6 +70,9 @@ fun IdeaAgentApp(
     // Code Review ViewModel (created lazily when needed)
     var codeReviewViewModel by remember { mutableStateOf<IdeaCodeReviewViewModel?>(null) }
 
+    // Knowledge ViewModel (created lazily when needed)
+    var knowledgeViewModel by remember { mutableStateOf<IdeaKnowledgeViewModel?>(null) }
+
     // Auto-scroll to bottom when new items arrive
     LaunchedEffect(timeline.size, streamingOutput) {
         if (timeline.isNotEmpty() || streamingOutput.isNotEmpty()) {
@@ -83,14 +88,21 @@ fun IdeaAgentApp(
         if (currentAgentType == AgentType.CODE_REVIEW && codeReviewViewModel == null) {
             codeReviewViewModel = IdeaCodeReviewViewModel(project, coroutineScope)
         }
+        if (currentAgentType == AgentType.KNOWLEDGE && knowledgeViewModel == null) {
+            knowledgeViewModel = IdeaKnowledgeViewModel(project, coroutineScope)
+        }
     }
 
-    // Dispose CodeReviewViewModel when leaving CODE_REVIEW tab
+    // Dispose ViewModels when leaving their tabs
     DisposableEffect(currentAgentType) {
         onDispose {
             if (currentAgentType != AgentType.CODE_REVIEW) {
                 codeReviewViewModel?.dispose()
                 codeReviewViewModel = null
+            }
+            if (currentAgentType != AgentType.KNOWLEDGE) {
+                knowledgeViewModel?.dispose()
+                knowledgeViewModel = null
             }
         }
     }
@@ -130,7 +142,9 @@ fun IdeaAgentApp(
                     } ?: EmptyStateMessage("Loading Code Review...")
                 }
                 AgentType.KNOWLEDGE -> {
-                    KnowledgeContent()
+                    knowledgeViewModel?.let { vm ->
+                        IdeaKnowledgeContent(viewModel = vm)
+                    } ?: EmptyStateMessage("Loading Knowledge Agent...")
                 }
             }
         }
@@ -215,10 +229,8 @@ private fun TimelineItemView(item: JewelRenderer.TimelineItem) {
     }
 }
 
-@Composable
-private fun KnowledgeContent() {
-    EmptyStateMessage("Knowledge mode - Coming soon!")
-}
+// KnowledgeContent is now implemented in IdeaKnowledgeContent.kt
+// See IdeaAgentApp main content switch for integration
 
 @Composable
 private fun EmptyStateMessage(text: String) {
