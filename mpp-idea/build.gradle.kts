@@ -105,6 +105,20 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 
+    // Markdown renderer for Jewel-themed markdown rendering
+    implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1") {
+        // Exclude Compose dependencies - IntelliJ provides its own
+        exclude(group = "org.jetbrains.compose")
+        exclude(group = "org.jetbrains.compose.runtime")
+        exclude(group = "org.jetbrains.compose.foundation")
+        exclude(group = "org.jetbrains.compose.material3")
+        exclude(group = "org.jetbrains.compose.material")
+        exclude(group = "org.jetbrains.compose.ui")
+        exclude(group = "org.jetbrains.skiko")
+        // Exclude kotlinx libraries - IntelliJ provides its own
+        exclude(group = "org.jetbrains.kotlinx")
+    }
+
     // SQLite JDBC driver for SQLDelight (required at runtime)
     implementation("org.xerial:sqlite-jdbc:3.49.1.0")
 
