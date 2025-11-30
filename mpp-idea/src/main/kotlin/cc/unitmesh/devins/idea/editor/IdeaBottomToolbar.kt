@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,8 +45,10 @@ fun IdeaBottomToolbar(
         ) {
             // Workspace indicator
             if (!workspacePath.isNullOrEmpty()) {
-                val projectName = workspacePath.substringAfterLast('/')
-                    .ifEmpty { workspacePath.substringAfterLast('\\') }
+                // Extract project name from path, handling both Unix and Windows separators
+                val projectName = workspacePath
+                    .replace('\\', '/')  // Normalize to Unix separator
+                    .substringAfterLast('/')
                     .ifEmpty { "Project" }
 
                 Box(

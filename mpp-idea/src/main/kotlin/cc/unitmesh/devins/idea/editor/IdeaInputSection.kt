@@ -8,7 +8,6 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +52,14 @@ fun IdeaInputSection(
             .collect { inputText = it }
     }
 
+    // Extract send logic to avoid duplication
+    val doSend: () -> Unit = {
+        if (inputText.isNotBlank()) {
+            onSend(inputText)
+            textFieldState.edit { replace(0, length, "") }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -85,17 +92,14 @@ fun IdeaInputSection(
                     .fillMaxWidth()
                     .onPreviewKeyEvent { keyEvent ->
                         // Enter to send (without modifiers)
-                        if (keyEvent.key == Key.Enter && 
+                        if (keyEvent.key == Key.Enter &&
                             keyEvent.type == KeyEventType.KeyDown &&
                             !keyEvent.isShiftPressed &&
                             !keyEvent.isCtrlPressed &&
                             !keyEvent.isMetaPressed &&
                             !isProcessing
                         ) {
-                            if (inputText.isNotBlank()) {
-                                onSend(inputText)
-                                textFieldState.edit { replace(0, length, "") }
-                            }
+                            doSend()
                             true
                         } else {
                             false
@@ -109,12 +113,7 @@ fun IdeaInputSection(
 
         // Bottom toolbar
         IdeaBottomToolbar(
-            onSendClick = {
-                if (inputText.isNotBlank()) {
-                    onSend(inputText)
-                    textFieldState.edit { replace(0, length, "") }
-                }
-            },
+            onSendClick = doSend,
             sendEnabled = inputText.isNotBlank() && !isProcessing,
             isExecuting = isProcessing,
             onStopClick = onStop,

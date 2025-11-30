@@ -9,12 +9,13 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorModificationUtil
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
@@ -45,9 +46,16 @@ class IdeaDevInInput(
     val disposable: Disposable?,
     private val showAgent: Boolean = true
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
-    
+
     private val editorListeners = EventDispatcher.create(IdeaInputListener::class.java)
-    
+
+    // Internal document listener to notify text changes
+    private val internalDocumentListener = object : DocumentListener {
+        override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
+            editorListeners.multicaster.onTextChanged(text)
+        }
+    }
+
     // Enter key handling - submit on Enter, newline on Shift/Ctrl/Cmd+Enter
     private val submitAction = DumbAwareAction.create {
         val text = text.trim()
@@ -55,7 +63,7 @@ class IdeaDevInInput(
             editorListeners.multicaster.onSubmit(text, IdeaInputTrigger.Key)
         }
     }
-    
+
     private val enterShortcutSet = CustomShortcutSet(
         KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), null)
     )
@@ -116,11 +124,7 @@ class IdeaDevInInput(
         }
 
         // Add internal document listener to notify text changes
-        document.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
-                editorListeners.multicaster.onTextChanged(text)
-            }
-        })
+        document.addDocumentListener(internalDocumentListener)
 
         // Listen for completion popup state to disable Enter submit when completing
         project.messageBus.connect(disposable ?: this)
@@ -167,6 +171,7 @@ class IdeaDevInInput(
     }
 
     override fun dispose() {
+        editor?.document?.removeDocumentListener(internalDocumentListener)
         listeners.forEach {
             editor?.document?.removeDocumentListener(it)
         }
@@ -177,12 +182,18 @@ class IdeaDevInInput(
      * This enables syntax highlighting and completion for DevIn commands.
      */
     fun recreateDocument() {
-        val language = Language.findLanguageByID("DevIn") ?: Language.ANY
-        val id = UUID.randomUUID()
-        val file = LightVirtualFile("IdeaDevInInput-$id", language, "")
+        // Remove listeners from old document before replacing
+        editor?.document?.let { oldDoc ->
+            oldDoc.removeDocumentListener(internalDocumentListener)
+            listeners.forEach { listener ->
+                oldDoc.removeDocumentListener(listener)
+            }
+        }
 
-        val document = FileDocumentManager.getInstance().getDocument(file)
-            ?: throw IllegalStateException("Can't create in-memory document")
+        // Create new document using EditorFactory
+        val document = ReadAction.compute<Document, Throwable> {
+            EditorFactory.getInstance().createDocument("")
+        }
 
         initializeDocumentListeners(document)
         setDocument(document)
@@ -192,6 +203,8 @@ class IdeaDevInInput(
         listeners.forEach { listener ->
             inputDocument.addDocumentListener(listener)
         }
+        // Re-add internal listener to new document
+        inputDocument.addDocumentListener(internalDocumentListener)
     }
 
     /**
@@ -223,7 +236,6 @@ class IdeaDevInInput(
      */
     fun clearInput() {
         recreateDocument()
-        text = ""
     }
 }
 

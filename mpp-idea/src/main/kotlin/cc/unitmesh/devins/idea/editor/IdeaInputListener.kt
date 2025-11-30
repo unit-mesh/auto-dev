@@ -1,7 +1,7 @@
 package cc.unitmesh.devins.idea.editor
 
 import com.intellij.openapi.editor.ex.EditorEx
-import java.util.*
+import java.util.EventListener
 
 /**
  * Trigger type for input submission.
