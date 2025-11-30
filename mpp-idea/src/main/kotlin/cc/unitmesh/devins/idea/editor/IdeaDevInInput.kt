@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.DocumentListener
@@ -123,10 +124,10 @@ class IdeaDevInInput(
             document.addDocumentListener(listener)
         }
 
-        // Add internal document listener to notify text changes
-        document.addDocumentListener(internalDocumentListener)
+        runReadAction {
+            document.addDocumentListener(internalDocumentListener)
+        }
 
-        // Listen for completion popup state to disable Enter submit when completing
         project.messageBus.connect(disposable ?: this)
             .subscribe(LookupManagerListener.TOPIC, object : LookupManagerListener {
                 override fun activeLookupChanged(
@@ -159,7 +160,7 @@ class IdeaDevInInput(
         editor.setVerticalScrollbarVisible(true)
         setBorder(JBUI.Borders.empty())
         editor.setShowPlaceholderWhenFocused(true)
-        editor.caretModel.moveToOffset(0)
+        runReadAction { editor.caretModel.moveToOffset(0) }
         editor.scrollPane.setBorder(border)
         editor.contentComponent.setOpaque(false)
         return editor
