@@ -37,6 +37,7 @@ fun IdeaInputSection(
     onSend: (String) -> Unit,
     onStop: () -> Unit = {},
     onAtClick: () -> Unit = {},
+    onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     workspacePath: String? = null,
     totalTokens: Int? = null,
@@ -123,6 +124,13 @@ fun IdeaInputSection(
                     append("@")
                 }
                 onAtClick()
+            },
+            onSlashClick = {
+                // Insert / character and trigger slash commands
+                textFieldState.edit {
+                    append("/")
+                }
+                onSlashClick()
             },
             onSettingsClick = onSettingsClick,
             workspacePath = workspacePath,

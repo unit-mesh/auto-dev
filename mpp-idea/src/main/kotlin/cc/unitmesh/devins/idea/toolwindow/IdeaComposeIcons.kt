@@ -512,5 +512,246 @@ object IdeaComposeIcons {
             }
         }.build()
     }
+
+    /**
+     * Send icon (paper plane / arrow pointing right)
+     */
+    val Send: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Send",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(2.01f, 21f)
+                lineTo(23f, 12f)
+                lineTo(2.01f, 3f)
+                lineTo(2f, 10f)
+                lineToRelative(15f, 2f)
+                lineToRelative(-15f, 2f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Folder icon
+     */
+    val Folder: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Folder",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(10f, 4f)
+                lineTo(12f, 6f)
+                lineTo(20f, 6f)
+                curveToRelative(1.1f, 0f, 2f, 0.9f, 2f, 2f)
+                verticalLineToRelative(10f)
+                curveToRelative(0f, 1.1f, -0.9f, 2f, -2f, 2f)
+                lineTo(4f, 20f)
+                curveToRelative(-1.1f, 0f, -2f, -0.9f, -2f, -2f)
+                lineTo(2f, 6f)
+                curveToRelative(0f, -1.1f, 0.9f, -2f, 2f, -2f)
+                horizontalLineToRelative(6f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * AlternateEmail icon (@ symbol)
+     */
+    val AlternateEmail: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "AlternateEmail",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(12f, 2f)
+                curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
+                horizontalLineToRelative(5f)
+                verticalLineToRelative(-2f)
+                horizontalLineToRelative(-5f)
+                curveToRelative(-4.34f, 0f, -8f, -3.66f, -8f, -8f)
+                reflectiveCurveToRelative(3.66f, -8f, 8f, -8f)
+                reflectiveCurveToRelative(8f, 3.66f, 8f, 8f)
+                verticalLineToRelative(1.43f)
+                curveToRelative(0f, 0.79f, -0.71f, 1.57f, -1.5f, 1.57f)
+                reflectiveCurveToRelative(-1.5f, -0.78f, -1.5f, -1.57f)
+                lineTo(17f, 12f)
+                curveToRelative(0f, -2.76f, -2.24f, -5f, -5f, -5f)
+                reflectiveCurveToRelative(-5f, 2.24f, -5f, 5f)
+                reflectiveCurveToRelative(2.24f, 5f, 5f, 5f)
+                curveToRelative(1.38f, 0f, 2.64f, -0.56f, 3.54f, -1.47f)
+                curveToRelative(0.65f, 0.89f, 1.77f, 1.47f, 2.96f, 1.47f)
+                curveToRelative(1.97f, 0f, 3.5f, -1.6f, 3.5f, -3.57f)
+                lineTo(22f, 12f)
+                curveToRelative(0f, -5.52f, -4.48f, -10f, -10f, -10f)
+                close()
+                moveTo(12f, 15f)
+                curveToRelative(-1.66f, 0f, -3f, -1.34f, -3f, -3f)
+                reflectiveCurveToRelative(1.34f, -3f, 3f, -3f)
+                reflectiveCurveToRelative(3f, 1.34f, 3f, 3f)
+                reflectiveCurveToRelative(-1.34f, 3f, -3f, 3f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * ArrowDropDown icon (dropdown arrow)
+     */
+    val ArrowDropDown: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "ArrowDropDown",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(7f, 10f)
+                lineToRelative(5f, 5f)
+                lineToRelative(5f, -5f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Check icon (checkmark)
+     */
+    val Check: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Check",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(9f, 16.17f)
+                lineTo(4.83f, 12f)
+                lineToRelative(-1.42f, 1.41f)
+                lineTo(9f, 19f)
+                lineTo(21f, 7f)
+                lineToRelative(-1.41f, -1.41f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Visibility icon (eye open)
+     */
+    val Visibility: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Visibility",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(12f, 4.5f)
+                curveTo(7f, 4.5f, 2.73f, 7.61f, 1f, 12f)
+                curveToRelative(1.73f, 4.39f, 6f, 7.5f, 11f, 7.5f)
+                reflectiveCurveToRelative(9.27f, -3.11f, 11f, -7.5f)
+                curveToRelative(-1.73f, -4.39f, -6f, -7.5f, -11f, -7.5f)
+                close()
+                moveTo(12f, 17f)
+                curveToRelative(-2.76f, 0f, -5f, -2.24f, -5f, -5f)
+                reflectiveCurveToRelative(2.24f, -5f, 5f, -5f)
+                reflectiveCurveToRelative(5f, 2.24f, 5f, 5f)
+                reflectiveCurveToRelative(-2.24f, 5f, -5f, 5f)
+                close()
+                moveTo(12f, 9f)
+                curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
+                reflectiveCurveToRelative(1.34f, 3f, 3f, 3f)
+                reflectiveCurveToRelative(3f, -1.34f, 3f, -3f)
+                reflectiveCurveToRelative(-1.34f, -3f, -3f, -3f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * VisibilityOff icon (eye closed)
+     */
+    val VisibilityOff: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "VisibilityOff",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(12f, 7f)
+                curveToRelative(2.76f, 0f, 5f, 2.24f, 5f, 5f)
+                curveToRelative(0f, 0.65f, -0.13f, 1.26f, -0.36f, 1.83f)
+                lineToRelative(2.92f, 2.92f)
+                curveToRelative(1.51f, -1.26f, 2.7f, -2.89f, 3.43f, -4.75f)
+                curveToRelative(-1.73f, -4.39f, -6f, -7.5f, -11f, -7.5f)
+                curveToRelative(-1.4f, 0f, -2.74f, 0.25f, -3.98f, 0.7f)
+                lineToRelative(2.16f, 2.16f)
+                curveTo(10.74f, 7.13f, 11.35f, 7f, 12f, 7f)
+                close()
+                moveTo(2f, 4.27f)
+                lineToRelative(2.28f, 2.28f)
+                lineToRelative(0.46f, 0.46f)
+                curveTo(3.08f, 8.3f, 1.78f, 10.02f, 1f, 12f)
+                curveToRelative(1.73f, 4.39f, 6f, 7.5f, 11f, 7.5f)
+                curveToRelative(1.55f, 0f, 3.03f, -0.3f, 4.38f, -0.84f)
+                lineToRelative(0.42f, 0.42f)
+                lineTo(19.73f, 22f)
+                lineTo(21f, 20.73f)
+                lineTo(3.27f, 3f)
+                lineTo(2f, 4.27f)
+                close()
+                moveTo(7.53f, 9.8f)
+                lineToRelative(1.55f, 1.55f)
+                curveToRelative(-0.05f, 0.21f, -0.08f, 0.43f, -0.08f, 0.65f)
+                curveToRelative(0f, 1.66f, 1.34f, 3f, 3f, 3f)
+                curveToRelative(0.22f, 0f, 0.44f, -0.03f, 0.65f, -0.08f)
+                lineToRelative(1.55f, 1.55f)
+                curveToRelative(-0.67f, 0.33f, -1.41f, 0.53f, -2.2f, 0.53f)
+                curveToRelative(-2.76f, 0f, -5f, -2.24f, -5f, -5f)
+                curveToRelative(0f, -0.79f, 0.2f, -1.53f, 0.53f, -2.2f)
+                close()
+                moveTo(11.84f, 9.02f)
+                lineToRelative(3.15f, 3.15f)
+                lineToRelative(0.02f, -0.16f)
+                curveToRelative(0f, -1.66f, -1.34f, -3f, -3f, -3f)
+                lineToRelative(-0.17f, 0.01f)
+                close()
+            }
+        }.build()
+    }
+
 }
 
