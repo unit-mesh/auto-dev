@@ -26,10 +26,10 @@ import java.security.MessageDigest
  * Usage:
  * ```bash
  * # Document query mode (default)
- * ./gradlew :mpp-server:runDocumentCli -PprojectPath=/path/to/docs -Pquery="What is this about?" [-PdocumentPath=specific.pptx]
+ * ./gradlew :mpp-ui:runDocumentCli -PdocProjectPath=/path/to/docs -PdocQuery="What is this about?" [-PdocPath=specific.pptx]
  *
  * # Feature tree mode - generate product feature tree from source code
- * ./gradlew :mpp-server:runDocumentCli -PprojectPath=/path/to/project -Pmode=feature-tree [-Planguage=ZH]
+ * ./gradlew :mpp-ui:runDocumentCli -PdocProjectPath=/path/to/project -PdocMode=feature-tree [-PdocLanguage=ZH]
  * ```
  */
 object DocumentCli {
@@ -42,12 +42,14 @@ object DocumentCli {
 
         // Parse arguments
         val projectPath = System.getProperty("projectPath") ?: args.getOrNull(0) ?: run {
-            System.err.println("Usage: -PprojectPath=<path> -Pquery=<query> [-PdocumentPath=<doc>] [-Pmode=feature-tree] [-Planguage=EN|ZH]")
+            System.err.println("Usage: -PdocProjectPath=<path> -PdocQuery=<query> [-PdocPath=<doc>] [-PdocMode=feature-tree] [-PdocLanguage=EN|ZH]")
             return
         }
 
-        // Check mode
-        val mode = System.getProperty("mode") ?: args.getOrNull(3) ?: "query"
+        // Check mode - support both positional args and system properties
+        val mode = System.getProperty("mode") ?: args.lastOrNull()?.takeIf {
+            it.equals("feature-tree", ignoreCase = true) || it.equals("featuretree", ignoreCase = true) || it == "query"
+        } ?: "query"
         val language = System.getProperty("language") ?: "EN"
         val isFeatureTreeMode = mode.equals("feature-tree", ignoreCase = true) || mode.equals("featuretree", ignoreCase = true)
 
@@ -55,7 +57,7 @@ object DocumentCli {
             "Generate product feature tree for this codebase"
         } else {
             System.getProperty("query") ?: args.getOrNull(1) ?: run {
-                System.err.println("Usage: -PprojectPath=<path> -Pquery=<query> [-PdocumentPath=<doc>] [-Pmode=feature-tree] [-Planguage=EN|ZH]")
+                System.err.println("Usage: -PdocProjectPath=<path> -PdocQuery=<query> [-PdocPath=<doc>] [-PdocMode=feature-tree] [-PdocLanguage=EN|ZH]")
                 return
             }
         }

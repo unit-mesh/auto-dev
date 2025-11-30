@@ -1,6 +1,8 @@
 package cc.unitmesh.agent.document
 
 import kotlinx.serialization.Serializable
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 /**
  * Product Feature - represents a node in the product feature tree
@@ -17,8 +19,11 @@ data class ProductFeature(
     val status: FeatureStatus = FeatureStatus.PENDING
 ) {
     companion object {
-        private var counter = 0
-        fun generateFeatureId(): String = "feature-${++counter}"
+        @OptIn(ExperimentalAtomicApi::class)
+        private val counter = AtomicInt(0)
+
+        @OptIn(ExperimentalAtomicApi::class)
+        fun generateFeatureId(): String = "feature-${counter.addAndFetch(1)}"
     }
 }
 
@@ -143,7 +148,7 @@ object FeatureTreeRenderer {
     private fun renderDotChildren(parent: ProductFeature, sb: StringBuilder) {
         for (child in parent.children) {
             val color = if (child.confidence < 0.7) "lightyellow" else "white"
-            sb.appendLine("  \"${child.id}\" [label=\"${child.name}\", fillcolor=$color];")
+            sb.appendLine("  \"${child.id}\" [label=\"${child.name}\", style=filled, fillcolor=$color];")
             sb.appendLine("  \"${parent.id}\" -> \"${child.id}\";")
             renderDotChildren(child, sb)
         }
