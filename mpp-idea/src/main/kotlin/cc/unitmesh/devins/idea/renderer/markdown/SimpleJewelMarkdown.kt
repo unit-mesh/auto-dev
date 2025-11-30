@@ -739,15 +739,34 @@ private fun MarkdownTableRow(
 
 /**
  * Extract clean text from a table cell node.
- * Removes markdown formatting characters like |, `, **, etc.
+ * The CELL node contains TEXT children that have the actual cell content.
+ * We collect all TEXT token content and join them.
  */
 private fun extractCellText(cell: ASTNode, content: String): String {
-    return content.substring(cell.startOffset, cell.endOffset)
-        .replace("|", "")
-        .replace("`", "")
-        .replace("**", "")
-        .replace("*", "")
-        .trim()
+    // Collect text from TEXT tokens within the cell
+    val textParts = mutableListOf<String>()
+    collectTextFromNode(cell, content, textParts)
+    return textParts.joinToString("").trim()
+}
+
+/**
+ * Recursively collect text from TEXT tokens in the AST node.
+ */
+private fun collectTextFromNode(node: ASTNode, content: String, result: MutableList<String>) {
+    when (node.type) {
+        MarkdownTokenTypes.TEXT -> {
+            result.add(node.getTextInNode(content).toString())
+        }
+        MarkdownTokenTypes.WHITE_SPACE -> {
+            result.add(" ")
+        }
+        else -> {
+            // Recurse into children
+            node.children.forEach { child ->
+                collectTextFromNode(child, content, result)
+            }
+        }
+    }
 }
 
 // ============ Helper Functions ============
