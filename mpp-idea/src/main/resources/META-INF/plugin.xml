@@ -19,11 +19,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Project-level service for coroutine scope management -->
         <projectService serviceImplementation="cc.unitmesh.devins.idea.services.CoroutineScopeHolder"/>
-        <!-- ToolWindow for Compose-based Chat UI -->
-        <toolWindow factoryClass="cc.unitmesh.devins.idea.toolwindow.AutoDevToolWindowFactory"
-                    id="AutoDev Compose"
+        <!-- ToolWindow for Agent UI with tab-based navigation (Advanced version) -->
+        <toolWindow factoryClass="cc.unitmesh.devins.idea.toolwindow.IdeaAgentToolWindowFactory"
+                    id="AutoDev Agent"
                     anchor="right"
-                    secondary="true"
+                    secondary="false"
                     icon="cc.unitmesh.devins.idea.AutoDevIcons.ToolWindow"/>
     </extensions>
 </idea-plugin>

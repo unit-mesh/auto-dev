@@ -341,10 +341,14 @@ class DomainDictAgent(
     /**
      * Extract package path from file path
      * e.g., "src/main/kotlin/cc/unitmesh/agent/Tool.kt" -> "cc/unitmesh/agent"
+     * Handles both Unix (/) and Windows (\) path separators.
      */
     private fun extractPackagePath(filePath: String): String {
+        // Normalize path separators to forward slash for cross-platform compatibility
+        val normalizedPath = filePath.replace('\\', '/')
+
         // Remove common source prefixes
-        val cleanPath = filePath
+        val cleanPath = normalizedPath
             .replace(Regex("^.*/src/(main|common)/(kotlin|java|scala)/"), "")
             .replace(Regex("^.*/src/"), "")
             .replace(Regex("^src/(main|common)/(kotlin|java|scala)/"), "")
@@ -368,7 +372,10 @@ class DomainDictAgent(
         val prioritizedFiles = if (importantPackages.isNotEmpty()) {
             insights.hotFiles.sortedByDescending { file ->
                 val pkg = extractPackagePath(file.path)
-                if (importantPackages.any { pkg.startsWith(it) || it.startsWith(pkg) }) 2 else 1
+                // Skip empty package paths to avoid matching all entries
+                if (pkg.isEmpty()) 1
+                else if (importantPackages.any { pkg.startsWith(it) || it.startsWith(pkg) }) 2
+                else 1
             }
         } else {
             insights.hotFiles
