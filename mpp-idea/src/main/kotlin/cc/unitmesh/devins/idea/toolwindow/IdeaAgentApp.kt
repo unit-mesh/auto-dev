@@ -124,8 +124,7 @@ fun IdeaAgentApp(
                     IdeaTimelineContent(
                         timeline = timeline,
                         streamingOutput = streamingOutput,
-                        listState = listState,
-                        project = project
+                        listState = listState
                     )
                 }
                 AgentType.CODE_REVIEW -> {

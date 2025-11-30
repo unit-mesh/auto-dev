@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
-import com.intellij.openapi.project.Project
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Text
 
@@ -23,7 +22,6 @@ fun IdeaTimelineContent(
     timeline: List<JewelRenderer.TimelineItem>,
     streamingOutput: String,
     listState: LazyListState,
-    project: Project? = null,
     modifier: Modifier = Modifier
 ) {
     if (timeline.isEmpty() && streamingOutput.isEmpty()) {
@@ -36,7 +34,7 @@ fun IdeaTimelineContent(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(timeline, key = { it.id }) { item ->
-                IdeaTimelineItemView(item, project)
+                IdeaTimelineItemView(item)
             }
 
             // Show streaming output
@@ -53,10 +51,7 @@ fun IdeaTimelineContent(
  * Dispatch timeline item to appropriate bubble component.
  */
 @Composable
-fun IdeaTimelineItemView(
-    item: JewelRenderer.TimelineItem,
-    project: Project? = null
-) {
+fun IdeaTimelineItemView(item: JewelRenderer.TimelineItem) {
     when (item) {
         is JewelRenderer.TimelineItem.MessageItem -> {
             IdeaMessageBubble(
@@ -74,7 +69,7 @@ fun IdeaTimelineItemView(
             IdeaTaskCompleteBubble(item)
         }
         is JewelRenderer.TimelineItem.TerminalOutputItem -> {
-            IdeaTerminalOutputBubble(item, project)
+            IdeaTerminalOutputBubble(item)
         }
     }
 }
