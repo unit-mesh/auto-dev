@@ -16,6 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.diff.ChangeType
+import cc.unitmesh.devins.ui.compose.agent.codereview.AIAnalysisProgress
+import cc.unitmesh.devins.ui.compose.agent.codereview.AnalysisStage
+import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
+import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
@@ -36,7 +40,7 @@ fun IdeaCodeReviewContent(viewModel: IdeaCodeReviewViewModel) {
             selectedIndices = state.selectedCommitIndices,
             isLoading = state.isLoading,
             onCommitSelect = { index ->
-                viewModel.selectCommits(setOf(index))
+                viewModel.selectCommit(index)
             },
             modifier = Modifier.width(280.dp).fillMaxHeight()
         )
@@ -67,7 +71,7 @@ fun IdeaCodeReviewContent(viewModel: IdeaCodeReviewViewModel) {
 
 @Composable
 private fun CommitListPanel(
-    commits: List<IdeaCommitInfo>,
+    commits: List<CommitInfo>,
     selectedIndices: Set<Int>,
     isLoading: Boolean,
     onCommitSelect: (Int) -> Unit,
@@ -122,7 +126,7 @@ private fun CommitListPanel(
 
 @Composable
 private fun CommitItem(
-    commit: IdeaCommitInfo,
+    commit: CommitInfo,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -172,7 +176,7 @@ private fun CommitItem(
 
 @Composable
 private fun DiffViewerPanel(
-    diffFiles: List<IdeaDiffFileInfo>,
+    diffFiles: List<DiffFileInfo>,
     selectedFileIndex: Int,
     isLoading: Boolean,
     onFileSelect: (Int) -> Unit,
@@ -251,7 +255,7 @@ private fun DiffViewerPanel(
 }
 
 @Composable
-private fun DiffContent(file: IdeaDiffFileInfo) {
+private fun DiffContent(file: DiffFileInfo) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -311,7 +315,7 @@ private fun DiffContent(file: IdeaDiffFileInfo) {
 
 @Composable
 private fun AIAnalysisPanel(
-    progress: IdeaAIAnalysisProgress,
+    progress: AIAnalysisProgress,
     error: String?,
     onStartAnalysis: () -> Unit,
     onCancelAnalysis: () -> Unit,
@@ -333,7 +337,7 @@ private fun AIAnalysisPanel(
             )
 
             when (progress.stage) {
-                IdeaAnalysisStage.IDLE, IdeaAnalysisStage.COMPLETED, IdeaAnalysisStage.ERROR -> {
+                AnalysisStage.IDLE, AnalysisStage.COMPLETED, AnalysisStage.ERROR -> {
                     DefaultButton(onClick = onStartAnalysis) {
                         Text("Start Analysis")
                     }
@@ -355,18 +359,19 @@ private fun AIAnalysisPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val (statusText, statusColor) = when (progress.stage) {
-                IdeaAnalysisStage.IDLE -> "Ready" to JewelTheme.globalColors.text.info
-                IdeaAnalysisStage.RUNNING_LINT -> "Running lint..." to AutoDevColors.Amber.c400
-                IdeaAnalysisStage.ANALYZING -> "Analyzing code..." to AutoDevColors.Blue.c400
-                IdeaAnalysisStage.GENERATING_PLAN -> "Generating plan..." to AutoDevColors.Blue.c400
-                IdeaAnalysisStage.GENERATING_FIX -> "Generating fixes..." to AutoDevColors.Blue.c400
-                IdeaAnalysisStage.COMPLETED -> "Completed" to AutoDevColors.Green.c400
-                IdeaAnalysisStage.ERROR -> "Error" to AutoDevColors.Red.c400
+                AnalysisStage.IDLE -> "Ready" to JewelTheme.globalColors.text.info
+                AnalysisStage.RUNNING_LINT -> "Running lint..." to AutoDevColors.Amber.c400
+                AnalysisStage.ANALYZING_LINT -> "Analyzing code..." to AutoDevColors.Blue.c400
+                AnalysisStage.GENERATING_PLAN -> "Generating plan..." to AutoDevColors.Blue.c400
+                AnalysisStage.WAITING_FOR_USER_INPUT -> "Waiting for input..." to AutoDevColors.Amber.c400
+                AnalysisStage.GENERATING_FIX -> "Generating fixes..." to AutoDevColors.Blue.c400
+                AnalysisStage.COMPLETED -> "Completed" to AutoDevColors.Green.c400
+                AnalysisStage.ERROR -> "Error" to AutoDevColors.Red.c400
             }
 
-            if (progress.stage != IdeaAnalysisStage.IDLE &&
-                progress.stage != IdeaAnalysisStage.COMPLETED &&
-                progress.stage != IdeaAnalysisStage.ERROR) {
+            if (progress.stage != AnalysisStage.IDLE &&
+                progress.stage != AnalysisStage.COMPLETED &&
+                progress.stage != AnalysisStage.ERROR) {
                 CircularProgressIndicator()
             }
 

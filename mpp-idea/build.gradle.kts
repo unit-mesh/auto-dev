@@ -25,6 +25,7 @@ kotlin {
 }
 
 repositories {
+    mavenLocal()  // For locally published mpp-ui and mpp-core artifacts
     mavenCentral()
     google()
     // Required for mpp-ui's webview dependencies (jogamp)
@@ -41,7 +42,9 @@ dependencies {
     // Depend on mpp-ui and mpp-core JVM targets for shared UI components and ConfigManager
     // For KMP projects, we need to depend on the JVM target specifically
     // IMPORTANT: Exclude ALL transitive dependencies that conflict with IntelliJ's bundled libraries
-    implementation("cc.unitmesh.devins:mpp-ui-jvm") {
+    // Note: For KMP projects, the module is published as "group:artifact-jvm" but the project
+    // dependency substitution should map "group:artifact" to the project ":artifact"
+    implementation("AutoDev-Intellij:mpp-ui:$mppVersion") {
         // Exclude all Compose dependencies - IntelliJ provides its own via bundledModules
         exclude(group = "org.jetbrains.compose")
         exclude(group = "org.jetbrains.compose.runtime")
@@ -78,7 +81,7 @@ dependencies {
         // Exclude SQLDelight - not needed in IntelliJ plugin
         exclude(group = "app.cash.sqldelight")
     }
-    implementation("cc.unitmesh.devins:mpp-core-jvm") {
+    implementation("cc.unitmesh:mpp-core:$mppVersion") {
         // Exclude Compose dependencies from mpp-core as well
         exclude(group = "org.jetbrains.compose")
         exclude(group = "org.jetbrains.compose.runtime")
