@@ -11,6 +11,7 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.editor.actions.EnterAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
@@ -181,7 +182,9 @@ class AutoDevInput(
         val id = UUID.randomUUID()
         val file = LightVirtualFile("AutoDevInput-$id", language, "")
 
-        val document = file.findDocument() ?: throw IllegalStateException("Can't create in-memory document")
+        val document = ReadAction.compute<Document, Throwable> {
+            EditorFactory.getInstance().createDocument("")
+        }
 
         initializeDocumentListeners(document)
         setDocument(document)

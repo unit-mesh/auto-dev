@@ -71,13 +71,14 @@ class JewelRenderer : BaseRenderer() {
     val tasks: StateFlow<List<TaskInfo>> = _tasks.asStateFlow()
 
     // Data classes for timeline items - aligned with ComposeRenderer
-    sealed class TimelineItem(val timestamp: Long = System.currentTimeMillis()) {
+    sealed class TimelineItem(val timestamp: Long = System.currentTimeMillis(), val id: String = generateId()) {
         data class MessageItem(
             val role: MessageRole,
             val content: String,
             val tokenInfo: TokenInfo? = null,
-            val itemTimestamp: Long = System.currentTimeMillis()
-        ) : TimelineItem(itemTimestamp)
+            val itemTimestamp: Long = System.currentTimeMillis(),
+            val itemId: String = generateId()
+        ) : TimelineItem(itemTimestamp, itemId)
 
         /**
          * Combined tool call and result item - displays both in a single compact row.
@@ -95,28 +96,37 @@ class JewelRenderer : BaseRenderer() {
             val output: String? = null,
             val fullOutput: String? = null,
             val executionTimeMs: Long? = null,
-            val itemTimestamp: Long = System.currentTimeMillis()
-        ) : TimelineItem(itemTimestamp)
+            val itemTimestamp: Long = System.currentTimeMillis(),
+            val itemId: String = generateId()
+        ) : TimelineItem(itemTimestamp, itemId)
 
         data class ErrorItem(
             val message: String,
-            val itemTimestamp: Long = System.currentTimeMillis()
-        ) : TimelineItem(itemTimestamp)
+            val itemTimestamp: Long = System.currentTimeMillis(),
+            val itemId: String = generateId()
+        ) : TimelineItem(itemTimestamp, itemId)
 
         data class TaskCompleteItem(
             val success: Boolean,
             val message: String,
             val iterations: Int,
-            val itemTimestamp: Long = System.currentTimeMillis()
-        ) : TimelineItem(itemTimestamp)
+            val itemTimestamp: Long = System.currentTimeMillis(),
+            val itemId: String = generateId()
+        ) : TimelineItem(itemTimestamp, itemId)
 
         data class TerminalOutputItem(
             val command: String,
             val output: String,
             val exitCode: Int,
             val executionTimeMs: Long,
-            val itemTimestamp: Long = System.currentTimeMillis()
-        ) : TimelineItem(itemTimestamp)
+            val itemTimestamp: Long = System.currentTimeMillis(),
+            val itemId: String = generateId()
+        ) : TimelineItem(itemTimestamp, itemId)
+
+        companion object {
+            private var idCounter = 0L
+            fun generateId(): String = "${System.currentTimeMillis()}-${idCounter++}"
+        }
     }
 
     data class ToolCallInfo(
@@ -386,7 +396,7 @@ class JewelRenderer : BaseRenderer() {
         addTimelineItem(
             TimelineItem.MessageItem(
                 role = MessageRole.ASSISTANT,
-                content = "🔧 Recovery Advice:\n$recoveryAdvice"
+                content = "Recovery Advice:\n$recoveryAdvice"
             )
         )
     }
@@ -395,7 +405,7 @@ class JewelRenderer : BaseRenderer() {
         addTimelineItem(
             TimelineItem.MessageItem(
                 role = MessageRole.SYSTEM,
-                content = "⚠️ Confirmation required for tool: $toolName"
+                content = "Confirmation required for tool: $toolName"
             )
         )
     }

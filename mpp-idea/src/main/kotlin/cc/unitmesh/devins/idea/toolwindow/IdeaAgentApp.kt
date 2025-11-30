@@ -24,6 +24,7 @@ import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
@@ -177,7 +178,7 @@ private fun TimelineContent(
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(timeline, key = { it.timestamp }) { item ->
+            items(timeline, key = { it.id }) { item ->
                 TimelineItemView(item)
             }
 
@@ -295,8 +296,14 @@ private fun ToolCallBubble(item: JewelRenderer.TimelineItem.ToolCallItem) {
                         text = statusIcon,
                         style = JewelTheme.defaultTextStyle.copy(color = statusColor)
                     )
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Build,
+                        contentDescription = "Tool",
+                        modifier = Modifier.size(14.dp),
+                        tint = JewelTheme.globalColors.text.normal
+                    )
                     Text(
-                        text = "🔧 ${item.toolName}",
+                        text = item.toolName,
                         style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -337,12 +344,23 @@ private fun ErrorBubble(message: String) {
                 .background(AutoDevColors.Red.c400.copy(alpha = 0.2f)) // Error background from design system
                 .padding(8.dp)
         ) {
-            Text(
-                text = "❌ $message",
-                style = JewelTheme.defaultTextStyle.copy(
-                    color = AutoDevColors.Red.c400 // Error text color from design system
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Error,
+                    contentDescription = "Error",
+                    modifier = Modifier.size(16.dp),
+                    tint = AutoDevColors.Red.c400
                 )
-            )
+                Text(
+                    text = message,
+                    style = JewelTheme.defaultTextStyle.copy(
+                        color = AutoDevColors.Red.c400 // Error text color from design system
+                    )
+                )
+            }
         }
     }
 }
@@ -364,13 +382,23 @@ private fun TaskCompleteBubble(item: JewelRenderer.TimelineItem.TaskCompleteItem
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            val icon = if (item.success) "✅" else "❌"
-            Text(
-                text = "$icon ${item.message} (${item.iterations} iterations)",
-                style = JewelTheme.defaultTextStyle.copy(
-                    fontWeight = FontWeight.Bold
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (item.success) AutoDevComposeIcons.CheckCircle else AutoDevComposeIcons.Error,
+                    contentDescription = if (item.success) "Success" else "Failed",
+                    modifier = Modifier.size(16.dp),
+                    tint = if (item.success) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
                 )
-            )
+                Text(
+                    text = "${item.message} (${item.iterations} iterations)",
+                    style = JewelTheme.defaultTextStyle.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
         }
     }
 }
@@ -434,7 +462,12 @@ private fun AgentTabsHeader(
                 Text("+", style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold))
             }
             IconButton(onClick = onSettings) {
-                Text("⚙", style = JewelTheme.defaultTextStyle)
+                Icon(
+                    imageVector = AutoDevComposeIcons.Settings,
+                    contentDescription = "Settings",
+                    modifier = Modifier.size(16.dp),
+                    tint = JewelTheme.globalColors.text.normal
+                )
             }
         }
     }
