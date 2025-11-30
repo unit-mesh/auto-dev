@@ -602,10 +602,47 @@ private fun MarkdownHorizontalRule() {
 
 // ============ Table Component ============
 
+/**
+ * GFM Table renderer following the intellij-markdown AST structure.
+ * Table structure:
+ * - TABLE (GFMElementTypes.TABLE)
+ *   - HEADER (GFMElementTypes.HEADER) - first row with column headers
+ *     - CELL (GFMTokenTypes.CELL) - individual header cells
+ *   - TABLE_SEPARATOR (GFMTokenTypes.TABLE_SEPARATOR) - the |---|---| row
+ *   - ROW (GFMElementTypes.ROW) - data rows
+ *     - CELL (GFMTokenTypes.CELL) - individual data cells
+ */
 @Composable
 private fun MarkdownTable(node: ASTNode, content: String) {
     val headerRow = node.children.find { it.type == GFMElementTypes.HEADER }
     val bodyRows = node.children.filter { it.type == GFMElementTypes.ROW }
+
+    // Calculate column count from header
+    val columnsCount = headerRow?.children?.count { it.type == GFMTokenTypes.CELL } ?: 0
+    if (columnsCount == 0) return
+
+    // Calculate adaptive column weights based on content length
+    val columnWeights = remember(node, content) {
+        val lengths = IntArray(columnsCount) { 0 }
+        // Iterate header + rows to find max length per column
+        node.children
+            .filter { it.type == GFMElementTypes.HEADER || it.type == GFMElementTypes.ROW }
+            .forEach { rowNode ->
+                val cells = rowNode.children.filter { it.type == GFMTokenTypes.CELL }
+                cells.forEachIndexed { idx, cell ->
+                    if (idx < columnsCount) {
+                        val raw = extractCellText(cell, content)
+                        if (raw.length > lengths[idx]) lengths[idx] = raw.length
+                    }
+                }
+            }
+        // Convert to weights with min/max constraints
+        val floatLengths = lengths.map { it.coerceAtLeast(1).toFloat() }
+        val total = floatLengths.sum()
+        val constrained = floatLengths.map { (it / total).coerceIn(0.15f, 0.65f) }
+        val constrainedTotal = constrained.sum()
+        constrained.map { it / constrainedTotal }
+    }
 
     Column(
         modifier = Modifier
@@ -627,7 +664,8 @@ private fun MarkdownTable(node: ASTNode, content: String) {
             MarkdownTableRow(
                 node = headerRow,
                 content = content,
-                isHeader = true
+                isHeader = true,
+                columnWeights = columnWeights
             )
             Box(
                 modifier = Modifier
@@ -637,12 +675,13 @@ private fun MarkdownTable(node: ASTNode, content: String) {
             )
         }
 
-        // Body rows
+        // Body rows (skip TABLE_SEPARATOR which is handled implicitly)
         bodyRows.forEachIndexed { index, row ->
             MarkdownTableRow(
                 node = row,
                 content = content,
-                isHeader = false
+                isHeader = false,
+                columnWeights = columnWeights
             )
             if (index < bodyRows.size - 1) {
                 Box(
@@ -660,9 +699,12 @@ private fun MarkdownTable(node: ASTNode, content: String) {
 private fun MarkdownTableRow(
     node: ASTNode,
     content: String,
-    isHeader: Boolean
+    isHeader: Boolean,
+    columnWeights: List<Float>
 ) {
     val cells = node.children.filter { it.type == GFMTokenTypes.CELL }
+
+    if (cells.isEmpty()) return
 
     Row(
         modifier = Modifier
@@ -674,10 +716,13 @@ private fun MarkdownTableRow(
                     Modifier
                 }
             )
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        cells.forEach { cell ->
-            val cellText = cell.getTextInNode(content).toString().trim()
+        cells.forEachIndexed { idx, cell ->
+            val weight = if (idx < columnWeights.size) columnWeights[idx] else 1f / cells.size.coerceAtLeast(1)
+            val cellText = extractCellText(cell, content)
+
             Text(
                 text = cellText,
                 style = JewelTheme.defaultTextStyle.copy(
@@ -685,11 +730,24 @@ private fun MarkdownTableRow(
                     fontWeight = if (isHeader) FontWeight.SemiBold else FontWeight.Normal
                 ),
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(weight)
                     .padding(horizontal = 8.dp)
             )
         }
     }
+}
+
+/**
+ * Extract clean text from a table cell node.
+ * Removes markdown formatting characters like |, `, **, etc.
+ */
+private fun extractCellText(cell: ASTNode, content: String): String {
+    return content.substring(cell.startOffset, cell.endOffset)
+        .replace("|", "")
+        .replace("`", "")
+        .replace("**", "")
+        .replace("*", "")
+        .trim()
 }
 
 // ============ Helper Functions ============
