@@ -266,6 +266,10 @@ private fun IdeaDevInInputArea(
                 devInInput?.appendText("@")
                 onAtClick()
             },
+            onSlashClick = {
+                // Insert / at current cursor position to trigger slash commands
+                devInInput?.appendText("/")
+            },
             onSettingsClick = onSettingsClick,
             workspacePath = workspacePath,
             totalTokens = totalTokens

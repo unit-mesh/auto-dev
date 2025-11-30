@@ -2,20 +2,26 @@ package cc.unitmesh.devins.idea.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
+import org.jetbrains.jewel.ui.component.Icon
 
 /**
  * Bottom toolbar for the input section.
- * Provides send/stop buttons, @ trigger for agent completion, settings, and token info.
- * 
+ * Provides send/stop buttons, @ trigger for agent completion, / command trigger, settings, and token info.
+ *
+ * Layout: Workspace - Token Info - @ Symbol - / Symbol - Settings - Send Button
+ *
  * Uses Jewel components for native IntelliJ IDEA look and feel.
  */
 @Composable
@@ -25,6 +31,7 @@ fun IdeaBottomToolbar(
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
     onAtClick: () -> Unit = {},
+    onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     workspacePath: String? = null,
     totalTokens: Int? = null,
@@ -53,18 +60,19 @@ fun IdeaBottomToolbar(
 
                 Box(
                     modifier = Modifier
-                        .background(
-                            JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f)
-                        )
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = "📁",
-                            style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp)
+                        Icon(
+                            imageVector = IdeaComposeIcons.Folder,
+                            contentDescription = null,
+                            tint = JewelTheme.globalColors.text.normal,
+                            modifier = Modifier.size(12.dp)
                         )
                         Text(
                             text = projectName,
@@ -79,6 +87,7 @@ fun IdeaBottomToolbar(
             if (totalTokens != null && totalTokens > 0) {
                 Box(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
                         .background(AutoDevColors.Blue.c400.copy(alpha = 0.2f))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
@@ -112,8 +121,21 @@ fun IdeaBottomToolbar(
                 onClick = onAtClick,
                 modifier = Modifier.size(32.dp)
             ) {
+                Icon(
+                    imageVector = IdeaComposeIcons.AlternateEmail,
+                    contentDescription = "@ Agent",
+                    tint = JewelTheme.globalColors.text.normal,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            // / trigger button for slash commands
+            IconButton(
+                onClick = onSlashClick,
+                modifier = Modifier.size(32.dp)
+            ) {
                 Text(
-                    text = "@",
+                    text = "/",
                     style = JewelTheme.defaultTextStyle.copy(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -126,9 +148,11 @@ fun IdeaBottomToolbar(
                 onClick = onSettingsClick,
                 modifier = Modifier.size(32.dp)
             ) {
-                Text(
-                    text = "⚙",
-                    style = JewelTheme.defaultTextStyle.copy(fontSize = 14.sp)
+                Icon(
+                    imageVector = IdeaComposeIcons.Settings,
+                    contentDescription = "Settings",
+                    tint = JewelTheme.globalColors.text.normal,
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
@@ -138,12 +162,23 @@ fun IdeaBottomToolbar(
                     onClick = onStopClick,
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Text(
-                        text = "⏹ Stop",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            color = AutoDevColors.Red.c400
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = IdeaComposeIcons.Stop,
+                            contentDescription = "Stop",
+                            tint = AutoDevColors.Red.c400,
+                            modifier = Modifier.size(14.dp)
                         )
-                    )
+                        Text(
+                            text = "Stop",
+                            style = JewelTheme.defaultTextStyle.copy(
+                                color = AutoDevColors.Red.c400
+                            )
+                        )
+                    }
                 }
             } else {
                 DefaultButton(
@@ -151,10 +186,21 @@ fun IdeaBottomToolbar(
                     enabled = sendEnabled,
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Text(
-                        text = "Send",
-                        style = JewelTheme.defaultTextStyle
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = IdeaComposeIcons.Send,
+                            contentDescription = "Send",
+                            tint = JewelTheme.globalColors.text.normal,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "Send",
+                            style = JewelTheme.defaultTextStyle
+                        )
+                    }
                 }
             }
         }

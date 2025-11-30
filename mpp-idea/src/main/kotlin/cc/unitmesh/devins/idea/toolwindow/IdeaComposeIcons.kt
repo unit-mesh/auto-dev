@@ -512,5 +512,128 @@ object IdeaComposeIcons {
             }
         }.build()
     }
+
+    /**
+     * Send icon (paper plane / arrow pointing right)
+     */
+    val Send: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Send",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(2.01f, 21f)
+                lineTo(23f, 12f)
+                lineTo(2.01f, 3f)
+                lineTo(2f, 10f)
+                lineToRelative(15f, 2f)
+                lineToRelative(-15f, 2f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Folder icon
+     */
+    val Folder: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Folder",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(10f, 4f)
+                lineTo(12f, 6f)
+                lineTo(20f, 6f)
+                curveToRelative(1.1f, 0f, 2f, 0.9f, 2f, 2f)
+                verticalLineToRelative(10f)
+                curveToRelative(0f, 1.1f, -0.9f, 2f, -2f, 2f)
+                lineTo(4f, 20f)
+                curveToRelative(-1.1f, 0f, -2f, -0.9f, -2f, -2f)
+                lineTo(2f, 6f)
+                curveToRelative(0f, -1.1f, 0.9f, -2f, 2f, -2f)
+                horizontalLineToRelative(6f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * AlternateEmail icon (@ symbol)
+     */
+    val AlternateEmail: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "AlternateEmail",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(12f, 2f)
+                curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
+                horizontalLineToRelative(5f)
+                verticalLineToRelative(-2f)
+                horizontalLineToRelative(-5f)
+                curveToRelative(-4.34f, 0f, -8f, -3.66f, -8f, -8f)
+                reflectiveCurveToRelative(3.66f, -8f, 8f, -8f)
+                reflectiveCurveToRelative(8f, 3.66f, 8f, 8f)
+                verticalLineToRelative(1.43f)
+                curveToRelative(0f, 0.79f, -0.71f, 1.57f, -1.5f, 1.57f)
+                reflectiveCurveToRelative(-1.5f, -0.78f, -1.5f, -1.57f)
+                lineTo(17f, 12f)
+                curveToRelative(0f, -2.76f, -2.24f, -5f, -5f, -5f)
+                reflectiveCurveToRelative(-5f, 2.24f, -5f, 5f)
+                reflectiveCurveToRelative(2.24f, 5f, 5f, 5f)
+                curveToRelative(1.38f, 0f, 2.64f, -0.56f, 3.54f, -1.47f)
+                curveToRelative(0.65f, 0.89f, 1.77f, 1.47f, 2.96f, 1.47f)
+                curveToRelative(1.97f, 0f, 3.5f, -1.6f, 3.5f, -3.57f)
+                lineTo(22f, 12f)
+                curveToRelative(0f, -5.52f, -4.48f, -10f, -10f, -10f)
+                close()
+                moveTo(12f, 15f)
+                curveToRelative(-1.66f, 0f, -3f, -1.34f, -3f, -3f)
+                reflectiveCurveToRelative(1.34f, -3f, 3f, -3f)
+                reflectiveCurveToRelative(3f, 1.34f, 3f, 3f)
+                reflectiveCurveToRelative(-1.34f, 3f, -3f, 3f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * ArrowDropDown icon (dropdown arrow)
+     */
+    val ArrowDropDown: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "ArrowDropDown",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(7f, 10f)
+                lineToRelative(5f, 5f)
+                lineToRelative(5f, -5f)
+                close()
+            }
+        }.build()
+    }
 }
 
