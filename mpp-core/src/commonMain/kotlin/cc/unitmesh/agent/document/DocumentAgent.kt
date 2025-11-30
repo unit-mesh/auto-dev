@@ -17,19 +17,32 @@ import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.schema.AgentToolFormatter
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
+import cc.unitmesh.devins.compiler.template.TemplateCompiler
+import cc.unitmesh.devins.compiler.variable.VariableTable
 import cc.unitmesh.devins.document.DocumentParserService
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 /**
- * Document Task - represents a user query about a document
+ * Document Agent Mode - determines the agent's behavior
+ */
+enum class DocumentAgentMode {
+    DOCUMENT_QUERY,      // Original document query mode using DocQL
+    FEATURE_TREE         // Product feature tree generation mode
+}
+
+/**
+ * Document Task - represents a user query about a document or feature tree request
  */
 data class DocumentTask(
     val query: String,
-    val documentPath: String? = null
+    val documentPath: String? = null,
+    val mode: DocumentAgentMode = DocumentAgentMode.DOCUMENT_QUERY,
+    val language: String = "EN"
 )
 
 /**
@@ -154,11 +167,35 @@ class DocumentAgent(
     private fun buildContext(task: DocumentTask): DocumentContext {
         return DocumentContext(
             query = task.query,
-            documentPath = task.documentPath
+            documentPath = task.documentPath,
+            mode = task.mode,
+            language = task.language
         )
     }
 
     private fun buildSystemPrompt(context: DocumentContext): String {
+        return when (context.mode) {
+            DocumentAgentMode.FEATURE_TREE -> buildFeatureTreePrompt(context)
+            DocumentAgentMode.DOCUMENT_QUERY -> buildDocumentQueryPrompt(context)
+        }
+    }
+
+    private fun buildFeatureTreePrompt(context: DocumentContext): String {
+        val template = when (context.language.uppercase()) {
+            "ZH", "CN" -> ProductFeatureTreeTemplate.ZH
+            else -> ProductFeatureTreeTemplate.EN
+        }
+
+        val variableTable = VariableTable()
+        variableTable.addVariable("projectPath", cc.unitmesh.devins.compiler.variable.VariableType.STRING, actualFileSystem.getProjectPath() ?: ".")
+        variableTable.addVariable("timestamp", cc.unitmesh.devins.compiler.variable.VariableType.STRING, Clock.System.now().toString())
+        variableTable.addVariable("toolList", cc.unitmesh.devins.compiler.variable.VariableType.STRING, AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toList()))
+
+        val compiler = TemplateCompiler(variableTable)
+        return compiler.compile(template)
+    }
+
+    private fun buildDocumentQueryPrompt(context: DocumentContext): String {
         return """ You are a Code-First Project Research Assistant.
 Your job is to answer developer questions based on the source code (should be exist can be run by DocQL) and project documentation.
 DocQL Tool supports structured code search using a TreeSitter parser.
@@ -270,6 +307,8 @@ ${AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toLis
 
     data class DocumentContext(
         val query: String,
-        val documentPath: String?
+        val documentPath: String?,
+        val mode: DocumentAgentMode = DocumentAgentMode.DOCUMENT_QUERY,
+        val language: String = "EN"
     )
 }

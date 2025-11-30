@@ -356,9 +356,9 @@ class ToolOrchestrator(
         val readFileTool = tool as cc.unitmesh.agent.tool.impl.ReadFileTool
         val readFileParams = cc.unitmesh.agent.tool.impl.ReadFileParams(
             path = params["path"] as? String ?: "",
-            startLine = params["startLine"] as? Int,
-            endLine = params["endLine"] as? Int,
-            maxLines = params["maxLines"] as? Int
+            startLine = (params["startLine"] as? Number)?.toInt(),
+            endLine = (params["endLine"] as? Number)?.toInt(),
+            maxLines = (params["maxLines"] as? Number)?.toInt()
         )
         val invocation = readFileTool.createInvocation(readFileParams)
         return invocation.execute(context)
@@ -436,7 +436,14 @@ class ToolOrchestrator(
     ): ToolResult {
         val globTool = tool as cc.unitmesh.agent.tool.impl.GlobTool
         val globParams = cc.unitmesh.agent.tool.impl.GlobParams(
-            pattern = params["pattern"] as? String ?: ""
+            pattern = params["pattern"] as? String ?: "",
+            path = params["path"] as? String,
+            includeDirectories = params["includeDirectories"] as? Boolean ?: false,
+            includeHidden = params["includeHidden"] as? Boolean ?: false,
+            maxResults = (params["maxResults"] as? Number)?.toInt() ?: 1000,
+            sortByTime = params["sortByTime"] as? Boolean ?: false,
+            includeFileInfo = params["includeFileInfo"] as? Boolean ?: false,
+            respectGitIgnore = params["respectGitIgnore"] as? Boolean ?: true
         )
         val invocation = globTool.createInvocation(globParams)
         return invocation.execute(context)
@@ -454,8 +461,8 @@ class ToolOrchestrator(
             include = params["include"] as? String,
             exclude = params["exclude"] as? String,
             caseSensitive = params["caseSensitive"] as? Boolean ?: false,
-            maxMatches = params["maxMatches"] as? Int ?: 100,
-            contextLines = params["contextLines"] as? Int ?: 0,
+            maxMatches = (params["maxMatches"] as? Number)?.toInt() ?: 100,
+            contextLines = (params["contextLines"] as? Number)?.toInt() ?: 0,
             recursive = params["recursive"] as? Boolean ?: true
         )
         val invocation = grepTool.createInvocation(grepParams)
