@@ -5,10 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,14 +32,18 @@ import org.jetbrains.jewel.ui.theme.defaultBannerStyle
  * - Timeline-based chat interface with tool calls
  * - LLM configuration support via mpp-ui's ConfigManager
  * - Real agent execution using mpp-core's CodingAgent
+ * - Tool loading status bar
+ *
+ * Aligned with AgentChatInterface from mpp-ui for feature parity.
  */
 @Composable
 fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
     val currentAgentType by viewModel.currentAgentType.collectAsState()
     val timeline by viewModel.renderer.timeline.collectAsState()
     val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
-    val isProcessing by viewModel.isProcessing.collectAsState()
+    val isExecuting by viewModel.isExecuting.collectAsState()
     val showConfigDialog by viewModel.showConfigDialog.collectAsState()
+    val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
     val listState = rememberLazyListState()
 
     // Auto-scroll to bottom when new items arrive
@@ -93,11 +99,17 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
         // Input area (only for chat-based modes)
         if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
             ChatInputArea(
-                isProcessing = isProcessing,
+                isProcessing = isExecuting,
                 onSend = { viewModel.sendMessage(it) },
-                onAbort = { viewModel.abortRequest() }
+                onAbort = { viewModel.cancelTask() }
             )
         }
+
+        // Tool loading status bar
+        ToolLoadingStatusBar(
+            viewModel = viewModel,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
+        )
     }
 }
 
@@ -147,6 +159,9 @@ private fun TimelineItemView(item: JewelRenderer.TimelineItem) {
         }
         is JewelRenderer.TimelineItem.TaskCompleteItem -> {
             TaskCompleteBubble(item)
+        }
+        is JewelRenderer.TimelineItem.TerminalOutputItem -> {
+            TerminalOutputBubble(item)
         }
     }
 }
@@ -411,6 +426,162 @@ private fun AgentTab(
 }
 
 @Composable
+private fun TerminalOutputBubble(item: JewelRenderer.TimelineItem.TerminalOutputItem) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .widthIn(max = 600.dp)
+                .background(Color(0xFF1E1E1E)) // Dark terminal background
+                .padding(8.dp)
+        ) {
+            Column {
+                // Command header
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$ ${item.command}",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4EC9B0) // Cyan for commands
+                        )
+                    )
+                    val exitColor = if (item.exitCode == 0) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
+                    Text(
+                        text = "exit: ${item.exitCode}",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontSize = 11.sp,
+                            color = exitColor
+                        )
+                    )
+                    Text(
+                        text = "${item.executionTimeMs}ms",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontSize = 11.sp,
+                            color = JewelTheme.globalColors.text.info
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Output content
+                val outputText = item.output.take(1000) + if (item.output.length > 1000) "\n..." else ""
+                Text(
+                    text = outputText,
+                    style = JewelTheme.defaultTextStyle.copy(
+                        fontSize = 12.sp,
+                        color = Color(0xFFD4D4D4) // Light gray for output
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToolLoadingStatusBar(
+    viewModel: IdeaAgentViewModel,
+    modifier: Modifier = Modifier
+) {
+    val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
+    val toolStatus = remember(viewModel) { viewModel.getToolLoadingStatus() }
+
+    Row(
+        modifier = modifier
+            .background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // SubAgents status
+        ToolStatusChip(
+            label = "SubAgents",
+            count = toolStatus.subAgentsEnabled,
+            total = toolStatus.subAgentsTotal,
+            isLoading = false,
+            color = AutoDevColors.Blue.c400
+        )
+
+        // MCP Tools status
+        ToolStatusChip(
+            label = "MCP Tools",
+            count = toolStatus.mcpToolsEnabled,
+            total = if (toolStatus.isLoading) -1 else toolStatus.mcpToolsTotal,
+            isLoading = toolStatus.isLoading,
+            color = if (!toolStatus.isLoading && toolStatus.mcpToolsEnabled > 0)
+                AutoDevColors.Green.c400
+            else
+                JewelTheme.globalColors.text.info
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Status message
+        if (mcpPreloadingMessage.isNotEmpty()) {
+            Text(
+                text = mcpPreloadingMessage,
+                style = JewelTheme.defaultTextStyle.copy(
+                    fontSize = 11.sp,
+                    color = JewelTheme.globalColors.text.info
+                ),
+                maxLines = 1
+            )
+        } else if (!toolStatus.isLoading && toolStatus.mcpServersLoaded > 0) {
+            Text(
+                text = "✓ All tools ready",
+                style = JewelTheme.defaultTextStyle.copy(
+                    fontSize = 11.sp,
+                    color = AutoDevColors.Green.c400
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun ToolStatusChip(
+    label: String,
+    count: Int,
+    total: Int,
+    isLoading: Boolean,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        // Status indicator dot
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .background(
+                    color = if (isLoading) JewelTheme.globalColors.text.info.copy(alpha = 0.5f) else color,
+                    shape = CircleShape
+                )
+        )
+
+        val totalDisplay = if (total < 0) "∞" else total.toString()
+        Text(
+            text = "$label ($count/$totalDisplay)",
+            style = JewelTheme.defaultTextStyle.copy(
+                fontSize = 11.sp,
+                color = if (isLoading)
+                    JewelTheme.globalColors.text.info.copy(alpha = 0.7f)
+                else
+                    JewelTheme.globalColors.text.info
+            )
+        )
+    }
+}
+
+@Composable
 private fun ChatInputArea(
     isProcessing: Boolean,
     onSend: (String) -> Unit,
@@ -434,7 +605,7 @@ private fun ChatInputArea(
     ) {
         TextField(
             state = textFieldState,
-            placeholder = { Text("Type your message...") },
+            placeholder = { Text("Type your message or /help for commands...") },
             modifier = Modifier
                 .weight(1f)
                 .onPreviewKeyEvent { keyEvent ->

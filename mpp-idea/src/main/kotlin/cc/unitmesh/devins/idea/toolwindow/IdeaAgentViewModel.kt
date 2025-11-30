@@ -3,8 +3,12 @@ package cc.unitmesh.devins.idea.toolwindow
 import cc.unitmesh.agent.AgentTask
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.agent.CodingAgent
+import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.config.PreloadingStatus
 import cc.unitmesh.agent.config.ToolConfigFile
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.ui.config.AutoDevConfigWrapper
 import cc.unitmesh.devins.ui.config.ConfigManager
@@ -26,10 +30,13 @@ import kotlinx.coroutines.flow.asStateFlow
  * cross-platform consistency with CLI and Desktop apps.
  *
  * Integrates with mpp-core's CodingAgent for actual agent execution.
+ *
+ * Aligned with CodingAgentViewModel from mpp-ui for feature parity.
  */
 class IdeaAgentViewModel(
     private val project: Project,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val maxIterations: Int = 100
 ) : Disposable {
 
     // Renderer for agent output (uses StateFlow instead of Compose mutableStateOf)
@@ -39,9 +46,12 @@ class IdeaAgentViewModel(
     private val _currentAgentType = MutableStateFlow(AgentType.CODING)
     val currentAgentType: StateFlow<AgentType> = _currentAgentType.asStateFlow()
 
-    // Is processing a request
-    private val _isProcessing = MutableStateFlow(false)
-    val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
+    // Is executing a task
+    private val _isExecuting = MutableStateFlow(false)
+    val isExecuting: StateFlow<Boolean> = _isExecuting.asStateFlow()
+
+    // Is processing (alias for isExecuting for backward compatibility)
+    val isProcessing: StateFlow<Boolean> get() = _isExecuting
 
     // LLM Configuration from mpp-ui's ConfigManager
     private val _configWrapper = MutableStateFlow<AutoDevConfigWrapper?>(null)
@@ -65,6 +75,16 @@ class IdeaAgentViewModel(
     // Current execution job (for cancellation)
     private var currentJob: Job? = null
 
+    // MCP Preloading status
+    private val _mcpPreloadingStatus = MutableStateFlow(PreloadingStatus(false, emptyList(), 0))
+    val mcpPreloadingStatus: StateFlow<PreloadingStatus> = _mcpPreloadingStatus.asStateFlow()
+
+    private val _mcpPreloadingMessage = MutableStateFlow("")
+    val mcpPreloadingMessage: StateFlow<String> = _mcpPreloadingMessage.asStateFlow()
+
+    // Cached tool configuration
+    private var cachedToolConfig: ToolConfigFile? = null
+
     init {
         // Load configuration on initialization
         loadConfiguration()
@@ -84,6 +104,8 @@ class IdeaAgentViewModel(
                 // Create LLM service if config is valid
                 if (modelConfig != null && modelConfig.isValid()) {
                     llmService = KoogLLMService.create(modelConfig)
+                    // Start MCP preloading after LLM service is created
+                    startMcpPreloading()
                 }
 
                 // Set agent type from config
@@ -98,11 +120,61 @@ class IdeaAgentViewModel(
     }
 
     /**
+     * Start MCP servers preloading in background.
+     * Aligned with CodingAgentViewModel's startMcpPreloading().
+     */
+    private suspend fun startMcpPreloading() {
+        try {
+            _mcpPreloadingMessage.value = "Loading MCP servers configuration..."
+            val toolConfig = ConfigManager.loadToolConfig()
+            cachedToolConfig = toolConfig
+
+            if (toolConfig.mcpServers.isEmpty()) {
+                _mcpPreloadingMessage.value = "No MCP servers configured"
+                return
+            }
+
+            _mcpPreloadingMessage.value = "Initializing ${toolConfig.mcpServers.size} MCP servers..."
+
+            // Initialize MCP servers (this will start background preloading)
+            McpToolConfigManager.init(toolConfig)
+
+            // Monitor preloading status
+            while (McpToolConfigManager.isPreloading()) {
+                _mcpPreloadingStatus.value = McpToolConfigManager.getPreloadingStatus()
+                _mcpPreloadingMessage.value = "Loading MCP servers... (${_mcpPreloadingStatus.value.preloadedServers.size} completed)"
+                delay(500)
+            }
+
+            // Wait a bit more to ensure all status updates are complete
+            delay(1000)
+
+            // Final status update
+            repeat(3) {
+                _mcpPreloadingStatus.value = McpToolConfigManager.getPreloadingStatus()
+                delay(100)
+            }
+
+            val preloadedCount = _mcpPreloadingStatus.value.preloadedServers.size
+            val totalCount = toolConfig.mcpServers.filter { !it.value.disabled }.size
+
+            _mcpPreloadingMessage.value = if (preloadedCount > 0) {
+                "MCP servers loaded successfully ($preloadedCount/$totalCount servers)"
+            } else {
+                "MCP servers initialization completed (no tools loaded)"
+            }
+        } catch (e: Exception) {
+            _mcpPreloadingMessage.value = "Failed to load MCP servers: ${e.message}"
+        }
+    }
+
+    /**
      * Reload configuration from file
      */
     fun reloadConfiguration() {
         agentInitialized = false
         codingAgent = null
+        cachedToolConfig = null
         loadConfiguration()
     }
 
@@ -114,15 +186,16 @@ class IdeaAgentViewModel(
     }
 
     /**
-     * Initialize the CodingAgent with tool configuration
+     * Initialize the CodingAgent with tool configuration.
+     * Aligned with CodingAgentViewModel's initializeCodingAgent().
      */
     private suspend fun initializeCodingAgent(): CodingAgent {
         val service = llmService
             ?: throw IllegalStateException("LLM service is not configured. Please configure in ~/.autodev/config.yaml")
 
         if (codingAgent == null || !agentInitialized) {
-            val toolConfig = try {
-                ConfigManager.loadToolConfig()
+            val toolConfig = cachedToolConfig ?: try {
+                ConfigManager.loadToolConfig().also { cachedToolConfig = it }
             } catch (e: Exception) {
                 ToolConfigFile.default()
             }
@@ -133,7 +206,7 @@ class IdeaAgentViewModel(
             codingAgent = CodingAgent(
                 projectPath = projectPath,
                 llmService = service,
-                maxIterations = 100,
+                maxIterations = maxIterations,
                 renderer = renderer,
                 mcpToolConfigService = mcpToolConfigService,
                 enableLLMStreaming = true
@@ -144,46 +217,154 @@ class IdeaAgentViewModel(
     }
 
     /**
-     * Send a message to the Agent.
+     * Check if LLM service is configured.
      */
-    fun sendMessage(content: String) {
-        if (content.isBlank() || _isProcessing.value) return
+    fun isConfigured(): Boolean = llmService != null
 
-        // Add user message to renderer timeline
-        renderer.addUserMessage(content)
+    /**
+     * Execute a task with the agent.
+     * Aligned with CodingAgentViewModel's executeTask().
+     *
+     * @param task The task description
+     * @param onConfigRequired Callback when configuration is needed
+     */
+    fun executeTask(task: String, onConfigRequired: (() -> Unit)? = null) {
+        if (_isExecuting.value) return
 
-        // Start processing
-        _isProcessing.value = true
+        if (!isConfigured()) {
+            renderer.addUserMessage(task)
+            renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
+            onConfigRequired?.invoke()
+            return
+        }
+
+        // Handle builtin commands
+        if (task.trim().startsWith("/")) {
+            handleBuiltinCommand(task.trim(), onConfigRequired)
+            return
+        }
+
+        _isExecuting.value = true
+        renderer.clearError()
+        renderer.addUserMessage(task)
 
         currentJob = coroutineScope.launch {
             try {
                 val agent = initializeCodingAgent()
                 val projectPath = project.basePath ?: System.getProperty("user.home")
 
-                val task = AgentTask(
-                    requirement = content,
+                val agentTask = AgentTask(
+                    requirement = task,
                     projectPath = projectPath
                 )
 
-                // Execute the agent task
-                agent.executeTask(task)
-
+                agent.executeTask(agentTask)
             } catch (e: CancellationException) {
+                renderer.forceStop()
                 renderer.renderError("Task cancelled by user")
             } catch (e: Exception) {
-                renderer.renderError("Error: ${e.message}")
+                renderer.renderError(e.message ?: "Unknown error")
             } finally {
-                _isProcessing.value = false
+                _isExecuting.value = false
+                currentJob = null
             }
         }
     }
 
     /**
-     * Abort the current request.
+     * Handle builtin commands (/init, /clear, /help, etc.).
+     * Aligned with CodingAgentViewModel's handleBuiltinCommand().
+     */
+    private fun handleBuiltinCommand(command: String, onConfigRequired: (() -> Unit)? = null) {
+        val parts = command.substring(1).trim().split("\\s+".toRegex())
+        val commandName = parts[0].lowercase()
+        val args = parts.drop(1).joinToString(" ")
+
+        renderer.addUserMessage(command)
+
+        when (commandName) {
+            "clear" -> {
+                renderer.clearTimeline()
+                renderer.renderFinalResult(true, "SUCCESS: Chat history cleared", 0)
+            }
+
+            "help" -> {
+                val helpText = buildString {
+                    appendLine("HELP: Available Commands:")
+                    appendLine("  /clear - Clear chat history")
+                    appendLine("  /help - Show this help message")
+                    appendLine("  /status - Show MCP servers and tools status")
+                    appendLine("")
+                    appendLine("TIP: You can also use @ for agents and other DevIns commands")
+                }
+                renderer.renderFinalResult(true, helpText, 0)
+            }
+
+            "status" -> {
+                val status = getToolLoadingStatus()
+                val statusText = buildString {
+                    appendLine("STATUS: Tool Loading Status")
+                    appendLine("  SubAgents: ${status.subAgentsEnabled}/${status.subAgentsTotal}")
+                    appendLine("  MCP Servers: ${status.mcpServersLoaded}/${status.mcpServersTotal}")
+                    appendLine("  MCP Tools: ${status.mcpToolsEnabled}/${status.mcpToolsTotal}")
+                    appendLine("  Loading: ${status.isLoading}")
+                }
+                renderer.renderFinalResult(true, statusText, 0)
+            }
+
+            else -> {
+                if (!isConfigured()) {
+                    renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
+                    onConfigRequired?.invoke()
+                    return
+                }
+
+                // Treat as a regular task
+                _isExecuting.value = true
+                currentJob = coroutineScope.launch {
+                    try {
+                        val agent = initializeCodingAgent()
+                        val projectPath = project.basePath ?: System.getProperty("user.home")
+                        val agentTask = AgentTask(
+                            requirement = command,
+                            projectPath = projectPath
+                        )
+                        agent.executeTask(agentTask)
+                    } catch (e: Exception) {
+                        renderer.renderError(e.message ?: "Unknown error")
+                    } finally {
+                        _isExecuting.value = false
+                        currentJob = null
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Send a message to the Agent (alias for executeTask for backward compatibility).
+     */
+    fun sendMessage(content: String) {
+        executeTask(content) { setShowConfigDialog(true) }
+    }
+
+    /**
+     * Cancel the current task.
+     */
+    fun cancelTask() {
+        if (_isExecuting.value && currentJob != null) {
+            currentJob?.cancel("Task cancelled by user")
+            currentJob = null
+            renderer.forceStop()
+            _isExecuting.value = false
+        }
+    }
+
+    /**
+     * Abort the current request (alias for cancelTask for backward compatibility).
      */
     fun abortRequest() {
-        currentJob?.cancel()
-        _isProcessing.value = false
+        cancelTask()
     }
 
     /**
@@ -191,6 +372,41 @@ class IdeaAgentViewModel(
      */
     fun clearHistory() {
         renderer.clearTimeline()
+    }
+
+    /**
+     * Get tool loading status.
+     * Aligned with CodingAgentViewModel's getToolLoadingStatus().
+     */
+    fun getToolLoadingStatus(): ToolLoadingStatus {
+        val toolConfig = cachedToolConfig
+        val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
+        val subAgentsEnabled = subAgentTools.size
+        val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
+        val mcpServersLoaded = _mcpPreloadingStatus.value.preloadedServers.size
+
+        val mcpToolsEnabled = if (McpToolConfigManager.isPreloading()) {
+            0
+        } else {
+            val enabledMcpToolsCount = toolConfig?.enabledMcpTools?.size ?: 0
+            if (enabledMcpToolsCount > 0) enabledMcpToolsCount else 0
+        }
+
+        val mcpToolsTotal = if (McpToolConfigManager.isPreloading()) {
+            0
+        } else {
+            McpToolConfigManager.getTotalDiscoveredTools()
+        }
+
+        return ToolLoadingStatus(
+            subAgentsEnabled = subAgentsEnabled,
+            subAgentsTotal = subAgentTools.size,
+            mcpServersLoaded = mcpServersLoaded,
+            mcpServersTotal = mcpServersTotal,
+            mcpToolsEnabled = mcpToolsEnabled,
+            mcpToolsTotal = mcpToolsTotal,
+            isLoading = McpToolConfigManager.isPreloading()
+        )
     }
 
     /**
@@ -204,6 +420,7 @@ class IdeaAgentViewModel(
                 reloadConfiguration()
             } catch (e: Exception) {
                 // Handle save error
+                renderer.renderError("Failed to save configuration: ${e.message}")
             }
         }
     }
@@ -227,4 +444,18 @@ class IdeaAgentViewModel(
         coroutineScope.cancel()
     }
 }
+
+/**
+ * Data class to hold tool loading status information.
+ * Aligned with CodingAgentViewModel's ToolLoadingStatus.
+ */
+data class ToolLoadingStatus(
+    val subAgentsEnabled: Int = 0,
+    val subAgentsTotal: Int = 0,
+    val mcpServersLoaded: Int = 0,
+    val mcpServersTotal: Int = 0,
+    val mcpToolsEnabled: Int = 0,
+    val mcpToolsTotal: Int = 0,
+    val isLoading: Boolean = false
+)
 
