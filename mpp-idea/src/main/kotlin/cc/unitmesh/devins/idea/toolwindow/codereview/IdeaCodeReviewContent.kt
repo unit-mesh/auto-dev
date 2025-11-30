@@ -84,6 +84,7 @@ fun IdeaCodeReviewContent(
                     DiffViewerPanel(
                         diffFiles = state.diffFiles,
                         selectedCommits = selectedCommits,
+                        selectedCommitIndices = state.selectedCommitIndices,
                         isLoadingDiff = state.isLoadingDiff,
                         onViewFile = { path -> viewModel.openFileViewer(path) },
                         onRefreshIssue = { index -> viewModel.refreshIssueForCommit(index) },
@@ -230,6 +231,7 @@ private enum class IdeaFileViewMode {
 private fun DiffViewerPanel(
     diffFiles: List<DiffFileInfo>,
     selectedCommits: List<CommitInfo>,
+    selectedCommitIndices: Set<Int>,
     isLoadingDiff: Boolean,
     onViewFile: ((String) -> Unit)? = null,
     onRefreshIssue: ((Int) -> Unit)? = null,
@@ -248,6 +250,7 @@ private fun DiffViewerPanel(
         if (selectedCommits.isNotEmpty()) {
             IdeaCommitInfoCard(
                 selectedCommits = selectedCommits,
+                selectedCommitIndices = selectedCommitIndices.toList(),
                 onRefreshIssue = onRefreshIssue,
                 onConfigureToken = onConfigureToken
             )
@@ -352,10 +355,12 @@ private fun DiffViewerPanel(
 
 /**
  * Commit info card with issue display
+ * @param selectedCommitIndices The actual indices in the commit history for proper refresh targeting
  */
 @Composable
 private fun IdeaCommitInfoCard(
     selectedCommits: List<CommitInfo>,
+    selectedCommitIndices: List<Int>,
     onRefreshIssue: ((Int) -> Unit)?,
     onConfigureToken: () -> Unit
 ) {
@@ -388,10 +393,11 @@ private fun IdeaCommitInfoCard(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Inline issue indicator
+                    // Inline issue indicator - use the actual commit index
+                    val actualCommitIndex = selectedCommitIndices.firstOrNull() ?: 0
                     IdeaIssueIndicator(
                         commit = selectedCommit,
-                        commitIndex = 0,
+                        commitIndex = actualCommitIndex,
                         onRefreshIssue = onRefreshIssue,
                         onConfigureToken = onConfigureToken
                     )
@@ -1027,6 +1033,7 @@ private fun IdeaDiffLineView(line: cc.unitmesh.agent.diff.DiffLine) {
 
 /**
  * File tree view with directory grouping
+ * Uses file.path as unique identifier for O(1) expansion tracking instead of indexOf
  */
 @Composable
 private fun IdeaFileTreeView(
@@ -1036,7 +1043,8 @@ private fun IdeaFileTreeView(
     val scrollState = rememberLazyListState()
     val treeNodes = remember(files) { buildFileTreeStructure(files) }
     var expandedDirs by remember { mutableStateOf(setOf<String>()) }
-    var expandedFileIndex by remember { mutableStateOf<Int?>(null) }
+    // Use file path as identifier instead of index for O(1) lookup
+    var expandedFilePath by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(
         state = scrollState,
@@ -1064,10 +1072,9 @@ private fun IdeaFileTreeView(
                             item(key = "file_${node.path}_$index") {
                                 IdeaFileTreeItemCompact(
                                     file = file,
-                                    isExpanded = expandedFileIndex == files.indexOf(file),
+                                    isExpanded = expandedFilePath == file.path,
                                     onToggleExpand = {
-                                        val fileIndex = files.indexOf(file)
-                                        expandedFileIndex = if (expandedFileIndex == fileIndex) null else fileIndex
+                                        expandedFilePath = if (expandedFilePath == file.path) null else file.path
                                     },
                                     onViewFile = onViewFile,
                                     indentLevel = 1
@@ -1080,10 +1087,9 @@ private fun IdeaFileTreeView(
                     item(key = "file_root_${node.file.path}") {
                         IdeaFileTreeItemCompact(
                             file = node.file,
-                            isExpanded = expandedFileIndex == files.indexOf(node.file),
+                            isExpanded = expandedFilePath == node.file.path,
                             onToggleExpand = {
-                                val fileIndex = files.indexOf(node.file)
-                                expandedFileIndex = if (expandedFileIndex == fileIndex) null else fileIndex
+                                expandedFilePath = if (expandedFilePath == node.file.path) null else node.file.path
                             },
                             onViewFile = onViewFile,
                             indentLevel = 0
