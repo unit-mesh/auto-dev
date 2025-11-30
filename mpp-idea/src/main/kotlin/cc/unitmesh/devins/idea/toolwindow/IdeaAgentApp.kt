@@ -142,7 +142,10 @@ fun IdeaAgentApp(
                 }
                 AgentType.CODE_REVIEW -> {
                     codeReviewViewModel?.let { vm ->
-                        IdeaCodeReviewContent(viewModel = vm)
+                        IdeaCodeReviewContent(
+                            viewModel = vm,
+                            parentDisposable = viewModel
+                        )
                     } ?: IdeaEmptyStateMessage("Loading Code Review...")
                 }
                 AgentType.KNOWLEDGE -> {

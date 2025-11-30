@@ -16,11 +16,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.diff.ChangeType
+import cc.unitmesh.devins.idea.renderer.sketch.IdeaSketchRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.AIAnalysisProgress
 import cc.unitmesh.devins.ui.compose.agent.codereview.AnalysisStage
 import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.Disposable
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.*
@@ -30,7 +32,10 @@ import org.jetbrains.jewel.ui.component.*
  * Uses Jewel UI components for IntelliJ-native look and feel.
  */
 @Composable
-fun IdeaCodeReviewContent(viewModel: IdeaCodeReviewViewModel) {
+fun IdeaCodeReviewContent(
+    viewModel: IdeaCodeReviewViewModel,
+    parentDisposable: Disposable
+) {
     val state by viewModel.state.collectAsState()
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -64,6 +69,7 @@ fun IdeaCodeReviewContent(viewModel: IdeaCodeReviewViewModel) {
             error = state.error,
             onStartAnalysis = { viewModel.startAnalysis() },
             onCancelAnalysis = { viewModel.cancelAnalysis() },
+            parentDisposable = parentDisposable,
             modifier = Modifier.width(350.dp).fillMaxHeight()
         )
     }
@@ -319,6 +325,7 @@ private fun AIAnalysisPanel(
     error: String?,
     onStartAnalysis: () -> Unit,
     onCancelAnalysis: () -> Unit,
+    parentDisposable: Disposable,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.background(JewelTheme.globalColors.panelBackground)) {
@@ -395,7 +402,7 @@ private fun AIAnalysisPanel(
 
         Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
 
-        // Analysis output
+        // Analysis output - use IdeaSketchRenderer for rich markdown/code rendering
         val scrollState = rememberScrollState()
         Box(
             modifier = Modifier
@@ -404,12 +411,13 @@ private fun AIAnalysisPanel(
                 .padding(12.dp)
         ) {
             if (progress.analysisOutput.isNotEmpty()) {
-                Text(
-                    text = progress.analysisOutput,
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 11.sp
-                    )
+                val isComplete = progress.stage == AnalysisStage.COMPLETED ||
+                                 progress.stage == AnalysisStage.ERROR
+                IdeaSketchRenderer.RenderResponse(
+                    content = progress.analysisOutput,
+                    isComplete = isComplete,
+                    parentDisposable = parentDisposable,
+                    modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 Text(
