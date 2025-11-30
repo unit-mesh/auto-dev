@@ -24,7 +24,6 @@ import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
-import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
@@ -297,7 +296,7 @@ private fun ToolCallBubble(item: JewelRenderer.TimelineItem.ToolCallItem) {
                         style = JewelTheme.defaultTextStyle.copy(color = statusColor)
                     )
                     Icon(
-                        imageVector = AutoDevComposeIcons.Build,
+                        imageVector = IdeaComposeIcons.Build,
                         contentDescription = "Tool",
                         modifier = Modifier.size(14.dp),
                         tint = JewelTheme.globalColors.text.normal
@@ -349,7 +348,7 @@ private fun ErrorBubble(message: String) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = AutoDevComposeIcons.Error,
+                    imageVector = IdeaComposeIcons.Error,
                     contentDescription = "Error",
                     modifier = Modifier.size(16.dp),
                     tint = AutoDevColors.Red.c400
@@ -387,7 +386,7 @@ private fun TaskCompleteBubble(item: JewelRenderer.TimelineItem.TaskCompleteItem
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = if (item.success) AutoDevComposeIcons.CheckCircle else AutoDevComposeIcons.Error,
+                    imageVector = if (item.success) IdeaComposeIcons.CheckCircle else IdeaComposeIcons.Error,
                     contentDescription = if (item.success) "Success" else "Failed",
                     modifier = Modifier.size(16.dp),
                     tint = if (item.success) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
@@ -463,7 +462,7 @@ private fun AgentTabsHeader(
             }
             IconButton(onClick = onSettings) {
                 Icon(
-                    imageVector = AutoDevComposeIcons.Settings,
+                    imageVector = IdeaComposeIcons.Settings,
                     contentDescription = "Settings",
                     modifier = Modifier.size(16.dp),
                     tint = JewelTheme.globalColors.text.normal
