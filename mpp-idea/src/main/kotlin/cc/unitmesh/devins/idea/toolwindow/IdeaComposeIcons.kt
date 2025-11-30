@@ -181,5 +181,153 @@ object IdeaComposeIcons {
             }
         }.build()
     }
+
+    /**
+     * Refresh icon (circular arrow)
+     */
+    val Refresh: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Refresh",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(17.65f, 6.35f)
+                curveTo(16.2f, 4.9f, 14.21f, 4f, 12f, 4f)
+                curveToRelative(-4.42f, 0f, -7.99f, 3.58f, -7.99f, 8f)
+                reflectiveCurveToRelative(3.57f, 8f, 7.99f, 8f)
+                curveToRelative(3.73f, 0f, 6.84f, -2.55f, 7.73f, -6f)
+                horizontalLineToRelative(-2.08f)
+                curveToRelative(-0.82f, 2.33f, -3.04f, 4f, -5.65f, 4f)
+                curveToRelative(-3.31f, 0f, -6f, -2.69f, -6f, -6f)
+                reflectiveCurveToRelative(2.69f, -6f, 6f, -6f)
+                curveToRelative(1.66f, 0f, 3.14f, 0.69f, 4.22f, 1.78f)
+                lineTo(13f, 11f)
+                horizontalLineToRelative(7f)
+                lineTo(20f, 4f)
+                lineToRelative(-2.35f, 2.35f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Description icon (document)
+     */
+    val Description: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Description",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(14f, 2f)
+                lineTo(6f, 2f)
+                curveToRelative(-1.1f, 0f, -1.99f, 0.9f, -1.99f, 2f)
+                lineTo(4f, 20f)
+                curveToRelative(0f, 1.1f, 0.89f, 2f, 1.99f, 2f)
+                lineTo(18f, 22f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                lineTo(20f, 8f)
+                lineToRelative(-6f, -6f)
+                close()
+                moveTo(16f, 18f)
+                lineTo(8f, 18f)
+                verticalLineToRelative(-2f)
+                horizontalLineToRelative(8f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(16f, 14f)
+                lineTo(8f, 14f)
+                verticalLineToRelative(-2f)
+                horizontalLineToRelative(8f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(13f, 9f)
+                lineTo(13f, 3.5f)
+                lineTo(18.5f, 9f)
+                lineTo(13f, 9f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Code icon (angle brackets)
+     */
+    val Code: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Code",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(9.4f, 16.6f)
+                lineTo(4.8f, 12f)
+                lineToRelative(4.6f, -4.6f)
+                lineTo(8f, 6f)
+                lineToRelative(-6f, 6f)
+                lineToRelative(6f, 6f)
+                lineToRelative(1.4f, -1.4f)
+                close()
+                moveTo(14.6f, 16.6f)
+                lineToRelative(4.6f, -4.6f)
+                lineToRelative(-4.6f, -4.6f)
+                lineTo(16f, 6f)
+                lineToRelative(6f, 6f)
+                lineToRelative(-6f, 6f)
+                lineToRelative(-1.4f, -1.4f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Delete icon (trash can)
+     */
+    val Delete: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Delete",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                moveTo(6f, 19f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(8f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                lineTo(18f, 7f)
+                lineTo(6f, 7f)
+                verticalLineToRelative(12f)
+                close()
+                moveTo(19f, 4f)
+                horizontalLineToRelative(-3.5f)
+                lineToRelative(-1f, -1f)
+                horizontalLineToRelative(-5f)
+                lineToRelative(-1f, 1f)
+                lineTo(5f, 4f)
+                verticalLineToRelative(2f)
+                horizontalLineToRelative(14f)
+                lineTo(19f, 4f)
+                close()
+            }
+        }.build()
+    }
 }
 
