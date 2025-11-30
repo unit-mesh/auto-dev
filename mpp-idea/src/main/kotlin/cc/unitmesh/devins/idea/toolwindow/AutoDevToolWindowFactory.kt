@@ -7,6 +7,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import cc.unitmesh.devins.idea.services.CoroutineScopeHolder
+import cc.unitmesh.devins.idea.agent.IdeaCodingAgentViewModel
+import cc.unitmesh.devins.idea.agent.ui.CodingAgentPanel
 import org.jetbrains.jewel.bridge.addComposeTab
 
 /**
@@ -22,20 +24,23 @@ class AutoDevToolWindowFactory : ToolWindowFactory {
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        createChatPanel(project, toolWindow)
+        createAgentPanel(project, toolWindow)
     }
 
     override fun shouldBeAvailable(project: Project): Boolean = true
 
-    private fun createChatPanel(project: Project, toolWindow: ToolWindow) {
+    private fun createAgentPanel(project: Project, toolWindow: ToolWindow) {
         val coroutineScope = project.service<CoroutineScopeHolder>()
-            .createScope("AutoDevChatViewModel")
+            .createScope("IdeaCodingAgentViewModel")
 
-        val viewModel = AutoDevChatViewModel(coroutineScope)
+        val viewModel = IdeaCodingAgentViewModel(
+            project = project,
+            coroutineScope = coroutineScope
+        )
         Disposer.register(toolWindow.disposable, viewModel)
 
-        toolWindow.addComposeTab("Chat") {
-            AutoDevChatApp(viewModel)
+        toolWindow.addComposeTab("Agent") {
+            CodingAgentPanel(viewModel)
         }
     }
 }
