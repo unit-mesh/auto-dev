@@ -476,7 +476,7 @@ tasks.register<JavaExec>("runDocumentCli") {
     classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
     mainClass.set("cc.unitmesh.server.cli.DocumentCli")
 
-    // Pass properties
+    // Pass properties - use docProjectPath to avoid conflict with Gradle's projectPath
     if (project.hasProperty("docProjectPath")) {
         systemProperty("projectPath", project.property("docProjectPath") as String)
     }
@@ -486,7 +486,14 @@ tasks.register<JavaExec>("runDocumentCli") {
     if (project.hasProperty("docPath")) {
         systemProperty("documentPath", project.property("docPath") as String)
     }
-    
+    // New parameters for feature tree mode
+    if (project.hasProperty("docMode")) {
+        systemProperty("mode", project.property("docMode") as String)
+    }
+    if (project.hasProperty("docLanguage")) {
+        systemProperty("language", project.property("docLanguage") as String)
+    }
+
     standardInput = System.`in`
 }
 

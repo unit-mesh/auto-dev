@@ -75,12 +75,30 @@ class ToolCallParser {
 
         for (i in jsonStartIndex until lines.size) {
             val line = lines[i].trim()
+            // Handle both "```json" on its own line and "```json{...}" on single line
             if (line == "```json") {
                 inJsonBlock = true
+                continue
+            } else if (line.startsWith("```json") && line.length > 7) {
+                // Handle format like: ```json{"pattern": "..."}
+                val jsonContent = line.removePrefix("```json").removeSuffix("```")
+                if (jsonContent.isNotEmpty()) {
+                    jsonLines.add(jsonContent)
+                    // If the line also ends with ```, we're done
+                    if (line.endsWith("```")) {
+                        break
+                    }
+                    inJsonBlock = true
+                }
                 continue
             } else if (line == "```") {
                 break
             } else if (inJsonBlock) {
+                // Handle content that might end with ```
+                if (line.endsWith("```")) {
+                    jsonLines.add(line.removeSuffix("```"))
+                    break
+                }
                 jsonLines.add(lines[i]) // Keep original indentation for JSON
             }
         }
