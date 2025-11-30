@@ -8,9 +8,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.devins.idea.renderer.markdown.JewelMarkdown
-import cc.unitmesh.devins.idea.renderer.markdown.jewelMarkdownColor
-import cc.unitmesh.devins.idea.renderer.markdown.jewelMarkdownTypography
+import cc.unitmesh.devins.idea.renderer.markdown.SimpleJewelMarkdown
 import cc.unitmesh.devins.parser.CodeFence
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.Disposable
@@ -47,12 +45,10 @@ fun IdeaMarkdownRenderer(
             modifier = modifier
         )
     } else {
-        // Use standard JewelMarkdown for regular content or streaming
-        JewelMarkdown(
+        // Use simple Jewel Markdown renderer
+        SimpleJewelMarkdown(
             content = content,
-            modifier = modifier,
-            colors = jewelMarkdownColor(),
-            typography = jewelMarkdownTypography()
+            modifier = modifier
         )
     }
 }
@@ -84,11 +80,9 @@ private fun MermaidAwareMarkdownRenderer(
                 }
                 "markdown", "md", "" -> {
                     if (fence.text.isNotBlank()) {
-                        JewelMarkdown(
+                        SimpleJewelMarkdown(
                             content = fence.text,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = jewelMarkdownColor(),
-                            typography = jewelMarkdownTypography()
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }

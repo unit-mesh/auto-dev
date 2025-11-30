@@ -6,9 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.idea.renderer.MermaidDiagramView
-import cc.unitmesh.devins.idea.renderer.markdown.JewelMarkdown
-import cc.unitmesh.devins.idea.renderer.markdown.jewelMarkdownColor
-import cc.unitmesh.devins.idea.renderer.markdown.jewelMarkdownTypography
+import cc.unitmesh.devins.idea.renderer.markdown.SimpleJewelMarkdown
 import cc.unitmesh.devins.parser.CodeFence
 import com.intellij.openapi.Disposable
 import org.jetbrains.jewel.ui.component.CircularProgressIndicator
@@ -47,11 +45,9 @@ object IdeaSketchRenderer {
                 when (fence.languageId.lowercase()) {
                     "markdown", "md", "" -> {
                         if (fence.text.isNotBlank()) {
-                            JewelMarkdown(
+                            SimpleJewelMarkdown(
                                 content = fence.text,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = jewelMarkdownColor(),
-                                typography = jewelMarkdownTypography()
+                                modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }

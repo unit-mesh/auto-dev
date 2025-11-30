@@ -50,6 +50,20 @@ class IdeaCodeReviewViewModel(
     }
 
     /**
+     * Open a file in the IDE editor
+     */
+    fun openFileViewer(path: String) {
+        val basePath = project.basePath ?: return
+        val file = java.io.File(basePath, path)
+        if (file.exists()) {
+            val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
+            if (virtualFile != null) {
+                com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFile(virtualFile, true)
+            }
+        }
+    }
+
+    /**
      * Dispose resources when the ViewModel is no longer needed
      */
     override fun dispose() {
