@@ -115,6 +115,13 @@ class IdeaDevInInput(
             document.addDocumentListener(listener)
         }
 
+        // Add internal document listener to notify text changes
+        document.addDocumentListener(object : DocumentListener {
+            override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
+                editorListeners.multicaster.onTextChanged(text)
+            }
+        })
+
         // Listen for completion popup state to disable Enter submit when completing
         project.messageBus.connect(disposable ?: this)
             .subscribe(LookupManagerListener.TOPIC, object : LookupManagerListener {

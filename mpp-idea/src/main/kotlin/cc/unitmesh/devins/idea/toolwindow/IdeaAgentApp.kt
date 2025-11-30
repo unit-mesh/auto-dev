@@ -10,23 +10,34 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.AgentType
+import cc.unitmesh.devins.idea.editor.IdeaBottomToolbar
+import cc.unitmesh.devins.idea.editor.IdeaDevInInput
+import cc.unitmesh.devins.idea.editor.IdeaInputListener
+import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.*
 import org.jetbrains.jewel.ui.theme.defaultBannerStyle
+import java.awt.BorderLayout
+import java.awt.Dimension
+import javax.swing.JPanel
 
 /**
  * Main Compose application for Agent ToolWindow.
@@ -128,7 +139,9 @@ fun IdeaAgentApp(
 
         // Input area (only for chat-based modes)
         if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
-            ChatInputArea(
+            DevInInputArea(
+                project = project,
+                parentDisposable = viewModel,
                 isProcessing = isExecuting,
                 onSend = { viewModel.sendMessage(it) },
                 onAbort = { viewModel.cancelTask() },
@@ -136,8 +149,7 @@ fun IdeaAgentApp(
                 totalTokens = null, // TODO: integrate token counting from renderer
                 onSettingsClick = { viewModel.setShowConfigDialog(true) },
                 onAtClick = {
-                    // @ click triggers agent completion - for now just a placeholder
-                    // Full completion integration requires EditorTextField with DevIn language
+                    // @ click triggers agent completion - placeholder for now
                 }
             )
         }
@@ -618,8 +630,9 @@ private fun ToolStatusChip(
 /**
  * Advanced chat input area with full DevIn language support.
  *
- * Features:
- * - Multi-line text input with syntax highlighting hints
+ * Uses IdeaDevInInput (EditorTextField-based) embedded via SwingPanel for:
+ * - DevIn language syntax highlighting and completion
+ * - IntelliJ's native completion popup integration
  * - Enter to submit, Shift+Enter for newline
  * - @ trigger for agent completion
  * - Token usage display
@@ -627,7 +640,9 @@ private fun ToolStatusChip(
  * - Stop/Send button based on execution state
  */
 @Composable
-private fun ChatInputArea(
+private fun DevInInputArea(
+    project: Project,
+    parentDisposable: Disposable,
     isProcessing: Boolean,
     onSend: (String) -> Unit,
     onAbort: () -> Unit,
@@ -636,15 +651,85 @@ private fun ChatInputArea(
     onSettingsClick: () -> Unit = {},
     onAtClick: () -> Unit = {}
 ) {
-    cc.unitmesh.devins.idea.editor.IdeaInputSection(
-        isProcessing = isProcessing,
-        onSend = onSend,
-        onStop = onAbort,
-        onAtClick = onAtClick,
-        onSettingsClick = onSettingsClick,
-        workspacePath = workspacePath,
-        totalTokens = totalTokens,
-        modifier = Modifier.padding(8.dp)
-    )
+    var inputText by remember { mutableStateOf("") }
+    var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(8.dp)
+    ) {
+        // DevIn Editor via SwingPanel
+        SwingPanel(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            factory = {
+                val input = IdeaDevInInput(
+                    project = project,
+                    disposable = parentDisposable,
+                    showAgent = true
+                ).apply {
+                    recreateDocument()
+
+                    addInputListener(object : IdeaInputListener {
+                        override fun editorAdded(editor: EditorEx) {
+                            // Editor is ready
+                        }
+
+                        override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
+                            if (text.isNotBlank() && !isProcessing) {
+                                onSend(text)
+                                clearInput()
+                                inputText = ""
+                            }
+                        }
+
+                        override fun onStop() {
+                            onAbort()
+                        }
+
+                        override fun onTextChanged(text: String) {
+                            inputText = text
+                        }
+                    })
+                }
+
+                // Register for disposal
+                Disposer.register(parentDisposable, input)
+                devInInput = input
+
+                // Wrap in a JPanel to handle sizing
+                JPanel(BorderLayout()).apply {
+                    add(input, BorderLayout.CENTER)
+                    preferredSize = Dimension(800, 120)
+                    minimumSize = Dimension(200, 80)
+                }
+            },
+            update = { panel ->
+                // Update panel if needed
+            }
+        )
+
+        // Bottom toolbar with Compose
+        IdeaBottomToolbar(
+            onSendClick = {
+                val text = devInInput?.text?.trim() ?: inputText.trim()
+                if (text.isNotBlank() && !isProcessing) {
+                    onSend(text)
+                    devInInput?.clearInput()
+                    inputText = ""
+                }
+            },
+            sendEnabled = inputText.isNotBlank() && !isProcessing,
+            isExecuting = isProcessing,
+            onStopClick = onAbort,
+            onAtClick = {
+                devInInput?.appendText("@")
+                onAtClick()
+            },
+            onSettingsClick = onSettingsClick,
+            workspacePath = workspacePath,
+            totalTokens = totalTokens
+        )
+    }
 }
 
