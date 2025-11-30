@@ -17,7 +17,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
+import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.project.Project
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
@@ -37,7 +41,11 @@ import org.jetbrains.jewel.ui.theme.defaultBannerStyle
  * Aligned with AgentChatInterface from mpp-ui for feature parity.
  */
 @Composable
-fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
+fun IdeaAgentApp(
+    viewModel: IdeaAgentViewModel,
+    project: Project,
+    coroutineScope: CoroutineScope
+) {
     val currentAgentType by viewModel.currentAgentType.collectAsState()
     val timeline by viewModel.renderer.timeline.collectAsState()
     val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
@@ -46,12 +54,32 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
     val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
     val listState = rememberLazyListState()
 
+    // Code Review ViewModel (created lazily when needed)
+    var codeReviewViewModel by remember { mutableStateOf<IdeaCodeReviewViewModel?>(null) }
+
     // Auto-scroll to bottom when new items arrive
     LaunchedEffect(timeline.size, streamingOutput) {
         if (timeline.isNotEmpty() || streamingOutput.isNotEmpty()) {
             val targetIndex = if (streamingOutput.isNotEmpty()) timeline.size else timeline.lastIndex.coerceAtLeast(0)
             if (targetIndex >= 0) {
                 listState.animateScrollToItem(targetIndex)
+            }
+        }
+    }
+
+    // Create CodeReviewViewModel when switching to CODE_REVIEW tab
+    LaunchedEffect(currentAgentType) {
+        if (currentAgentType == AgentType.CODE_REVIEW && codeReviewViewModel == null) {
+            codeReviewViewModel = IdeaCodeReviewViewModel(project, coroutineScope)
+        }
+    }
+
+    // Dispose CodeReviewViewModel when leaving CODE_REVIEW tab
+    DisposableEffect(currentAgentType) {
+        onDispose {
+            if (currentAgentType != AgentType.CODE_REVIEW) {
+                codeReviewViewModel?.dispose()
+                codeReviewViewModel = null
             }
         }
     }
@@ -86,7 +114,9 @@ fun IdeaAgentApp(viewModel: IdeaAgentViewModel) {
                     )
                 }
                 AgentType.CODE_REVIEW -> {
-                    CodeReviewContent()
+                    codeReviewViewModel?.let { vm ->
+                        IdeaCodeReviewContent(viewModel = vm)
+                    } ?: EmptyStateMessage("Loading Code Review...")
                 }
                 AgentType.KNOWLEDGE -> {
                     KnowledgeContent()
@@ -164,11 +194,6 @@ private fun TimelineItemView(item: JewelRenderer.TimelineItem) {
             TerminalOutputBubble(item)
         }
     }
-}
-
-@Composable
-private fun CodeReviewContent() {
-    EmptyStateMessage("Code Review mode - Coming soon!")
 }
 
 @Composable

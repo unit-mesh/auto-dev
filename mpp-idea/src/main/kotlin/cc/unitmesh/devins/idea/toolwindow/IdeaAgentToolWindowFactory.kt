@@ -41,7 +41,7 @@ class IdeaAgentToolWindowFactory : ToolWindowFactory {
         Disposer.register(toolWindow.disposable, viewModel)
 
         toolWindow.addComposeTab("Agent") {
-            IdeaAgentApp(viewModel)
+            IdeaAgentApp(viewModel, project, coroutineScope)
         }
     }
 }
