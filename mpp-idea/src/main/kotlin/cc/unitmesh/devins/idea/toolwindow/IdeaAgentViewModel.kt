@@ -139,21 +139,19 @@ class IdeaAgentViewModel(
             // Initialize MCP servers (this will start background preloading)
             McpToolConfigManager.init(toolConfig)
 
-            // Monitor preloading status
-            while (McpToolConfigManager.isPreloading()) {
+            // Monitor preloading status with timeout to prevent infinite loop
+            val timeoutMs = 60_000L // 60 seconds max
+            val startTime = System.currentTimeMillis()
+            while (McpToolConfigManager.isPreloading() &&
+                (System.currentTimeMillis() - startTime) < timeoutMs
+            ) {
                 _mcpPreloadingStatus.value = McpToolConfigManager.getPreloadingStatus()
                 _mcpPreloadingMessage.value = "Loading MCP servers... (${_mcpPreloadingStatus.value.preloadedServers.size} completed)"
                 delay(500)
             }
 
-            // Wait a bit more to ensure all status updates are complete
-            delay(1000)
-
             // Final status update
-            repeat(3) {
-                _mcpPreloadingStatus.value = McpToolConfigManager.getPreloadingStatus()
-                delay(100)
-            }
+            _mcpPreloadingStatus.value = McpToolConfigManager.getPreloadingStatus()
 
             val preloadedCount = _mcpPreloadingStatus.value.preloadedServers.size
             val totalCount = toolConfig.mcpServers.filter { !it.value.disabled }.size
@@ -231,16 +229,16 @@ class IdeaAgentViewModel(
     fun executeTask(task: String, onConfigRequired: (() -> Unit)? = null) {
         if (_isExecuting.value) return
 
+        // Handle builtin commands first (before config check) so they work without LLM configuration
+        if (task.trim().startsWith("/")) {
+            handleBuiltinCommand(task.trim(), onConfigRequired)
+            return
+        }
+
         if (!isConfigured()) {
             renderer.addUserMessage(task)
             renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
             onConfigRequired?.invoke()
-            return
-        }
-
-        // Handle builtin commands
-        if (task.trim().startsWith("/")) {
-            handleBuiltinCommand(task.trim(), onConfigRequired)
             return
         }
 

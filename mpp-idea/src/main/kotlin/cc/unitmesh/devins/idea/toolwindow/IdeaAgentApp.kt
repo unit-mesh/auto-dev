@@ -434,7 +434,7 @@ private fun TerminalOutputBubble(item: JewelRenderer.TimelineItem.TerminalOutput
         Box(
             modifier = Modifier
                 .widthIn(max = 600.dp)
-                .background(Color(0xFF1E1E1E)) // Dark terminal background
+                .background(AutoDevColors.Neutral.c900) // Terminal background from design system
                 .padding(8.dp)
         ) {
             Column {
@@ -447,7 +447,7 @@ private fun TerminalOutputBubble(item: JewelRenderer.TimelineItem.TerminalOutput
                         text = "$ ${item.command}",
                         style = JewelTheme.defaultTextStyle.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4EC9B0) // Cyan for commands
+                            color = AutoDevColors.Cyan.c400 // Cyan for commands from design system
                         )
                     )
                     val exitColor = if (item.exitCode == 0) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
@@ -475,7 +475,7 @@ private fun TerminalOutputBubble(item: JewelRenderer.TimelineItem.TerminalOutput
                     text = outputText,
                     style = JewelTheme.defaultTextStyle.copy(
                         fontSize = 12.sp,
-                        color = Color(0xFFD4D4D4) // Light gray for output
+                        color = AutoDevColors.Neutral.c300 // Light gray for output from design system
                     )
                 )
             }
@@ -489,7 +489,9 @@ private fun ToolLoadingStatusBar(
     modifier: Modifier = Modifier
 ) {
     val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
-    val toolStatus = remember(viewModel) { viewModel.getToolLoadingStatus() }
+    val mcpPreloadingStatus by viewModel.mcpPreloadingStatus.collectAsState()
+    // Recompute when preloading status changes to make it reactive
+    val toolStatus = remember(mcpPreloadingStatus) { viewModel.getToolLoadingStatus() }
 
     Row(
         modifier = modifier

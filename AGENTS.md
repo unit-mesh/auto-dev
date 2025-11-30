@@ -43,6 +43,27 @@ Rest:
 1. Build MPP Core: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
 2. Build and run MPP CLI: `cd mpp-ui && npm run build && npm run start`
 
+## IntelliJ IDEA Plugin (mpp-idea)
+
+`mpp-idea` is a standalone Gradle project with `includeBuild` dependency on parent project.
+
+**Build Commands:**
+```bash
+# Compile (from project root)
+cd mpp-idea && ../gradlew compileKotlin
+
+# Run tests (JewelRendererTest uses JUnit 5, no IntelliJ Platform required)
+cd mpp-idea && ../gradlew test --tests "cc.unitmesh.devins.idea.renderer.JewelRendererTest"
+
+# Build plugin
+cd mpp-idea && ../gradlew buildPlugin
+```
+
+**Notes:**
+- Do NOT use `./gradlew :mpp-idea:compileKotlin` from root - use `cd mpp-idea && ../gradlew` instead
+- `IdeaAgentViewModelTest` requires IntelliJ Platform Test Framework
+- `JewelRendererTest` can run standalone with JUnit 5
+
 ## Release
 
 1. modify version in `gradle.properties`

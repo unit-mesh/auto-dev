@@ -282,6 +282,8 @@ class JewelRenderer : BaseRenderer() {
         fullOutput: String?,
         metadata: Map<String, String>
     ) {
+        // Capture current tool call info before clearing
+        val currentToolCallInfo = _currentToolCall.value
         _currentToolCall.value = null
 
         val summary = formatToolResultSummary(toolName, success, output)
@@ -295,7 +297,7 @@ class JewelRenderer : BaseRenderer() {
         if (toolType == ToolType.Shell && output != null) {
             val exitCode = liveExitCode ?: (if (success) 0 else 1)
             val executionTimeMs = executionTime ?: 0L
-            val command = _currentToolCall.value?.details?.removePrefix("Executing: ") ?: "unknown"
+            val command = currentToolCallInfo?.details?.removePrefix("Executing: ") ?: "unknown"
 
             if (isLiveSession) {
                 // Add terminal output after live terminal

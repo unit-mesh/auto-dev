@@ -195,9 +195,12 @@ class JewelRendererTest {
 
         assertFalse(renderer.isProcessing.first())
 
-        // Should have added the interrupted message
+        // Verify the interrupted message was added
         val timeline = renderer.timeline.first()
         assertTrue(timeline.isNotEmpty())
+        val lastItem = timeline.last()
+        assertTrue(lastItem is JewelRenderer.TimelineItem.MessageItem)
+        assertTrue((lastItem as JewelRenderer.TimelineItem.MessageItem).content.contains("[Interrupted]"))
     }
 
     @Test
