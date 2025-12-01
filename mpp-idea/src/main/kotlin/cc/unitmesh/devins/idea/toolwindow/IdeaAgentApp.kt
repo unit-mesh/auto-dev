@@ -18,6 +18,9 @@ import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
 import cc.unitmesh.devins.idea.toolwindow.header.IdeaAgentTabsHeader
 import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeContent
 import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeViewModel
+import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentContent
+import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentViewModel
+import cc.unitmesh.devins.idea.toolwindow.remote.getEffectiveProjectId
 import cc.unitmesh.devins.idea.toolwindow.status.IdeaToolLoadingStatusBar
 import cc.unitmesh.devins.idea.toolwindow.timeline.IdeaEmptyStateMessage
 import cc.unitmesh.devins.idea.toolwindow.timeline.IdeaTimelineContent
@@ -77,6 +80,13 @@ fun IdeaAgentApp(
     // Knowledge ViewModel (created lazily when needed)
     var knowledgeViewModel by remember { mutableStateOf<IdeaKnowledgeViewModel?>(null) }
 
+    // Remote Agent ViewModel (created lazily when needed)
+    var remoteAgentViewModel by remember { mutableStateOf<IdeaRemoteAgentViewModel?>(null) }
+
+    // Remote agent state for input handling
+    var remoteProjectId by remember { mutableStateOf("") }
+    var remoteGitUrl by remember { mutableStateOf("") }
+
     // Auto-scroll to bottom when new items arrive
     LaunchedEffect(timeline.size, streamingOutput) {
         if (timeline.isNotEmpty() || streamingOutput.isNotEmpty()) {
@@ -87,13 +97,20 @@ fun IdeaAgentApp(
         }
     }
 
-    // Create CodeReviewViewModel when switching to CODE_REVIEW tab
+    // Create ViewModels when switching tabs
     LaunchedEffect(currentAgentType) {
         if (currentAgentType == AgentType.CODE_REVIEW && codeReviewViewModel == null) {
             codeReviewViewModel = IdeaCodeReviewViewModel(project, coroutineScope)
         }
         if (currentAgentType == AgentType.KNOWLEDGE && knowledgeViewModel == null) {
             knowledgeViewModel = IdeaKnowledgeViewModel(project, coroutineScope)
+        }
+        if (currentAgentType == AgentType.REMOTE && remoteAgentViewModel == null) {
+            remoteAgentViewModel = IdeaRemoteAgentViewModel(
+                project = project,
+                coroutineScope = coroutineScope,
+                serverUrl = "http://localhost:8080"
+            )
         }
     }
 
@@ -107,6 +124,10 @@ fun IdeaAgentApp(
             if (currentAgentType != AgentType.KNOWLEDGE) {
                 knowledgeViewModel?.dispose()
                 knowledgeViewModel = null
+            }
+            if (currentAgentType != AgentType.REMOTE) {
+                remoteAgentViewModel?.dispose()
+                remoteAgentViewModel = null
             }
         }
     }
@@ -133,12 +154,22 @@ fun IdeaAgentApp(
                 .weight(1f)
         ) {
             when (currentAgentType) {
-                AgentType.CODING, AgentType.REMOTE, AgentType.LOCAL_CHAT -> {
+                AgentType.CODING, AgentType.LOCAL_CHAT -> {
                     IdeaTimelineContent(
                         timeline = timeline,
                         streamingOutput = streamingOutput,
                         listState = listState
                     )
+                }
+                AgentType.REMOTE -> {
+                    remoteAgentViewModel?.let { vm ->
+                        IdeaRemoteAgentContent(
+                            viewModel = vm,
+                            listState = listState,
+                            onProjectIdChange = { remoteProjectId = it },
+                            onGitUrlChange = { remoteGitUrl = it }
+                        )
+                    } ?: IdeaEmptyStateMessage("Loading Remote Agent...")
                 }
                 AgentType.CODE_REVIEW -> {
                     codeReviewViewModel?.let { vm ->
@@ -159,7 +190,7 @@ fun IdeaAgentApp(
         Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
 
         // Input area (only for chat-based modes)
-        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
+        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.LOCAL_CHAT) {
             IdeaDevInInputArea(
                 project = project,
                 parentDisposable = viewModel,
@@ -179,6 +210,39 @@ fun IdeaAgentApp(
                 },
                 onConfigureClick = { viewModel.setShowConfigDialog(true) }
             )
+        }
+
+        // Remote agent input area
+        if (currentAgentType == AgentType.REMOTE) {
+            remoteAgentViewModel?.let { remoteVm ->
+                val remoteIsExecuting by remoteVm.isExecuting.collectAsState()
+                val remoteIsConnected by remoteVm.isConnected.collectAsState()
+
+                IdeaDevInInputArea(
+                    project = project,
+                    parentDisposable = viewModel,
+                    isProcessing = remoteIsExecuting,
+                    onSend = { task ->
+                        val effectiveProjectId = getEffectiveProjectId(remoteProjectId, remoteGitUrl)
+                        if (effectiveProjectId.isNotBlank()) {
+                            remoteVm.executeTask(effectiveProjectId, task, remoteGitUrl)
+                        } else {
+                            remoteVm.renderer.renderError("Please provide a project or Git URL")
+                        }
+                    },
+                    onAbort = { remoteVm.cancelTask() },
+                    workspacePath = project.basePath,
+                    totalTokens = null,
+                    onSettingsClick = { viewModel.setShowConfigDialog(true) },
+                    onAtClick = {},
+                    availableConfigs = availableConfigs,
+                    currentConfigName = currentConfigName,
+                    onConfigSelect = { config ->
+                        viewModel.setActiveConfig(config.name)
+                    },
+                    onConfigureClick = { viewModel.setShowConfigDialog(true) }
+                )
+            }
         }
 
         // Tool loading status bar
