@@ -367,6 +367,21 @@ class IdeaKnowledgeViewModel(
     }
 
     /**
+     * Navigate to an entity in the document
+     */
+    fun navigateToEntity(entity: cc.unitmesh.devins.document.Entity) {
+        val content = _state.value.documentContent ?: return
+        // Search for the entity name in the content
+        val entityName = entity.name
+        val pattern = Regex("\\b${Regex.escape(entityName)}\\b")
+        val match = pattern.find(content)
+        if (match != null) {
+            val lineNumber = content.substring(0, match.range.first).count { it == '\n' } + 1
+            navigateToLine(lineNumber, entityName)
+        }
+    }
+
+    /**
      * Clear navigation state
      */
     fun clearNavigation() {

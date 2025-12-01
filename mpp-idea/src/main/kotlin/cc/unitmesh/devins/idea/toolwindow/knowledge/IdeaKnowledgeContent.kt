@@ -16,6 +16,8 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
+import cc.unitmesh.devins.idea.toolwindow.components.IdeaResizableSplitPane
+import cc.unitmesh.devins.idea.toolwindow.components.IdeaVerticalResizableSplitPane
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
@@ -26,10 +28,10 @@ import org.jetbrains.jewel.ui.component.*
  * Main content view for Knowledge Agent in IntelliJ IDEA.
  * Provides document browsing, search, and AI-powered document querying.
  *
- * Layout:
- * - Left: Document list with search
- * - Center: Document content viewer
- * - Right: AI Chat interface
+ * Layout (using resizable split panes):
+ * - Left: Document list with search (resizable)
+ * - Center: Document content viewer + Structured info pane (vertical split)
+ * - Right: AI Chat interface (resizable)
  */
 @Composable
 fun IdeaKnowledgeContent(
@@ -40,47 +42,76 @@ fun IdeaKnowledgeContent(
     val timeline by viewModel.renderer.timeline.collectAsState()
     val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
 
-    Row(
-        modifier = modifier.fillMaxSize()
-    ) {
-        // Left panel: Document list with search
-        DocumentListPanel(
-            documents = state.filteredDocuments,
-            selectedDocument = state.selectedDocument,
-            searchQuery = state.searchQuery,
-            isLoading = state.isLoading,
-            onSearchQueryChange = { viewModel.updateSearchQuery(it) },
-            onDocumentSelect = { viewModel.selectDocument(it) },
-            onRefresh = { viewModel.refreshDocuments() },
-            modifier = Modifier.width(250.dp)
-        )
-
-        Divider(Orientation.Vertical, modifier = Modifier.fillMaxHeight().width(1.dp))
-
-        // Center panel: Document content viewer
-        DocumentContentPanel(
-            document = state.selectedDocument,
-            content = state.documentContent ?: state.parsedContent,
-            isLoading = state.isLoading,
-            targetLineNumber = state.targetLineNumber,
-            highlightedText = state.highlightedText,
-            onTocItemClick = { viewModel.navigateToTocItem(it) },
-            modifier = Modifier.weight(1f)
-        )
-
-        Divider(Orientation.Vertical, modifier = Modifier.fillMaxHeight().width(1.dp))
-
-        // Right panel: AI Chat interface
-        AIChatPanel(
-            timeline = timeline,
-            streamingOutput = streamingOutput,
-            isGenerating = state.isGenerating,
-            onSendMessage = { viewModel.sendMessage(it) },
-            onStopGeneration = { viewModel.stopGeneration() },
-            onClearHistory = { viewModel.clearChatHistory() },
-            modifier = Modifier.width(400.dp)
-        )
-    }
+    // Left panel + (Center + Right) split
+    IdeaResizableSplitPane(
+        modifier = modifier.fillMaxSize(),
+        initialSplitRatio = 0.18f,
+        minRatio = 0.12f,
+        maxRatio = 0.35f,
+        first = {
+            // Left panel: Document list with search
+            DocumentListPanel(
+                documents = state.filteredDocuments,
+                selectedDocument = state.selectedDocument,
+                searchQuery = state.searchQuery,
+                isLoading = state.isLoading,
+                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+                onDocumentSelect = { viewModel.selectDocument(it) },
+                onRefresh = { viewModel.refreshDocuments() },
+                modifier = Modifier.fillMaxSize()
+            )
+        },
+        second = {
+            // Center + Right split
+            IdeaResizableSplitPane(
+                modifier = Modifier.fillMaxSize(),
+                initialSplitRatio = 0.65f,
+                minRatio = 0.4f,
+                maxRatio = 0.85f,
+                first = {
+                    // Center panel: Document content viewer + Structured info (vertical split)
+                    IdeaVerticalResizableSplitPane(
+                        modifier = Modifier.fillMaxSize(),
+                        initialSplitRatio = 0.7f,
+                        minRatio = 0.3f,
+                        maxRatio = 0.9f,
+                        top = {
+                            DocumentContentPanel(
+                                document = state.selectedDocument,
+                                content = state.documentContent ?: state.parsedContent,
+                                isLoading = state.isLoading,
+                                targetLineNumber = state.targetLineNumber,
+                                highlightedText = state.highlightedText,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        },
+                        bottom = {
+                            // Structured info pane (TOC + Entities)
+                            IdeaStructuredInfoPane(
+                                toc = state.selectedDocument?.toc ?: emptyList(),
+                                entities = state.selectedDocument?.entities ?: emptyList(),
+                                onTocSelected = { viewModel.navigateToTocItem(it) },
+                                onEntitySelected = { viewModel.navigateToEntity(it) },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    )
+                },
+                second = {
+                    // Right panel: AI Chat interface
+                    AIChatPanel(
+                        timeline = timeline,
+                        streamingOutput = streamingOutput,
+                        isGenerating = state.isGenerating,
+                        onSendMessage = { viewModel.sendMessage(it) },
+                        onStopGeneration = { viewModel.stopGeneration() },
+                        onClearHistory = { viewModel.clearChatHistory() },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            )
+        }
+    )
 }
 
 /**
@@ -262,7 +293,7 @@ private fun DocumentListItem(
 }
 
 /**
- * Document content viewer panel
+ * Document content viewer panel (TOC moved to IdeaStructuredInfoPane)
  */
 @Composable
 private fun DocumentContentPanel(
@@ -271,7 +302,6 @@ private fun DocumentContentPanel(
     isLoading: Boolean,
     targetLineNumber: Int?,
     highlightedText: String?,
-    onTocItemClick: (cc.unitmesh.devins.document.TOCItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -338,41 +368,6 @@ private fun DocumentContentPanel(
             }
 
             Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
-
-            // TOC panel if available
-            if (document.toc.isNotEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = "Table of Contents (${document.toc.size})",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 150.dp)
-                    ) {
-                        items(document.toc) { tocItem ->
-                            // Guard against zero or negative levels to prevent IllegalArgumentException
-                            val safeLevel = tocItem.level.coerceAtLeast(1)
-                            Text(
-                                text = "${"  ".repeat(safeLevel - 1)}• ${tocItem.title}",
-                                style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onTocItemClick(tocItem) }
-                                    .padding(vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
-                Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
-            }
 
             // Content viewer
             if (content != null) {
