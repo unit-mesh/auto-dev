@@ -16,8 +16,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
@@ -602,6 +604,9 @@ private fun MarkdownHorizontalRule() {
 
 // ============ Table Component ============
 
+/** Default cell width for table columns */
+private val TABLE_CELL_WIDTH = 120.dp
+
 /**
  * GFM Table renderer following the intellij-markdown AST structure.
  * Table structure:
@@ -611,6 +616,8 @@ private fun MarkdownHorizontalRule() {
  *   - TABLE_SEPARATOR (GFMTokenTypes.TABLE_SEPARATOR) - the |---|---| row
  *   - ROW (GFMElementTypes.ROW) - data rows
  *     - CELL (GFMTokenTypes.CELL) - individual data cells
+ *
+ * Uses BoxWithConstraints to determine if horizontal scrolling is needed.
  */
 @Composable
 private fun MarkdownTable(node: ASTNode, content: String) {
@@ -620,6 +627,9 @@ private fun MarkdownTable(node: ASTNode, content: String) {
     // Calculate column count from header
     val columnsCount = headerRow?.children?.count { it.type == GFMTokenTypes.CELL } ?: 0
     if (columnsCount == 0) return
+
+    // Calculate table width based on column count
+    val tableWidth = columnsCount * TABLE_CELL_WIDTH
 
     // Calculate adaptive column weights based on content length
     val columnWeights = remember(node, content) {
@@ -644,9 +654,8 @@ private fun MarkdownTable(node: ASTNode, content: String) {
         constrained.map { it / constrainedTotal }
     }
 
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(vertical = 4.dp)
             .background(
                 JewelTheme.globalColors.panelBackground.copy(alpha = 0.3f),
@@ -657,39 +666,51 @@ private fun MarkdownTable(node: ASTNode, content: String) {
                 JewelTheme.globalColors.borders.normal,
                 RoundedCornerShape(6.dp)
             )
-            .horizontalScroll(rememberScrollState())
     ) {
-        // Header row
-        if (headerRow != null) {
-            MarkdownTableRow(
-                node = headerRow,
-                content = content,
-                isHeader = true,
-                columnWeights = columnWeights
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(JewelTheme.globalColors.borders.normal)
-            )
-        }
+        // Determine if scrolling is needed
+        val scrollable = maxWidth < tableWidth
 
-        // Body rows (skip TABLE_SEPARATOR which is handled implicitly)
-        bodyRows.forEachIndexed { index, row ->
-            MarkdownTableRow(
-                node = row,
-                content = content,
-                isHeader = false,
-                columnWeights = columnWeights
-            )
-            if (index < bodyRows.size - 1) {
+        Column(
+            modifier = if (scrollable) {
+                Modifier.horizontalScroll(rememberScrollState()).requiredWidth(tableWidth)
+            } else {
+                Modifier.fillMaxWidth()
+            }
+        ) {
+            // Header row
+            if (headerRow != null) {
+                MarkdownTableRow(
+                    node = headerRow,
+                    content = content,
+                    isHeader = true,
+                    columnWeights = columnWeights,
+                    tableWidth = tableWidth
+                )
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(JewelTheme.globalColors.borders.normal.copy(alpha = 0.5f))
+                        .background(JewelTheme.globalColors.borders.normal)
                 )
+            }
+
+            // Body rows (skip TABLE_SEPARATOR which is handled implicitly)
+            bodyRows.forEachIndexed { index, row ->
+                MarkdownTableRow(
+                    node = row,
+                    content = content,
+                    isHeader = false,
+                    columnWeights = columnWeights,
+                    tableWidth = tableWidth
+                )
+                if (index < bodyRows.size - 1) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(JewelTheme.globalColors.borders.normal.copy(alpha = 0.5f))
+                    )
+                }
             }
         }
     }
@@ -700,7 +721,8 @@ private fun MarkdownTableRow(
     node: ASTNode,
     content: String,
     isHeader: Boolean,
-    columnWeights: List<Float>
+    columnWeights: List<Float>,
+    tableWidth: Dp
 ) {
     val cells = node.children.filter { it.type == GFMTokenTypes.CELL }
 
@@ -708,7 +730,8 @@ private fun MarkdownTableRow(
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .widthIn(min = tableWidth)
+            .height(IntrinsicSize.Max)
             .then(
                 if (isHeader) {
                     Modifier.background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.5f))
