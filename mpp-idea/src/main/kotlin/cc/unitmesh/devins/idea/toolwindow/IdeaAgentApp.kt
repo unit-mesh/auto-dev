@@ -16,6 +16,7 @@ import cc.unitmesh.devins.idea.editor.IdeaModelConfigDialog
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
 import cc.unitmesh.devins.idea.components.header.IdeaAgentTabsHeader
+import cc.unitmesh.devins.idea.components.IdeaVerticalResizableSplitPane
 import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeContent
 import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeViewModel
 import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentContent
@@ -147,32 +148,92 @@ fun IdeaAgentApp(
 
         Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
 
-        // Content based on agent type
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            when (currentAgentType) {
-                AgentType.CODING, AgentType.LOCAL_CHAT -> {
-                    IdeaTimelineContent(
-                        timeline = timeline,
-                        streamingOutput = streamingOutput,
-                        listState = listState,
-                        project = project
-                    )
-                }
-                AgentType.REMOTE -> {
-                    remoteAgentViewModel?.let { vm ->
-                        IdeaRemoteAgentContent(
-                            viewModel = vm,
+        // Main content area with resizable split pane for chat-based modes
+        when (currentAgentType) {
+            AgentType.CODING, AgentType.LOCAL_CHAT -> {
+                IdeaVerticalResizableSplitPane(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    initialSplitRatio = 0.75f,
+                    minRatio = 0.3f,
+                    maxRatio = 0.9f,
+                    top = {
+                        IdeaTimelineContent(
+                            timeline = timeline,
+                            streamingOutput = streamingOutput,
                             listState = listState,
-                            onProjectIdChange = { remoteProjectId = it },
-                            onGitUrlChange = { remoteGitUrl = it }
+                            project = project
                         )
-                    } ?: IdeaEmptyStateMessage("Loading Remote Agent...")
-                }
-                AgentType.CODE_REVIEW -> {
+                    },
+                    bottom = {
+                        IdeaDevInInputArea(
+                            project = project,
+                            parentDisposable = viewModel,
+                            isProcessing = isExecuting,
+                            onSend = { viewModel.sendMessage(it) },
+                            onAbort = { viewModel.cancelTask() },
+                            workspacePath = project.basePath,
+                            totalTokens = null,
+                            onSettingsClick = { viewModel.setShowConfigDialog(true) },
+                            onAtClick = {},
+                            availableConfigs = availableConfigs,
+                            currentConfigName = currentConfigName,
+                            onConfigSelect = { config ->
+                                viewModel.setActiveConfig(config.name)
+                            },
+                            onConfigureClick = { viewModel.setShowConfigDialog(true) }
+                        )
+                    }
+                )
+            }
+            AgentType.REMOTE -> {
+                remoteAgentViewModel?.let { remoteVm ->
+                    val remoteIsExecuting by remoteVm.isExecuting.collectAsState()
+                    val remoteIsConnected by remoteVm.isConnected.collectAsState()
+
+                    IdeaVerticalResizableSplitPane(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        initialSplitRatio = 0.75f,
+                        minRatio = 0.3f,
+                        maxRatio = 0.9f,
+                        top = {
+                            IdeaRemoteAgentContent(
+                                viewModel = remoteVm,
+                                listState = listState,
+                                onProjectIdChange = { remoteProjectId = it },
+                                onGitUrlChange = { remoteGitUrl = it }
+                            )
+                        },
+                        bottom = {
+                            IdeaDevInInputArea(
+                                project = project,
+                                parentDisposable = viewModel,
+                                isProcessing = remoteIsExecuting,
+                                onSend = { task ->
+                                    val effectiveProjectId = getEffectiveProjectId(remoteProjectId, remoteGitUrl)
+                                    if (effectiveProjectId.isNotBlank()) {
+                                        remoteVm.executeTask(effectiveProjectId, task, remoteGitUrl)
+                                    } else {
+                                        remoteVm.renderer.renderError("Please provide a project or Git URL")
+                                    }
+                                },
+                                onAbort = { remoteVm.cancelTask() },
+                                workspacePath = project.basePath,
+                                totalTokens = null,
+                                onSettingsClick = { viewModel.setShowConfigDialog(true) },
+                                onAtClick = {},
+                                availableConfigs = availableConfigs,
+                                currentConfigName = currentConfigName,
+                                onConfigSelect = { config ->
+                                    viewModel.setActiveConfig(config.name)
+                                },
+                                onConfigureClick = { viewModel.setShowConfigDialog(true) }
+                            )
+                        }
+                    )
+                } ?: IdeaEmptyStateMessage("Loading Remote Agent...")
+            }
+            AgentType.CODE_REVIEW -> {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                     codeReviewViewModel?.let { vm ->
                         IdeaCodeReviewContent(
                             viewModel = vm,
@@ -180,69 +241,13 @@ fun IdeaAgentApp(
                         )
                     } ?: IdeaEmptyStateMessage("Loading Code Review...")
                 }
-                AgentType.KNOWLEDGE -> {
+            }
+            AgentType.KNOWLEDGE -> {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                     knowledgeViewModel?.let { vm ->
                         IdeaKnowledgeContent(viewModel = vm)
                     } ?: IdeaEmptyStateMessage("Loading Knowledge Agent...")
                 }
-            }
-        }
-
-        Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
-
-        // Input area (only for chat-based modes)
-        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.LOCAL_CHAT) {
-            IdeaDevInInputArea(
-                project = project,
-                parentDisposable = viewModel,
-                isProcessing = isExecuting,
-                onSend = { viewModel.sendMessage(it) },
-                onAbort = { viewModel.cancelTask() },
-                workspacePath = project.basePath,
-                totalTokens = null, // TODO: integrate token counting from renderer
-                onSettingsClick = { viewModel.setShowConfigDialog(true) },
-                onAtClick = {
-                    // @ click triggers agent completion - placeholder for now
-                },
-                availableConfigs = availableConfigs,
-                currentConfigName = currentConfigName,
-                onConfigSelect = { config ->
-                    viewModel.setActiveConfig(config.name)
-                },
-                onConfigureClick = { viewModel.setShowConfigDialog(true) }
-            )
-        }
-
-        // Remote agent input area
-        if (currentAgentType == AgentType.REMOTE) {
-            remoteAgentViewModel?.let { remoteVm ->
-                val remoteIsExecuting by remoteVm.isExecuting.collectAsState()
-                val remoteIsConnected by remoteVm.isConnected.collectAsState()
-
-                IdeaDevInInputArea(
-                    project = project,
-                    parentDisposable = viewModel,
-                    isProcessing = remoteIsExecuting,
-                    onSend = { task ->
-                        val effectiveProjectId = getEffectiveProjectId(remoteProjectId, remoteGitUrl)
-                        if (effectiveProjectId.isNotBlank()) {
-                            remoteVm.executeTask(effectiveProjectId, task, remoteGitUrl)
-                        } else {
-                            remoteVm.renderer.renderError("Please provide a project or Git URL")
-                        }
-                    },
-                    onAbort = { remoteVm.cancelTask() },
-                    workspacePath = project.basePath,
-                    totalTokens = null,
-                    onSettingsClick = { viewModel.setShowConfigDialog(true) },
-                    onAtClick = {},
-                    availableConfigs = availableConfigs,
-                    currentConfigName = currentConfigName,
-                    onConfigSelect = { config ->
-                        viewModel.setActiveConfig(config.name)
-                    },
-                    onConfigureClick = { viewModel.setShowConfigDialog(true) }
-                )
             }
         }
 
@@ -302,13 +307,13 @@ private fun IdeaDevInInputArea(
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(8.dp)
+        modifier = Modifier.fillMaxSize().padding(8.dp)
     ) {
-        // DevIn Editor via SwingPanel
+        // DevIn Editor via SwingPanel - uses weight(1f) to fill available space
         SwingPanel(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .weight(1f),
             factory = {
                 val input = IdeaDevInInput(
                     project = project,
@@ -344,11 +349,11 @@ private fun IdeaDevInInputArea(
                 Disposer.register(parentDisposable, input)
                 devInInput = input
 
-                // Wrap in a JPanel to handle sizing
+                // Wrap in a JPanel to handle dynamic sizing
                 JPanel(BorderLayout()).apply {
                     add(input, BorderLayout.CENTER)
-                    preferredSize = Dimension(800, 120)
-                    minimumSize = Dimension(200, 80)
+                    // Don't set fixed preferredSize - let it fill available space
+                    minimumSize = Dimension(200, 60)
                 }
             },
             update = { panel ->
@@ -369,16 +374,7 @@ private fun IdeaDevInInputArea(
             sendEnabled = inputText.isNotBlank() && !isProcessing,
             isExecuting = isProcessing,
             onStopClick = onAbort,
-            onAtClick = {
-                devInInput?.appendText("@")
-                onAtClick()
-            },
-            onSlashClick = {
-                // Insert / at current cursor position to trigger slash commands
-                devInInput?.appendText("/")
-            },
             onSettingsClick = onSettingsClick,
-            workspacePath = workspacePath,
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,
             currentConfigName = currentConfigName,

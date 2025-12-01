@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.idea.toolwindow.remote
 
 import cc.unitmesh.agent.RemoteAgentEvent
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.sse.*
@@ -10,8 +12,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -45,10 +45,7 @@ class IdeaRemoteAgentClient(
         }
     }
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
+    private val gson = Gson()
 
     /**
      * Health check to verify server is running
@@ -58,7 +55,7 @@ class IdeaRemoteAgentClient(
         if (!response.status.isSuccess()) {
             throw RemoteAgentException("Health check failed: ${response.status}")
         }
-        return json.decodeFromString(response.bodyAsText())
+        return gson.fromJson(response.bodyAsText(), HealthResponse::class.java)
     }
 
     /**
@@ -69,7 +66,7 @@ class IdeaRemoteAgentClient(
         if (!response.status.isSuccess()) {
             throw RemoteAgentException("Failed to fetch projects: ${response.status}")
         }
-        return json.decodeFromString(response.bodyAsText())
+        return gson.fromJson(response.bodyAsText(), ProjectListResponse::class.java)
     }
 
     /**
@@ -83,7 +80,7 @@ class IdeaRemoteAgentClient(
                 request = {
                     method = HttpMethod.Post
                     contentType(ContentType.Application.Json)
-                    setBody(json.encodeToString(RemoteAgentRequest.serializer(), request))
+                    setBody(gson.toJson(request))
                 }
             ) {
                 // Check HTTP status before processing SSE events
@@ -118,7 +115,6 @@ class IdeaRemoteAgentClient(
 /**
  * Request/Response Data Classes
  */
-@Serializable
 data class RemoteAgentRequest(
     val projectId: String,
     val task: String,
@@ -129,7 +125,6 @@ data class RemoteAgentRequest(
     val password: String? = null
 )
 
-@Serializable
 data class LLMConfig(
     val provider: String,
     val modelName: String,
@@ -137,12 +132,10 @@ data class LLMConfig(
     val baseUrl: String? = null
 )
 
-@Serializable
 data class HealthResponse(
     val status: String
 )
 
-@Serializable
 data class ProjectInfo(
     val id: String,
     val name: String,
@@ -150,7 +143,6 @@ data class ProjectInfo(
     val description: String
 )
 
-@Serializable
 data class ProjectListResponse(
     val projects: List<ProjectInfo>
 )

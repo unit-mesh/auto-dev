@@ -1,7 +1,9 @@
 package cc.unitmesh.devins.idea.editor
 
+import cc.unitmesh.devti.language.DevInLanguage
+import cc.unitmesh.devti.util.InsertUtil
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.lookup.LookupManagerListener
-import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
@@ -9,7 +11,6 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -21,6 +22,8 @@ import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
@@ -32,17 +35,18 @@ import javax.swing.KeyStroke
 
 /**
  * DevIn language input component for mpp-idea module.
- * 
+ *
  * Features:
  * - DevIn language support with syntax highlighting and completion
  * - Enter to submit, Shift/Ctrl/Cmd+Enter for newline
  * - Integration with IntelliJ's completion system (lookup listener)
+ * - Auto-completion for @, /, $, : characters
  * - Placeholder text support
- * 
+ *
  * Based on AutoDevInput from core module but adapted for standalone mpp-idea usage.
  */
 class IdeaDevInInput(
-    project: Project,
+    private val project: Project,
     private val listeners: List<DocumentListener> = emptyList(),
     val disposable: Disposable?,
     private val showAgent: Boolean = true
@@ -191,13 +195,18 @@ class IdeaDevInInput(
             }
         }
 
-        // Create new document using EditorFactory
+        // Create new document with DevIn language support
+        val id = UUID.randomUUID()
         val document = ReadAction.compute<Document, Throwable> {
-            EditorFactory.getInstance().createDocument("")
+            val psiFile = PsiFileFactory.getInstance(project)
+                .createFileFromText("IdeaDevInInput-$id.devin", DevInLanguage, "")
+            PsiDocumentManager.getInstance(project).getDocument(psiFile)
         }
 
-        initializeDocumentListeners(document)
-        setDocument(document)
+        if (document != null) {
+            initializeDocumentListeners(document)
+            setDocument(document)
+        }
     }
 
     private fun initializeDocumentListeners(inputDocument: Document) {
@@ -224,11 +233,12 @@ class IdeaDevInInput(
 
     /**
      * Append text at the end of the document.
+     * Uses InsertUtil for proper text insertion with DevIn language support.
      */
     fun appendText(textToAppend: String) {
         WriteCommandAction.runWriteCommandAction(project, "Append text", "intentions.write.action", {
             val document = this.editor?.document ?: return@runWriteCommandAction
-            document.insertString(document.textLength, textToAppend)
+            InsertUtil.insertStringAndSaveChange(project, textToAppend, document, document.textLength, false)
         })
     }
 
