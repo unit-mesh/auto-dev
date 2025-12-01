@@ -13,14 +13,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.parser.ToolCallParser
-import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
-import cc.unitmesh.devins.workspace.WorkspaceManager
 import kotlinx.serialization.json.Json
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
+
+/**
+ * Reusable Json instance with pretty print configuration
+ */
+private val PrettyJson = Json { prettyPrint = true }
 
 /**
  * DevIn Block Renderer for IntelliJ IDEA with Jewel styling.
@@ -43,9 +46,6 @@ fun IdeaDevInBlockRenderer(
             val toolCalls = remember(devinContent) { parser.parseToolCalls(wrappedContent) }
 
             if (toolCalls.isNotEmpty()) {
-                // Get workspace root path for resolving relative paths
-                val workspaceRoot = WorkspaceManager.currentWorkspace?.rootPath
-
                 toolCalls.forEach { toolCall ->
                     val toolName = toolCall.toolName
                     val params = toolCall.params
@@ -53,18 +53,9 @@ fun IdeaDevInBlockRenderer(
                     // Format details string (for display)
                     val details = formatToolCallDetails(params)
 
-                    // Resolve relative path to absolute path using workspace root
-                    val relativePath = params["path"] as? String
-                    val filePath = resolveAbsolutePath(relativePath, workspaceRoot)
-
-                    // Map tool name to ToolType
-                    val toolType = ToolType.fromName(toolName)
-
                     IdeaDevInToolItem(
                         toolName = toolName,
                         details = details,
-                        filePath = filePath,
-                        toolType = toolType,
                         params = params,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -98,8 +89,6 @@ fun IdeaDevInBlockRenderer(
 private fun IdeaDevInToolItem(
     toolName: String,
     details: String,
-    filePath: String?,
-    toolType: ToolType?,
     params: Map<String, String>,
     modifier: Modifier = Modifier
 ) {
@@ -196,23 +185,6 @@ private fun IdeaDevInToolItem(
 }
 
 /**
- * Resolve relative path to absolute path using workspace root
- */
-private fun resolveAbsolutePath(relativePath: String?, workspaceRoot: String?): String? {
-    if (relativePath == null) return null
-    if (workspaceRoot == null) return relativePath
-
-    // If already an absolute path, return as-is
-    if (relativePath.startsWith("/") || relativePath.matches(Regex("^[A-Za-z]:.*"))) {
-        return relativePath
-    }
-
-    // Combine workspace root with relative path
-    val separator = if (workspaceRoot.endsWith("/") || workspaceRoot.endsWith("\\")) "" else "/"
-    return "$workspaceRoot$separator$relativePath"
-}
-
-/**
  * Format tool call parameters as a human-readable details string
  */
 private fun formatToolCallDetails(params: Map<String, String>): String {
@@ -237,19 +209,17 @@ private fun truncateValue(value: String, maxLength: Int = 100): String {
  */
 private fun formatParamsAsJson(params: Map<String, String>): String {
     return try {
-        Json {
-            prettyPrint = true
-        }.encodeToString(
+        PrettyJson.encodeToString(
             kotlinx.serialization.serializer(),
             params
         )
     } catch (e: Exception) {
-        // Fallback to manual formatting
+        // Fallback to manual formatting with proper JSON escaping
         buildString {
             appendLine("{")
             params.entries.forEachIndexed { index, (key, value) ->
-                append("  \"$key\": ")
-                append("\"${value.replace("\"", "\\\"")}\"")
+                append("  \"${escapeJsonString(key)}\": ")
+                append("\"${escapeJsonString(value)}\"")
                 if (index < params.size - 1) {
                     appendLine(",")
                 } else {
@@ -259,5 +229,17 @@ private fun formatParamsAsJson(params: Map<String, String>): String {
             append("}")
         }
     }
+}
+
+/**
+ * Escape special characters for valid JSON string
+ */
+private fun escapeJsonString(value: String): String {
+    return value
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
 }
 
