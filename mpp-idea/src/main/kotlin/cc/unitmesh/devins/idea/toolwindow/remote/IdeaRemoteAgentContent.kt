@@ -306,11 +306,17 @@ private fun ConnectionStatusBar(
 }
 
 /**
- * Get the project ID or Git URL for task execution
+ * Get the project ID or Git URL for task execution.
+ * Handles trailing slashes and empty segments in Git URLs.
  */
 fun getEffectiveProjectId(projectId: String, gitUrl: String): String {
     return if (gitUrl.isNotBlank()) {
-        gitUrl.split('/').last().removeSuffix(".git")
+        gitUrl.trimEnd('/')
+            .split('/')
+            .lastOrNull { it.isNotBlank() }
+            ?.removeSuffix(".git")
+            ?.ifBlank { projectId }
+            ?: projectId
     } else {
         projectId
     }

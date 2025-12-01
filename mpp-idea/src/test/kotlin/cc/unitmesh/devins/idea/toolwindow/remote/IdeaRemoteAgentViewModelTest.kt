@@ -305,5 +305,57 @@ class IdeaRemoteAgentViewModelTest {
         assertEquals("/path/to/project", project.path)
         assertEquals("A test project", project.description)
     }
+
+    // Tests for getEffectiveProjectId utility function
+
+    @Test
+    fun testGetEffectiveProjectIdWithNormalGitUrl() {
+        val result = getEffectiveProjectId("fallback", "https://github.com/user/repo.git")
+        assertEquals("repo", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithTrailingSlash() {
+        // Edge case: URL with trailing slash should still extract correct project ID
+        val result = getEffectiveProjectId("fallback", "https://github.com/user/repo/")
+        assertEquals("repo", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithMultipleTrailingSlashes() {
+        val result = getEffectiveProjectId("fallback", "https://github.com/user/repo///")
+        assertEquals("repo", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithEmptyGitUrl() {
+        val result = getEffectiveProjectId("my-project", "")
+        assertEquals("my-project", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithBlankGitUrl() {
+        val result = getEffectiveProjectId("my-project", "   ")
+        assertEquals("my-project", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithOnlySlashes() {
+        // Edge case: URL that is just slashes should fallback to projectId
+        val result = getEffectiveProjectId("fallback", "///")
+        assertEquals("fallback", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithGitSuffix() {
+        val result = getEffectiveProjectId("fallback", "https://github.com/user/my-repo.git")
+        assertEquals("my-repo", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithoutGitSuffix() {
+        val result = getEffectiveProjectId("fallback", "https://github.com/user/my-repo")
+        assertEquals("my-repo", result)
+    }
 }
 

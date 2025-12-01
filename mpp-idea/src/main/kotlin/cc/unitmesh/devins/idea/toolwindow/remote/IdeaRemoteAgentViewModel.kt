@@ -153,7 +153,7 @@ class IdeaRemoteAgentViewModel(
     ): RemoteAgentRequest {
         return if (gitUrl.isNotBlank()) {
             RemoteAgentRequest(
-                projectId = gitUrl.split('/').lastOrNull()?.removeSuffix(".git") ?: "temp-project",
+                projectId = extractProjectIdFromUrl(gitUrl) ?: "temp-project",
                 task = task,
                 llmConfig = llmConfig,
                 gitUrl = gitUrl
@@ -165,7 +165,7 @@ class IdeaRemoteAgentViewModel(
 
             if (isGitUrl) {
                 RemoteAgentRequest(
-                    projectId = projectId.split('/').lastOrNull()?.removeSuffix(".git") ?: "temp-project",
+                    projectId = extractProjectIdFromUrl(projectId) ?: "temp-project",
                     task = task,
                     llmConfig = llmConfig,
                     gitUrl = projectId
@@ -178,6 +178,17 @@ class IdeaRemoteAgentViewModel(
                 )
             }
         }
+    }
+
+    /**
+     * Extract project ID from a Git URL, handling trailing slashes and empty segments.
+     */
+    private fun extractProjectIdFromUrl(url: String): String? {
+        return url.trimEnd('/')
+            .split('/')
+            .lastOrNull { it.isNotBlank() }
+            ?.removeSuffix(".git")
+            ?.ifBlank { null }
     }
 
     /**

@@ -29,6 +29,8 @@ class IdeaRemoteAgentClient(
             maxReconnectionAttempts = 3
         }
 
+        // We handle HTTP errors manually to provide better error messages
+        // SSE connections need explicit status checking
         expectSuccess = false
 
         engine {
@@ -53,6 +55,9 @@ class IdeaRemoteAgentClient(
      */
     suspend fun healthCheck(): HealthResponse {
         val response = httpClient.get("$baseUrl/health")
+        if (!response.status.isSuccess()) {
+            throw RemoteAgentException("Health check failed: ${response.status}")
+        }
         return json.decodeFromString(response.bodyAsText())
     }
 
@@ -61,6 +66,9 @@ class IdeaRemoteAgentClient(
      */
     suspend fun getProjects(): ProjectListResponse {
         val response = httpClient.get("$baseUrl/api/projects")
+        if (!response.status.isSuccess()) {
+            throw RemoteAgentException("Failed to fetch projects: ${response.status}")
+        }
         return json.decodeFromString(response.bodyAsText())
     }
 
