@@ -2,6 +2,9 @@ package cc.unitmesh.agent.render
 
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
+import cc.unitmesh.devins.llm.Message
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.llm.compression.TokenInfo
 
 /**
@@ -56,13 +59,6 @@ enum class TaskStatus(val displayName: String) {
 }
 
 /**
- * Message role for timeline messages.
- */
-enum class MessageRole {
-    USER, ASSISTANT, SYSTEM
-}
-
-/**
  * Base timeline item for chronological rendering.
  * This is the shared base class for timeline items in both ComposeRenderer and JewelRenderer.
  */
@@ -72,14 +68,34 @@ sealed class TimelineItem(
 ) {
     /**
      * Message item for user/assistant/system messages.
+     * Supports both simple role+content and full Message object.
      */
     data class MessageItem(
-        val role: MessageRole,
-        val content: String,
+        val message: Message? = null,
+        val role: MessageRole = message?.role ?: MessageRole.USER,
+        val content: String = message?.content ?: "",
         val tokenInfo: TokenInfo? = null,
-        override val timestamp: Long = Platform.getCurrentTimestamp(),
+        override val timestamp: Long = message?.timestamp ?: Platform.getCurrentTimestamp(),
         override val id: String = generateId()
-    ) : TimelineItem(timestamp, id)
+    ) : TimelineItem(timestamp, id) {
+        /**
+         * Secondary constructor for simple role+content usage (JewelRenderer).
+         */
+        constructor(
+            role: MessageRole,
+            content: String,
+            tokenInfo: TokenInfo? = null,
+            timestamp: Long = Platform.getCurrentTimestamp(),
+            id: String = generateId()
+        ) : this(
+            message = null,
+            role = role,
+            content = content,
+            tokenInfo = tokenInfo,
+            timestamp = timestamp,
+            id = id
+        )
+    }
 
     /**
      * Combined tool call and result item - displays both in a single compact row.
@@ -88,7 +104,7 @@ sealed class TimelineItem(
     data class ToolCallItem(
         val toolName: String,
         val description: String = "",
-        val params: String,
+        val params: String = "",
         val fullParams: String? = null,
         val filePath: String? = null,
         val toolType: ToolType? = null,
@@ -97,6 +113,8 @@ sealed class TimelineItem(
         val output: String? = null,
         val fullOutput: String? = null,
         val executionTimeMs: Long? = null,
+        // DocQL-specific search statistics
+        val docqlStats: DocQLSearchStats? = null,
         override val timestamp: Long = Platform.getCurrentTimestamp(),
         override val id: String = generateId()
     ) : TimelineItem(timestamp, id)
@@ -129,6 +147,19 @@ sealed class TimelineItem(
         val output: String,
         val exitCode: Int,
         val executionTimeMs: Long,
+        override val timestamp: Long = Platform.getCurrentTimestamp(),
+        override val id: String = generateId()
+    ) : TimelineItem(timestamp, id)
+
+    /**
+     * Live terminal session - connected to a PTY process for real-time output.
+     * This is only used on platforms that support PTY (JVM with JediTerm).
+     */
+    data class LiveTerminalItem(
+        val sessionId: String,
+        val command: String,
+        val workingDirectory: String?,
+        val ptyHandle: Any?, // Platform-specific: on JVM this is a PtyProcess
         override val timestamp: Long = Platform.getCurrentTimestamp(),
         override val id: String = generateId()
     ) : TimelineItem(timestamp, id)

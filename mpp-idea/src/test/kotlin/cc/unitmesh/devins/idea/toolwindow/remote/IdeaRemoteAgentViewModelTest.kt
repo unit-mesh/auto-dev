@@ -1,6 +1,6 @@
 package cc.unitmesh.devins.idea.toolwindow.remote
 
-import cc.unitmesh.agent.render.MessageRole
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import kotlinx.coroutines.*

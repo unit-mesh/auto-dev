@@ -1,6 +1,6 @@
 package cc.unitmesh.devins.idea.renderer
 
-import cc.unitmesh.agent.render.MessageRole
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.TaskStatus
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.llm.compression.TokenInfo

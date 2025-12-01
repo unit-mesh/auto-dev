@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import cc.unitmesh.agent.render.MessageRole
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.idea.components.IdeaResizableSplitPane
@@ -745,6 +745,34 @@ private fun ChatMessageItem(item: TimelineItem) {
                     )
                     Text(
                         text = item.output.take(500) + if (item.output.length > 500) "..." else "",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            color = AutoDevColors.Neutral.c300,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+        }
+
+        is TimelineItem.LiveTerminalItem -> {
+            // Live terminal not supported in knowledge content, show placeholder
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(AutoDevColors.Neutral.c900)
+                    .padding(8.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "$ ${item.command}",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = AutoDevColors.Cyan.c400,
+                            fontSize = 12.sp
+                        )
+                    )
+                    Text(
+                        text = "[Live terminal session: ${item.sessionId}]",
                         style = JewelTheme.defaultTextStyle.copy(
                             color = AutoDevColors.Neutral.c300,
                             fontSize = 11.sp

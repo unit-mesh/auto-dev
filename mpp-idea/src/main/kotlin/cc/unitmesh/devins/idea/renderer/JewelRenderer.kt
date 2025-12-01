@@ -1,7 +1,7 @@
 package cc.unitmesh.devins.idea.renderer
 
 import cc.unitmesh.agent.render.BaseRenderer
-import cc.unitmesh.agent.render.MessageRole
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.RendererUtils
 import cc.unitmesh.agent.render.TaskInfo
 import cc.unitmesh.agent.render.TaskStatus
