@@ -497,6 +497,29 @@ tasks.register<JavaExec>("runDocumentCli") {
     standardInput = System.`in`
 }
 
+// Task to run Coding CLI
+tasks.register<JavaExec>("runCodingCli") {
+    group = "application"
+    description = "Run Coding Agent CLI for autonomous coding tasks"
+
+    val jvmCompilation = kotlin.jvm().compilations.getByName("main")
+    classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
+    mainClass.set("cc.unitmesh.server.cli.CodingCli")
+
+    // Pass properties - use codingProjectPath to avoid conflict with Gradle's projectPath
+    if (project.hasProperty("codingProjectPath")) {
+        systemProperty("projectPath", project.property("codingProjectPath") as String)
+    }
+    if (project.hasProperty("codingTask")) {
+        systemProperty("task", project.property("codingTask") as String)
+    }
+    if (project.hasProperty("codingMaxIterations")) {
+        systemProperty("maxIterations", project.property("codingMaxIterations") as String)
+    }
+
+    standardInput = System.`in`
+}
+
 // Task to run Review CLI
 tasks.register<JavaExec>("runReviewCli") {
     group = "application"
@@ -525,7 +548,7 @@ tasks.register<JavaExec>("runReviewCli") {
     if (project.hasProperty("reviewLanguage")) {
         systemProperty("reviewLanguage", project.property("reviewLanguage") as String)
     }
-    
+
     standardInput = System.`in`
 }
 
@@ -548,7 +571,7 @@ tasks.register<JavaExec>("runDomainDictCli") {
     if (project.hasProperty("domainFocusArea")) {
         systemProperty("domainFocusArea", project.property("domainFocusArea") as String)
     }
-    
+
     standardInput = System.`in`
 }
 
