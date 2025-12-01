@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.Alignment as ComposeAlignment
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.NamedModelConfig
@@ -93,9 +94,10 @@ fun IdeaModelSelector(
             )
         }
 
-        // Dropdown popup
+        // Dropdown popup - positioned above the selector to avoid covering input area
         if (expanded) {
             Popup(
+                alignment = ComposeAlignment.BottomStart,
                 onDismissRequest = { expanded = false },
                 properties = PopupProperties(focusable = true)
             ) {
