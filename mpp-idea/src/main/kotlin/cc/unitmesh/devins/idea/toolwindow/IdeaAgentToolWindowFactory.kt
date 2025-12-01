@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import cc.unitmesh.devins.idea.services.CoroutineScopeHolder
 import org.jetbrains.jewel.bridge.addComposeTab
+import org.jetbrains.jewel.foundation.JewelFlags
 
 /**
  * Factory for creating the Agent ToolWindow with tab-based navigation.
@@ -28,6 +29,10 @@ class IdeaAgentToolWindowFactory : ToolWindowFactory {
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        // Enable custom popup rendering to use JBPopup instead of default Compose implementation
+        // This fixes z-index issues when Compose Popup is used with SwingPanel (e.g., EditorTextField)
+        JewelFlags.useCustomPopupRenderer = true
+
         createAgentPanel(project, toolWindow)
     }
 

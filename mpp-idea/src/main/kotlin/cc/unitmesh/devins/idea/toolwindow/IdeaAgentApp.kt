@@ -25,6 +25,7 @@ import cc.unitmesh.devins.idea.toolwindow.remote.getEffectiveProjectId
 import cc.unitmesh.devins.idea.components.status.IdeaToolLoadingStatusBar
 import cc.unitmesh.devins.idea.components.timeline.IdeaEmptyStateMessage
 import cc.unitmesh.devins.idea.components.timeline.IdeaTimelineContent
+import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
@@ -265,10 +266,30 @@ fun IdeaAgentApp(
             currentConfig = dialogConfig,
             currentConfigName = currentConfigName,
             onDismiss = { viewModel.setShowConfigDialog(false) },
-            onSave = { name, config ->
-                val namedConfig = NamedModelConfig.fromModelConfig(name, config)
+            onSave = { configName, newModelConfig ->
+                // If creating a new config (not editing current), ensure unique name
+                val existingNames = availableConfigs.map { it.name }
+                val finalConfigName =
+                    if (currentConfigName != configName && configName in existingNames) {
+                        // Auto-increment: my-glm -> my-glm-1 -> my-glm-2, etc.
+                        ConfigManager.generateUniqueConfigName(configName, existingNames)
+                    } else {
+                        configName
+                    }
+
+                // Convert ModelConfig to NamedModelConfig
+                val namedConfig = NamedModelConfig.fromModelConfig(
+                    name = finalConfigName,
+                    config = newModelConfig
+                )
+
+                // Save to file
                 viewModel.saveModelConfig(namedConfig, setActive = true)
                 viewModel.setShowConfigDialog(false)
+
+                if (finalConfigName != configName) {
+                    println("✅ 配置名称已存在，自动重命名为: $finalConfigName")
+                }
             }
         )
     }
