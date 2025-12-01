@@ -183,10 +183,9 @@ fun IdeaDevInEditorInput(
 
     // MCP Configuration Dialog
     if (showMcpConfigDialog) {
-        // TODO: Create IDEA version of MCP configuration dialog
-        // Should migrate from mpp-ui/ToolConfigDialog.kt
-        // For now, just close it
-        showMcpConfigDialog = false
+        IdeaMcpConfigDialog(
+            onDismiss = { showMcpConfigDialog = false }
+        )
     }
 
     // Prompt Optimization Dialog
