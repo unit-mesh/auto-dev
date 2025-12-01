@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.agent.render.TaskStatus
 import cc.unitmesh.devins.ui.base.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput

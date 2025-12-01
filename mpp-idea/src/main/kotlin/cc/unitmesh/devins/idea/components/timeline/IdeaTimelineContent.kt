@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.agent.render.TimelineItem
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Text
 
@@ -19,7 +19,7 @@ import org.jetbrains.jewel.ui.component.Text
  */
 @Composable
 fun IdeaTimelineContent(
-    timeline: List<JewelRenderer.TimelineItem>,
+    timeline: List<TimelineItem>,
     streamingOutput: String,
     listState: LazyListState,
     modifier: Modifier = Modifier
@@ -51,25 +51,36 @@ fun IdeaTimelineContent(
  * Dispatch timeline item to appropriate bubble component.
  */
 @Composable
-fun IdeaTimelineItemView(item: JewelRenderer.TimelineItem) {
+fun IdeaTimelineItemView(item: TimelineItem) {
     when (item) {
-        is JewelRenderer.TimelineItem.MessageItem -> {
+        is TimelineItem.MessageItem -> {
             IdeaMessageBubble(
                 role = item.role,
                 content = item.content
             )
         }
-        is JewelRenderer.TimelineItem.ToolCallItem -> {
+        is TimelineItem.ToolCallItem -> {
             IdeaToolCallBubble(item)
         }
-        is JewelRenderer.TimelineItem.ErrorItem -> {
+        is TimelineItem.ErrorItem -> {
             IdeaErrorBubble(item.message)
         }
-        is JewelRenderer.TimelineItem.TaskCompleteItem -> {
+        is TimelineItem.TaskCompleteItem -> {
             IdeaTaskCompleteBubble(item)
         }
-        is JewelRenderer.TimelineItem.TerminalOutputItem -> {
+        is TimelineItem.TerminalOutputItem -> {
             IdeaTerminalOutputBubble(item)
+        }
+        is TimelineItem.LiveTerminalItem -> {
+            // Live terminal not supported in IDEA yet, show placeholder
+            IdeaTerminalOutputBubble(
+                TimelineItem.TerminalOutputItem(
+                    command = item.command,
+                    output = "[Live terminal session: ${item.sessionId}]",
+                    exitCode = 0,
+                    executionTimeMs = 0
+                )
+            )
         }
     }
 }
