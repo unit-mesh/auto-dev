@@ -190,11 +190,15 @@ fun IdeaDevInEditorInput(
 
     // Prompt Optimization Dialog
     if (showPromptOptimizationDialog) {
-        // TODO: Create IDEA version of prompt optimization dialog
-        // Should use PromptEnhancer to optimize the current input text
-        // Reference: mpp-ui DevInEditorInput lines 319-349
-        // For now, just close it
-        showPromptOptimizationDialog = false
+        IdeaPromptOptimizationDialog(
+            originalText = inputComponent.text,
+            enhancer = promptEnhancer,
+            onApply = { enhancedText ->
+                inputComponent.text = enhancedText
+                showPromptOptimizationDialog = false
+            },
+            onDismiss = { showPromptOptimizationDialog = false }
+        )
     }
 }
 
