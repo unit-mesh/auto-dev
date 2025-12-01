@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.idea.editor
 
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
@@ -17,10 +18,14 @@ import com.intellij.openapi.editor.actions.IncrementalFindAction
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
@@ -32,21 +37,31 @@ import javax.swing.KeyStroke
 
 /**
  * DevIn language input component for mpp-idea module.
- * 
+ *
  * Features:
  * - DevIn language support with syntax highlighting and completion
  * - Enter to submit, Shift/Ctrl/Cmd+Enter for newline
  * - Integration with IntelliJ's completion system (lookup listener)
+ * - Auto-completion for @, /, $, : characters
  * - Placeholder text support
- * 
+ *
  * Based on AutoDevInput from core module but adapted for standalone mpp-idea usage.
  */
 class IdeaDevInInput(
-    project: Project,
+    private val project: Project,
     private val listeners: List<DocumentListener> = emptyList(),
     val disposable: Disposable?,
     private val showAgent: Boolean = true
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
+
+    // Try to get DevIn file type if available, otherwise use plain text
+    private val devInFileType: FileType? by lazy {
+        try {
+            FileTypeManager.getInstance().getFileTypeByExtension("devin")
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     private val editorListeners = EventDispatcher.create(IdeaInputListener::class.java)
 
@@ -191,9 +206,21 @@ class IdeaDevInInput(
             }
         }
 
-        // Create new document using EditorFactory
+        // Create new document with DevIn language support if available
         val document = ReadAction.compute<Document, Throwable> {
-            EditorFactory.getInstance().createDocument("")
+            val doc = EditorFactory.getInstance().createDocument("")
+
+            // Try to create a PsiFile with DevIn language support
+            devInFileType?.let { fileType ->
+                try {
+                    val psiFile = PsiFileFactory.getInstance(project)
+                        .createFileFromText("input.devin", fileType, "")
+                    PsiDocumentManager.getInstance(project).getDocument(psiFile) ?: doc
+                } catch (e: Exception) {
+                    // Fall back to plain document if DevIn language is not available
+                    doc
+                }
+            } ?: doc
         }
 
         initializeDocumentListeners(document)
@@ -224,11 +251,21 @@ class IdeaDevInInput(
 
     /**
      * Append text at the end of the document.
+     * If the text is a completion trigger character (@, /, $, :), auto-trigger completion.
      */
     fun appendText(textToAppend: String) {
         WriteCommandAction.runWriteCommandAction(project, "Append text", "intentions.write.action", {
             val document = this.editor?.document ?: return@runWriteCommandAction
+            val currentEditor = this.editor ?: return@runWriteCommandAction
+
             document.insertString(document.textLength, textToAppend)
+            currentEditor.caretModel.moveToOffset(document.textLength)
+
+            // Auto-trigger completion for special characters
+            if (textToAppend in listOf("@", "/", "$", ":")) {
+                PsiDocumentManager.getInstance(project).commitDocument(document)
+                AutoPopupController.getInstance(project).autoPopupMemberLookup(currentEditor, null)
+            }
         })
     }
 
