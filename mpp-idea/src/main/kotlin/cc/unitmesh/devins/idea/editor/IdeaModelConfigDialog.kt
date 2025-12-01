@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.llm.LLMProviderType
 import cc.unitmesh.llm.ModelConfig
@@ -34,9 +32,35 @@ import org.jetbrains.jewel.ui.component.TextField
 /**
  * Dialog for configuring LLM model settings for IntelliJ IDEA plugin.
  * Uses Jewel components for native IntelliJ look and feel.
+ *
+ * @deprecated Use IdeaModelConfigDialogWrapper.show() instead for proper z-index handling with SwingPanel.
  */
 @Composable
 fun IdeaModelConfigDialog(
+    currentConfig: ModelConfig,
+    currentConfigName: String? = null,
+    onDismiss: () -> Unit,
+    onSave: (configName: String, config: ModelConfig) -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        IdeaModelConfigDialogContent(
+            currentConfig = currentConfig,
+            currentConfigName = currentConfigName,
+            onDismiss = onDismiss,
+            onSave = onSave
+        )
+    }
+}
+
+/**
+ * Content for the model configuration dialog.
+ * This is extracted to be used both in Compose Dialog and DialogWrapper.
+ */
+@Composable
+fun IdeaModelConfigDialogContent(
     currentConfig: ModelConfig,
     currentConfigName: String? = null,
     onDismiss: () -> Unit,
@@ -55,219 +79,228 @@ fun IdeaModelConfigDialog(
     var modelExpanded by remember { mutableStateOf(false) }
     var showAdvanced by remember { mutableStateOf(false) }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+    Box(
+        modifier = Modifier
+            .width(500.dp)
+            .heightIn(max = 600.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(JewelTheme.globalColors.panelBackground)
+            .onKeyEvent { event ->
+                if (event.key == Key.Escape) {
+                    onDismiss()
+                    true
+                } else false
+            }
     ) {
-        Box(
+        Column(
             modifier = Modifier
-                .width(500.dp)
-                .heightIn(max = 600.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(JewelTheme.globalColors.panelBackground)
-                .onKeyEvent { event ->
-                    if (event.key == Key.Escape) {
-                        onDismiss()
-                        true
-                    } else false
-                }
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // Title
-                Text(
-                    text = "Model Configuration",
-                    style = JewelTheme.defaultTextStyle.copy(fontSize = 18.sp)
+            // Title
+            Text(
+                text = "Model Configuration",
+                style = JewelTheme.defaultTextStyle.copy(fontSize = 18.sp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Config Name
+            IdeaConfigFormField(label = "Config Name") {
+                TextField(
+                    state = configNameState,
+                    placeholder = { Text("e.g., my-gpt4") },
+                    modifier = Modifier.fillMaxWidth()
                 )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                // Config Name
-                IdeaConfigFormField(label = "Config Name") {
+            // Provider Selector
+            IdeaConfigFormField(label = "Provider") {
+                IdeaProviderSelector(
+                    provider = provider,
+                    expanded = providerExpanded,
+                    onExpandedChange = { providerExpanded = it },
+                    onProviderSelect = { selectedProvider ->
+                        provider = selectedProvider
+                        val defaultModels = ModelRegistry.getAvailableModels(selectedProvider)
+                        if (defaultModels.isNotEmpty()) {
+                            modelNameState.edit { replace(0, length, defaultModels[0]) }
+                        }
+                        if (selectedProvider == LLMProviderType.OLLAMA && baseUrlState.text.isEmpty()) {
+                            baseUrlState.edit { replace(0, length, "http://localhost:11434") }
+                        }
+                        providerExpanded = false
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Model Name
+            val availableModels = remember(provider) { ModelRegistry.getAvailableModels(provider) }
+            IdeaConfigFormField(label = "Model") {
+                if (availableModels.isNotEmpty()) {
+                    IdeaModelNameSelector(
+                        modelNameState = modelNameState,
+                        availableModels = availableModels,
+                        expanded = modelExpanded,
+                        onExpandedChange = { modelExpanded = it },
+                        onModelSelect = { selectedModel ->
+                            modelNameState.edit { replace(0, length, selectedModel) }
+                            modelExpanded = false
+                        }
+                    )
+                } else {
                     TextField(
-                        state = configNameState,
-                        placeholder = { Text("e.g., my-gpt4") },
+                        state = modelNameState,
+                        placeholder = { Text("Enter model name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // API Key
+            IdeaConfigFormField(label = "API Key") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextField(
+                        state = apiKeyState,
+                        placeholder = { Text("Enter API key") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { showApiKey = !showApiKey },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (showApiKey) IdeaComposeIcons.VisibilityOff else IdeaComposeIcons.Visibility,
+                            contentDescription = if (showApiKey) "Hide" else "Show",
+                            tint = JewelTheme.globalColors.text.normal,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            // Base URL (for certain providers)
+            val needsBaseUrl = provider in listOf(
+                LLMProviderType.OLLAMA, LLMProviderType.GLM, LLMProviderType.QWEN,
+                LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE
+            )
+            if (needsBaseUrl) {
+                Spacer(modifier = Modifier.height(12.dp))
+                IdeaConfigFormField(label = "Base URL") {
+                    TextField(
+                        state = baseUrlState,
+                        placeholder = { Text("e.g., http://localhost:11434") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Advanced Settings Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showAdvanced = !showAdvanced }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = if (showAdvanced) IdeaComposeIcons.ExpandLess else IdeaComposeIcons.ExpandMore,
+                    contentDescription = null,
+                    tint = JewelTheme.globalColors.text.normal,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Advanced Settings",
+                    style = JewelTheme.defaultTextStyle.copy(fontSize = 14.sp)
+                )
+            }
+
+            if (showAdvanced) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Temperature
+                IdeaConfigFormField(label = "Temperature") {
+                    TextField(
+                        state = temperatureState,
+                        placeholder = { Text("0.0 - 2.0") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Provider Selector
-                IdeaConfigFormField(label = "Provider") {
-                    IdeaProviderSelector(
-                        provider = provider,
-                        expanded = providerExpanded,
-                        onExpandedChange = { providerExpanded = it },
-                        onProviderSelect = { selectedProvider ->
-                            provider = selectedProvider
-                            val defaultModels = ModelRegistry.getAvailableModels(selectedProvider)
-                            if (defaultModels.isNotEmpty()) {
-                                modelNameState.edit { replace(0, length, defaultModels[0]) }
-                            }
-                            if (selectedProvider == LLMProviderType.OLLAMA && baseUrlState.text.isEmpty()) {
-                                baseUrlState.edit { replace(0, length, "http://localhost:11434") }
-                            }
-                            providerExpanded = false
-                        }
+                // Max Tokens
+                IdeaConfigFormField(label = "Max Tokens") {
+                    TextField(
+                        state = maxTokensState,
+                        placeholder = { Text("e.g., 128000") },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-                // Model Name
-                val availableModels = remember(provider) { ModelRegistry.getAvailableModels(provider) }
-                IdeaConfigFormField(label = "Model") {
-                    if (availableModels.isNotEmpty()) {
-                        IdeaModelNameSelector(
-                            modelNameState = modelNameState,
-                            availableModels = availableModels,
-                            expanded = modelExpanded,
-                            onExpandedChange = { modelExpanded = it },
-                            onModelSelect = { selectedModel ->
-                                modelNameState.edit { replace(0, length, selectedModel) }
-                                modelExpanded = false
-                            }
-                        )
-                    } else {
-                        TextField(
-                            state = modelNameState,
-                            placeholder = { Text("Enter model name") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+            // Action Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(onClick = onDismiss) {
+                    Text("Cancel")
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // API Key
-                IdeaConfigFormField(label = "API Key") {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextField(
-                            state = apiKeyState,
-                            placeholder = { Text("Enter API key") },
-                            modifier = Modifier.weight(1f)
+                Spacer(modifier = Modifier.width(12.dp))
+                DefaultButton(
+                    onClick = {
+                        val modelName = modelNameState.text.toString()
+                        val apiKey = apiKeyState.text.toString()
+                        val config = ModelConfig(
+                            provider = provider,
+                            modelName = modelName,
+                            apiKey = apiKey,
+                            temperature = temperatureState.text.toString().toDoubleOrNull() ?: 0.0,
+                            maxTokens = maxTokensState.text.toString().toIntOrNull() ?: 128000,
+                            baseUrl = baseUrlState.text.toString()
                         )
-                        IconButton(
-                            onClick = { showApiKey = !showApiKey },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (showApiKey) IdeaComposeIcons.VisibilityOff else IdeaComposeIcons.Visibility,
-                                contentDescription = if (showApiKey) "Hide" else "Show",
-                                tint = JewelTheme.globalColors.text.normal,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-
-                // Base URL (for certain providers)
-                val needsBaseUrl = provider in listOf(
-                    LLMProviderType.OLLAMA, LLMProviderType.GLM, LLMProviderType.QWEN,
-                    LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE
-                )
-                if (needsBaseUrl) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    IdeaConfigFormField(label = "Base URL") {
-                        TextField(
-                            state = baseUrlState,
-                            placeholder = { Text("e.g., http://localhost:11434") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Advanced Settings Toggle
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showAdvanced = !showAdvanced }
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        val configName = configNameState.text.toString()
+                        val name = configName.ifEmpty { "${provider.name.lowercase()}-${modelName}" }
+                        onSave(name, config)
+                    },
+                    enabled = modelNameState.text.isNotEmpty() && apiKeyState.text.isNotEmpty()
                 ) {
-                    Icon(
-                        imageVector = if (showAdvanced) IdeaComposeIcons.ExpandLess else IdeaComposeIcons.ExpandMore,
-                        contentDescription = null,
-                        tint = JewelTheme.globalColors.text.normal,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Advanced Settings",
-                        style = JewelTheme.defaultTextStyle.copy(fontSize = 14.sp)
-                    )
-                }
-
-                if (showAdvanced) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Temperature
-                    IdeaConfigFormField(label = "Temperature") {
-                        TextField(
-                            state = temperatureState,
-                            placeholder = { Text("0.0 - 2.0") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Max Tokens
-                    IdeaConfigFormField(label = "Max Tokens") {
-                        TextField(
-                            state = maxTokensState,
-                            placeholder = { Text("e.g., 128000") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Action Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    DefaultButton(
-                        onClick = {
-                            val modelName = modelNameState.text.toString()
-                            val apiKey = apiKeyState.text.toString()
-                            val config = ModelConfig(
-                                provider = provider,
-                                modelName = modelName,
-                                apiKey = apiKey,
-                                temperature = temperatureState.text.toString().toDoubleOrNull() ?: 0.0,
-                                maxTokens = maxTokensState.text.toString().toIntOrNull() ?: 128000,
-                                baseUrl = baseUrlState.text.toString()
-                            )
-                            val configName = configNameState.text.toString()
-                            val name = configName.ifEmpty { "${provider.name.lowercase()}-${modelName}" }
-                            onSave(name, config)
-                        },
-                        enabled = modelNameState.text.isNotEmpty() && apiKeyState.text.isNotEmpty()
-                    ) {
-                        Text("Save")
-                    }
+                    Text("Save")
                 }
             }
         }
     }
+}
+
+/**
+ * Deprecated: Use IdeaModelConfigDialogWrapper.show() instead.
+ */
+@Deprecated("Use IdeaModelConfigDialogWrapper.show() for proper z-index handling")
+@Composable
+fun IdeaModelConfigDialogLegacy(
+    currentConfig: ModelConfig,
+    currentConfigName: String? = null,
+    onDismiss: () -> Unit,
+    onSave: (configName: String, config: ModelConfig) -> Unit
+) {
+    IdeaModelConfigDialog(currentConfig, currentConfigName, onDismiss, onSave)
 }
 
 /**
@@ -289,7 +322,7 @@ private fun IdeaConfigFormField(
 }
 
 /**
- * Provider selector dropdown
+ * Provider selector dropdown using Jewel's PopupMenu for proper z-index handling
  */
 @Composable
 private fun IdeaProviderSelector(
@@ -319,43 +352,23 @@ private fun IdeaProviderSelector(
         }
 
         if (expanded) {
-            Popup(
-                onDismissRequest = { onExpandedChange(false) },
-                properties = PopupProperties(focusable = true)
+            PopupMenu(
+                onDismissRequest = {
+                    onExpandedChange(false)
+                    true
+                },
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.widthIn(min = 200.dp, max = 300.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .widthIn(min = 200.dp, max = 300.dp)
-                        .heightIn(max = 300.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(JewelTheme.globalColors.panelBackground)
-                        .padding(4.dp)
-                ) {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        LLMProviderType.entries.forEach { providerType ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .clickable { onProviderSelect(providerType) }
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = providerType.name,
-                                    style = JewelTheme.defaultTextStyle.copy(fontSize = 13.sp),
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (providerType == provider) {
-                                    Icon(
-                                        imageVector = IdeaComposeIcons.Check,
-                                        contentDescription = "Selected",
-                                        tint = JewelTheme.globalColors.text.normal,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-                        }
+                LLMProviderType.entries.forEach { providerType ->
+                    selectableItem(
+                        selected = providerType == provider,
+                        onClick = { onProviderSelect(providerType) }
+                    ) {
+                        Text(
+                            text = providerType.name,
+                            style = JewelTheme.defaultTextStyle.copy(fontSize = 13.sp)
+                        )
                     }
                 }
             }
@@ -364,7 +377,7 @@ private fun IdeaProviderSelector(
 }
 
 /**
- * Model name selector with dropdown for known models
+ * Model name selector with dropdown for known models using Jewel's PopupMenu
  */
 @Composable
 private fun IdeaModelNameSelector(
@@ -401,47 +414,26 @@ private fun IdeaModelNameSelector(
         }
 
         if (expanded) {
-            Popup(
-                onDismissRequest = { onExpandedChange(false) },
-                properties = PopupProperties(focusable = true)
+            PopupMenu(
+                onDismissRequest = {
+                    onExpandedChange(false)
+                    true
+                },
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.widthIn(min = 200.dp, max = 400.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .widthIn(min = 200.dp, max = 400.dp)
-                        .heightIn(max = 250.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(JewelTheme.globalColors.panelBackground)
-                        .padding(4.dp)
-                ) {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        availableModels.forEach { model ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .clickable { onModelSelect(model) }
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = model,
-                                    style = JewelTheme.defaultTextStyle.copy(fontSize = 13.sp),
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (model == modelName) {
-                                    Icon(
-                                        imageVector = IdeaComposeIcons.Check,
-                                        contentDescription = "Selected",
-                                        tint = JewelTheme.globalColors.text.normal,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-                        }
+                availableModels.forEach { model ->
+                    selectableItem(
+                        selected = model == modelName,
+                        onClick = { onModelSelect(model) }
+                    ) {
+                        Text(
+                            text = model,
+                            style = JewelTheme.defaultTextStyle.copy(fontSize = 13.sp)
+                        )
                     }
                 }
             }
         }
     }
 }
-
