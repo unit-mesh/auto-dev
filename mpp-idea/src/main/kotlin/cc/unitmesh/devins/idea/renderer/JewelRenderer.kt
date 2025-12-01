@@ -1,6 +1,12 @@
 package cc.unitmesh.devins.idea.renderer
 
 import cc.unitmesh.agent.render.BaseRenderer
+import cc.unitmesh.devins.llm.MessageRole
+import cc.unitmesh.agent.render.RendererUtils
+import cc.unitmesh.agent.render.TaskInfo
+import cc.unitmesh.agent.render.TaskStatus
+import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.llm.compression.TokenInfo
@@ -69,101 +75,6 @@ class JewelRenderer : BaseRenderer() {
     // Task tracking (from task-boundary tool)
     private val _tasks = MutableStateFlow<List<TaskInfo>>(emptyList())
     val tasks: StateFlow<List<TaskInfo>> = _tasks.asStateFlow()
-
-    // Data classes for timeline items - aligned with ComposeRenderer
-    sealed class TimelineItem(val timestamp: Long = System.currentTimeMillis(), val id: String = generateId()) {
-        data class MessageItem(
-            val role: MessageRole,
-            val content: String,
-            val tokenInfo: TokenInfo? = null,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        /**
-         * Combined tool call and result item - displays both in a single compact row.
-         * This is aligned with ComposeRenderer's CombinedToolItem for consistency.
-         */
-        data class ToolCallItem(
-            val toolName: String,
-            val description: String = "",
-            val params: String,
-            val fullParams: String? = null,
-            val filePath: String? = null,
-            val toolType: ToolType? = null,
-            val success: Boolean? = null,
-            val summary: String? = null,
-            val output: String? = null,
-            val fullOutput: String? = null,
-            val executionTimeMs: Long? = null,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        data class ErrorItem(
-            val message: String,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        data class TaskCompleteItem(
-            val success: Boolean,
-            val message: String,
-            val iterations: Int,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        data class TerminalOutputItem(
-            val command: String,
-            val output: String,
-            val exitCode: Int,
-            val executionTimeMs: Long,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        companion object {
-            private var idCounter = 0L
-            fun generateId(): String = "${System.currentTimeMillis()}-${idCounter++}"
-        }
-    }
-
-    data class ToolCallInfo(
-        val toolName: String,
-        val description: String,
-        val details: String? = null
-    )
-
-    enum class MessageRole {
-        USER, ASSISTANT, SYSTEM
-    }
-
-    /**
-     * Task information from task-boundary tool.
-     * Aligned with ComposeRenderer's TaskInfo for consistency.
-     */
-    data class TaskInfo(
-        val taskName: String,
-        val status: TaskStatus,
-        val summary: String = "",
-        val timestamp: Long = System.currentTimeMillis(),
-        val startTime: Long = System.currentTimeMillis()
-    )
-
-    enum class TaskStatus(val displayName: String) {
-        PLANNING("Planning"),
-        WORKING("Working"),
-        COMPLETED("Completed"),
-        BLOCKED("Blocked"),
-        CANCELLED("Cancelled");
-
-        companion object {
-            fun fromString(status: String): TaskStatus {
-                return entries.find { it.name.equals(status, ignoreCase = true) } ?: WORKING
-            }
-        }
-    }
 
     // BaseRenderer implementation
 
@@ -302,23 +213,29 @@ class JewelRenderer : BaseRenderer() {
 
         // For shell commands, check if it's a live session
         val isLiveSession = metadata["isLiveSession"] == "true"
-        val liveExitCode = metadata["live_exit_code"]?.toIntOrNull()
+        val sessionId = metadata["sessionId"]
+        val liveExitCode = metadata["exit_code"]?.toIntOrNull()
 
         if (toolType == ToolType.Shell && output != null) {
             val exitCode = liveExitCode ?: (if (success) 0 else 1)
             val executionTimeMs = executionTime ?: 0L
             val command = currentToolCallInfo?.details?.removePrefix("Executing: ") ?: "unknown"
 
-            if (isLiveSession) {
-                // Add terminal output after live terminal
-                addTimelineItem(
-                    TimelineItem.TerminalOutputItem(
-                        command = command,
-                        output = fullOutput ?: output,
-                        exitCode = exitCode,
-                        executionTimeMs = executionTimeMs
-                    )
-                )
+            if (isLiveSession && sessionId != null) {
+                // Update the existing LiveTerminalItem with completion status
+                _timeline.update { items ->
+                    items.map { item ->
+                        if (item is TimelineItem.LiveTerminalItem && item.sessionId == sessionId) {
+                            item.copy(
+                                exitCode = exitCode,
+                                executionTimeMs = executionTimeMs,
+                                output = fullOutput ?: output
+                            )
+                        } else {
+                            item
+                        }
+                    }
+                }
             } else {
                 // Replace the last tool call with terminal output
                 _timeline.update { items ->
@@ -479,85 +396,13 @@ class JewelRenderer : BaseRenderer() {
         _timeline.update { it + item }
     }
 
-    private fun formatToolCallDisplay(toolName: String, paramsStr: String): ToolCallDisplayInfo {
-        val params = parseParamsString(paramsStr)
-        val toolType = toolName.toToolType()
+    private fun formatToolCallDisplay(toolName: String, paramsStr: String) =
+        RendererUtils.formatToolCallDisplay(toolName, paramsStr)
 
-        return when (toolType) {
-            ToolType.ReadFile -> ToolCallDisplayInfo(
-                toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                description = "file reader",
-                details = "Reading file: ${params["path"] ?: "unknown"}"
-            )
-            ToolType.WriteFile -> ToolCallDisplayInfo(
-                toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                description = "file writer",
-                details = "Writing to file: ${params["path"] ?: "unknown"}"
-            )
-            ToolType.Glob -> ToolCallDisplayInfo(
-                toolName = toolType.displayName,
-                description = "pattern matcher",
-                details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
-            )
-            ToolType.Shell -> ToolCallDisplayInfo(
-                toolName = toolType.displayName,
-                description = "command executor",
-                details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
-            )
-            else -> ToolCallDisplayInfo(
-                toolName = if (toolName == "docql") "DocQL" else toolName,
-                description = "tool execution",
-                details = paramsStr
-            )
-        }
-    }
+    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?) =
+        RendererUtils.formatToolResultSummary(toolName, success, output)
 
-    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?): String {
-        if (!success) return "Failed"
-
-        val toolType = toolName.toToolType()
-        return when (toolType) {
-            ToolType.ReadFile -> {
-                val lines = output?.lines()?.size ?: 0
-                "Read $lines lines"
-            }
-            ToolType.WriteFile -> "File written successfully"
-            ToolType.Glob -> {
-                val firstLine = output?.lines()?.firstOrNull() ?: ""
-                when {
-                    firstLine.contains("Found ") && firstLine.contains(" files matching") -> {
-                        val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
-                        "Found $count files"
-                    }
-                    output?.contains("No files found") == true -> "No files found"
-                    else -> "Search completed"
-                }
-            }
-            ToolType.Shell -> {
-                val lines = output?.lines()?.size ?: 0
-                if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
-            }
-            else -> "Success"
-        }
-    }
-
-    private fun parseParamsString(paramsStr: String): Map<String, String> {
-        val params = mutableMapOf<String, String>()
-        val regex = Regex("""(\w+)="([^"]*)"|\s*(\w+)=([^\s]+)""")
-        regex.findAll(paramsStr).forEach { match ->
-            val key = match.groups[1]?.value ?: match.groups[3]?.value
-            val value = match.groups[2]?.value ?: match.groups[4]?.value
-            if (key != null && value != null) {
-                params[key] = value
-            }
-        }
-        return params
-    }
-
-    private data class ToolCallDisplayInfo(
-        val toolName: String,
-        val description: String,
-        val details: String?
-    )
+    private fun parseParamsString(paramsStr: String) =
+        RendererUtils.parseParamsString(paramsStr)
 }
 

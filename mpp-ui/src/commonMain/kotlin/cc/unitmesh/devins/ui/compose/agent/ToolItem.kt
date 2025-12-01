@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 @Composable
@@ -265,7 +266,7 @@ fun ToolErrorItem(
 }
 
 @Composable
-fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
+fun CurrentToolCallItem(toolCall: ToolCallInfo) {
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
         shape = RoundedCornerShape(8.dp),

@@ -1,20 +1,59 @@
 <!-- Plugin Configuration File for mpp-idea Compose UI module -->
-<idea-plugin>
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <id>cc.unitmesh.devins.idea</id>
     <name>AutoDev Compose UI</name>
     <vendor email="phodal@gmail.com" url="https://github.com/unit-mesh">UnitMesh</vendor>
 
     <description><![CDATA[
     AutoDev Compose UI module - Provides Compose-based UI components for IntelliJ IDEA 2025.2+.
-    This module leverages Jewel theme for native IDE integration.
+    This module leverages Jewel theme for native IDE integration with DevIn language support.
     ]]></description>
 
     <!-- Required for Compose support in IDEA 252+ -->
     <dependencies>
         <module name="intellij.platform.compose"/>
+        <plugin id="org.jetbrains.plugins.terminal"/>
+        <!-- DevIn language support for @ and / completion -->
+        <plugin id="org.intellij.plugins.markdown"/>
+        <plugin id="com.jetbrains.sh"/>
+        <plugin id="Git4Idea"/>
     </dependencies>
 
     <resource-bundle>messages.AutoDevIdeaBundle</resource-bundle>
+
+    <!-- Extension points required by devins-lang module (normally defined in autodev-core.xml) -->
+    <extensionPoints>
+        <extensionPoint qualifiedName="cc.unitmesh.languageProcessor"
+                        interface="cc.unitmesh.devti.provider.devins.LanguageProcessor"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.runService"
+                        interface="cc.unitmesh.devti.provider.RunService"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.sketchToolchainProvider"
+                        interface="cc.unitmesh.devti.sketch.SketchToolchainProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.devInsAgentTool"
+                        interface="cc.unitmesh.devti.provider.DevInsAgentToolCollector"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shirePostProcessor"
+                        interface="cc.unitmesh.devti.devins.post.PostProcessor"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireLocationInteraction"
+                        interface="cc.unitmesh.devti.devins.provider.LocationInteractionProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"
+                        interface="cc.unitmesh.devti.provider.devins.DevInsSymbolProvider"
+                        dynamic="true"/>
+    </extensionPoints>
+
+    <!-- Include DevIn language support (completion, syntax highlighting, etc.) -->
+    <xi:include href="/cc.unitmesh.devti.language.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Project-level service for coroutine scope management -->

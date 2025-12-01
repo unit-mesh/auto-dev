@@ -2,40 +2,39 @@ package cc.unitmesh.devins.idea.toolwindow
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.idea.editor.IdeaBottomToolbar
 import cc.unitmesh.devins.idea.editor.IdeaDevInInput
 import cc.unitmesh.devins.idea.editor.IdeaInputListener
 import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.devins.idea.editor.IdeaModelConfigDialog
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
-import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
-import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.devins.idea.components.header.IdeaAgentTabsHeader
+import cc.unitmesh.devins.idea.components.IdeaVerticalResizableSplitPane
+import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeContent
+import cc.unitmesh.devins.idea.toolwindow.knowledge.IdeaKnowledgeViewModel
+import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentContent
+import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentViewModel
+import cc.unitmesh.devins.idea.toolwindow.remote.getEffectiveProjectId
+import cc.unitmesh.devins.idea.components.status.IdeaToolLoadingStatusBar
+import cc.unitmesh.devins.idea.components.timeline.IdeaEmptyStateMessage
+import cc.unitmesh.devins.idea.components.timeline.IdeaTimelineContent
+import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.Orientation
-import org.jetbrains.jewel.ui.component.*
-import org.jetbrains.jewel.ui.theme.defaultBannerStyle
+import org.jetbrains.jewel.ui.component.Divider
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JPanel
@@ -64,10 +63,30 @@ fun IdeaAgentApp(
     val isExecuting by viewModel.isExecuting.collectAsState()
     val showConfigDialog by viewModel.showConfigDialog.collectAsState()
     val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
+    val configWrapper by viewModel.configWrapper.collectAsState()
+    val currentModelConfig by viewModel.currentModelConfig.collectAsState()
     val listState = rememberLazyListState()
+
+    // Get available configs and current config name
+    val availableConfigs = remember(configWrapper) {
+        configWrapper?.getAllConfigs() ?: emptyList()
+    }
+    val currentConfigName = remember(configWrapper) {
+        configWrapper?.getActiveName()
+    }
 
     // Code Review ViewModel (created lazily when needed)
     var codeReviewViewModel by remember { mutableStateOf<IdeaCodeReviewViewModel?>(null) }
+
+    // Knowledge ViewModel (created lazily when needed)
+    var knowledgeViewModel by remember { mutableStateOf<IdeaKnowledgeViewModel?>(null) }
+
+    // Remote Agent ViewModel (created lazily when needed)
+    var remoteAgentViewModel by remember { mutableStateOf<IdeaRemoteAgentViewModel?>(null) }
+
+    // Remote agent state for input handling
+    var remoteProjectId by remember { mutableStateOf("") }
+    var remoteGitUrl by remember { mutableStateOf("") }
 
     // Auto-scroll to bottom when new items arrive
     LaunchedEffect(timeline.size, streamingOutput) {
@@ -79,19 +98,37 @@ fun IdeaAgentApp(
         }
     }
 
-    // Create CodeReviewViewModel when switching to CODE_REVIEW tab
+    // Create ViewModels when switching tabs
     LaunchedEffect(currentAgentType) {
         if (currentAgentType == AgentType.CODE_REVIEW && codeReviewViewModel == null) {
             codeReviewViewModel = IdeaCodeReviewViewModel(project, coroutineScope)
         }
+        if (currentAgentType == AgentType.KNOWLEDGE && knowledgeViewModel == null) {
+            knowledgeViewModel = IdeaKnowledgeViewModel(project, coroutineScope)
+        }
+        if (currentAgentType == AgentType.REMOTE && remoteAgentViewModel == null) {
+            remoteAgentViewModel = IdeaRemoteAgentViewModel(
+                project = project,
+                coroutineScope = coroutineScope,
+                serverUrl = "http://localhost:8080"
+            )
+        }
     }
 
-    // Dispose CodeReviewViewModel when leaving CODE_REVIEW tab
+    // Dispose ViewModels when leaving their tabs
     DisposableEffect(currentAgentType) {
         onDispose {
             if (currentAgentType != AgentType.CODE_REVIEW) {
                 codeReviewViewModel?.dispose()
                 codeReviewViewModel = null
+            }
+            if (currentAgentType != AgentType.KNOWLEDGE) {
+                knowledgeViewModel?.dispose()
+                knowledgeViewModel = null
+            }
+            if (currentAgentType != AgentType.REMOTE) {
+                remoteAgentViewModel?.dispose()
+                remoteAgentViewModel = null
             }
         }
     }
@@ -102,7 +139,7 @@ fun IdeaAgentApp(
             .background(JewelTheme.globalColors.panelBackground)
     ) {
         // Agent Type Tabs Header
-        AgentTabsHeader(
+        IdeaAgentTabsHeader(
             currentAgentType = currentAgentType,
             onAgentTypeChange = { viewModel.onAgentTypeChange(it) },
             onNewChat = { viewModel.clearHistory() },
@@ -111,551 +148,128 @@ fun IdeaAgentApp(
 
         Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
 
-        // Content based on agent type
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            when (currentAgentType) {
-                AgentType.CODING, AgentType.REMOTE, AgentType.LOCAL_CHAT -> {
-                    TimelineContent(
-                        timeline = timeline,
-                        streamingOutput = streamingOutput,
-                        listState = listState
+        // Main content area with resizable split pane for chat-based modes
+        when (currentAgentType) {
+            AgentType.CODING, AgentType.LOCAL_CHAT -> {
+                IdeaVerticalResizableSplitPane(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    initialSplitRatio = 0.75f,
+                    minRatio = 0.3f,
+                    maxRatio = 0.9f,
+                    top = {
+                        IdeaTimelineContent(
+                            timeline = timeline,
+                            streamingOutput = streamingOutput,
+                            listState = listState,
+                            project = project
+                        )
+                    },
+                    bottom = {
+                        IdeaDevInInputArea(
+                            project = project,
+                            parentDisposable = viewModel,
+                            isProcessing = isExecuting,
+                            onSend = { viewModel.sendMessage(it) },
+                            onAbort = { viewModel.cancelTask() },
+                            workspacePath = project.basePath,
+                            totalTokens = null,
+                            onSettingsClick = { viewModel.setShowConfigDialog(true) },
+                            onAtClick = {},
+                            availableConfigs = availableConfigs,
+                            currentConfigName = currentConfigName,
+                            onConfigSelect = { config ->
+                                viewModel.setActiveConfig(config.name)
+                            },
+                            onConfigureClick = { viewModel.setShowConfigDialog(true) }
+                        )
+                    }
+                )
+            }
+            AgentType.REMOTE -> {
+                remoteAgentViewModel?.let { remoteVm ->
+                    val remoteIsExecuting by remoteVm.isExecuting.collectAsState()
+                    val remoteIsConnected by remoteVm.isConnected.collectAsState()
+
+                    IdeaVerticalResizableSplitPane(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        initialSplitRatio = 0.75f,
+                        minRatio = 0.3f,
+                        maxRatio = 0.9f,
+                        top = {
+                            IdeaRemoteAgentContent(
+                                viewModel = remoteVm,
+                                listState = listState,
+                                onProjectIdChange = { remoteProjectId = it },
+                                onGitUrlChange = { remoteGitUrl = it }
+                            )
+                        },
+                        bottom = {
+                            IdeaDevInInputArea(
+                                project = project,
+                                parentDisposable = viewModel,
+                                isProcessing = remoteIsExecuting,
+                                onSend = { task ->
+                                    val effectiveProjectId = getEffectiveProjectId(remoteProjectId, remoteGitUrl)
+                                    if (effectiveProjectId.isNotBlank()) {
+                                        remoteVm.executeTask(effectiveProjectId, task, remoteGitUrl)
+                                    } else {
+                                        remoteVm.renderer.renderError("Please provide a project or Git URL")
+                                    }
+                                },
+                                onAbort = { remoteVm.cancelTask() },
+                                workspacePath = project.basePath,
+                                totalTokens = null,
+                                onSettingsClick = { viewModel.setShowConfigDialog(true) },
+                                onAtClick = {},
+                                availableConfigs = availableConfigs,
+                                currentConfigName = currentConfigName,
+                                onConfigSelect = { config ->
+                                    viewModel.setActiveConfig(config.name)
+                                },
+                                onConfigureClick = { viewModel.setShowConfigDialog(true) }
+                            )
+                        }
                     )
-                }
-                AgentType.CODE_REVIEW -> {
+                } ?: IdeaEmptyStateMessage("Loading Remote Agent...")
+            }
+            AgentType.CODE_REVIEW -> {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                     codeReviewViewModel?.let { vm ->
-                        IdeaCodeReviewContent(viewModel = vm)
-                    } ?: EmptyStateMessage("Loading Code Review...")
+                        IdeaCodeReviewContent(
+                            viewModel = vm,
+                            parentDisposable = viewModel
+                        )
+                    } ?: IdeaEmptyStateMessage("Loading Code Review...")
                 }
-                AgentType.KNOWLEDGE -> {
-                    KnowledgeContent()
+            }
+            AgentType.KNOWLEDGE -> {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                    knowledgeViewModel?.let { vm ->
+                        IdeaKnowledgeContent(viewModel = vm)
+                    } ?: IdeaEmptyStateMessage("Loading Knowledge Agent...")
                 }
             }
         }
 
-        Divider(Orientation.Horizontal, modifier = Modifier.fillMaxWidth().height(1.dp))
-
-        // Input area (only for chat-based modes)
-        if (currentAgentType == AgentType.CODING || currentAgentType == AgentType.REMOTE || currentAgentType == AgentType.LOCAL_CHAT) {
-            DevInInputArea(
-                project = project,
-                parentDisposable = viewModel,
-                isProcessing = isExecuting,
-                onSend = { viewModel.sendMessage(it) },
-                onAbort = { viewModel.cancelTask() },
-                workspacePath = project.basePath,
-                totalTokens = null, // TODO: integrate token counting from renderer
-                onSettingsClick = { viewModel.setShowConfigDialog(true) },
-                onAtClick = {
-                    // @ click triggers agent completion - placeholder for now
-                }
-            )
-        }
-
         // Tool loading status bar
-        ToolLoadingStatusBar(
+        IdeaToolLoadingStatusBar(
             viewModel = viewModel,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
-}
 
-@Composable
-private fun TimelineContent(
-    timeline: List<JewelRenderer.TimelineItem>,
-    streamingOutput: String,
-    listState: androidx.compose.foundation.lazy.LazyListState
-) {
-    if (timeline.isEmpty() && streamingOutput.isEmpty()) {
-        EmptyStateMessage("Start a conversation with your AI Assistant!")
-    } else {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(timeline, key = { it.id }) { item ->
-                TimelineItemView(item)
+    // Model Configuration Dialog
+    if (showConfigDialog) {
+        val dialogConfig = currentModelConfig ?: ModelConfig()
+        IdeaModelConfigDialog(
+            currentConfig = dialogConfig,
+            currentConfigName = currentConfigName,
+            onDismiss = { viewModel.setShowConfigDialog(false) },
+            onSave = { name, config ->
+                val namedConfig = NamedModelConfig.fromModelConfig(name, config)
+                viewModel.saveModelConfig(namedConfig, setActive = true)
+                viewModel.setShowConfigDialog(false)
             }
-
-            // Show streaming output
-            if (streamingOutput.isNotEmpty()) {
-                item {
-                    StreamingMessageBubble(streamingOutput)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TimelineItemView(item: JewelRenderer.TimelineItem) {
-    when (item) {
-        is JewelRenderer.TimelineItem.MessageItem -> {
-            MessageBubble(
-                role = item.role,
-                content = item.content
-            )
-        }
-        is JewelRenderer.TimelineItem.ToolCallItem -> {
-            ToolCallBubble(item)
-        }
-        is JewelRenderer.TimelineItem.ErrorItem -> {
-            ErrorBubble(item.message)
-        }
-        is JewelRenderer.TimelineItem.TaskCompleteItem -> {
-            TaskCompleteBubble(item)
-        }
-        is JewelRenderer.TimelineItem.TerminalOutputItem -> {
-            TerminalOutputBubble(item)
-        }
-    }
-}
-
-@Composable
-private fun KnowledgeContent() {
-    EmptyStateMessage("Knowledge mode - Coming soon!")
-}
-
-@Composable
-private fun EmptyStateMessage(text: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            style = JewelTheme.defaultTextStyle.copy(
-                fontSize = 14.sp,
-                color = JewelTheme.globalColors.text.info
-            )
-        )
-    }
-}
-
-@Composable
-private fun MessageBubble(role: JewelRenderer.MessageRole, content: String) {
-    val isUser = role == JewelRenderer.MessageRole.USER
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 500.dp)
-                .background(
-                    if (isUser)
-                        JewelTheme.defaultBannerStyle.information.colors.background.copy(alpha = 0.75f)
-                    else
-                        JewelTheme.globalColors.panelBackground
-                )
-                .padding(8.dp)
-        ) {
-            Text(
-                text = content,
-                style = JewelTheme.defaultTextStyle
-            )
-        }
-    }
-}
-
-@Composable
-private fun ToolCallBubble(item: JewelRenderer.TimelineItem.ToolCallItem) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 500.dp)
-                .background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.5f))
-                .padding(8.dp)
-        ) {
-            Column {
-                // Tool name with icon
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val statusIcon = when (item.success) {
-                        true -> "✓"
-                        false -> "✗"
-                        null -> "⏳"
-                    }
-                    // Use AutoDevColors design system - use lighter colors for dark theme compatibility
-                    val statusColor = when (item.success) {
-                        true -> AutoDevColors.Green.c400 // Success color from design system
-                        false -> AutoDevColors.Red.c400 // Error color from design system
-                        null -> JewelTheme.globalColors.text.info
-                    }
-                    Text(
-                        text = statusIcon,
-                        style = JewelTheme.defaultTextStyle.copy(color = statusColor)
-                    )
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Build,
-                        contentDescription = "Tool",
-                        modifier = Modifier.size(14.dp),
-                        tint = JewelTheme.globalColors.text.normal
-                    )
-                    Text(
-                        text = item.toolName,
-                        style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
-
-                // Tool parameters (truncated)
-                if (item.params.isNotEmpty()) {
-                    Text(
-                        text = item.params.take(200) + if (item.params.length > 200) "..." else "",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            fontSize = 12.sp,
-                            color = JewelTheme.globalColors.text.info
-                        )
-                    )
-                }
-
-                // Tool output (if available)
-                item.output?.let { output ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = output.take(300) + if (output.length > 300) "..." else "",
-                        style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ErrorBubble(message: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 500.dp)
-                .background(AutoDevColors.Red.c400.copy(alpha = 0.2f)) // Error background from design system
-                .padding(8.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Error,
-                    contentDescription = "Error",
-                    modifier = Modifier.size(16.dp),
-                    tint = AutoDevColors.Red.c400
-                )
-                Text(
-                    text = message,
-                    style = JewelTheme.defaultTextStyle.copy(
-                        color = AutoDevColors.Red.c400 // Error text color from design system
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TaskCompleteBubble(item: JewelRenderer.TimelineItem.TaskCompleteItem) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    // Use AutoDevColors design system with alpha for background
-                    if (item.success)
-                        AutoDevColors.Green.c400.copy(alpha = 0.2f)
-                    else
-                        AutoDevColors.Red.c400.copy(alpha = 0.2f)
-                )
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (item.success) AutoDevComposeIcons.CheckCircle else AutoDevComposeIcons.Error,
-                    contentDescription = if (item.success) "Success" else "Failed",
-                    modifier = Modifier.size(16.dp),
-                    tint = if (item.success) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
-                )
-                Text(
-                    text = "${item.message} (${item.iterations} iterations)",
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun StreamingMessageBubble(content: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 500.dp)
-                .background(JewelTheme.globalColors.panelBackground)
-                .padding(8.dp)
-        ) {
-            Text(
-                text = content + "▌",
-                style = JewelTheme.defaultTextStyle
-            )
-        }
-    }
-}
-
-@Composable
-private fun AgentTabsHeader(
-    currentAgentType: AgentType,
-    onAgentTypeChange: (AgentType) -> Unit,
-    onNewChat: () -> Unit,
-    onSettings: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(36.dp)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Left: Agent Type Tabs (show main agent types, skip LOCAL_CHAT as it's similar to CODING)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Show only main agent types for cleaner UI
-            listOf(AgentType.CODING, AgentType.CODE_REVIEW, AgentType.KNOWLEDGE, AgentType.REMOTE).forEach { type ->
-                AgentTab(
-                    type = type,
-                    isSelected = type == currentAgentType,
-                    onClick = { onAgentTypeChange(type) }
-                )
-            }
-        }
-
-        // Right: Actions
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onNewChat) {
-                Text("+", style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold))
-            }
-            IconButton(onClick = onSettings) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Settings,
-                    contentDescription = "Settings",
-                    modifier = Modifier.size(16.dp),
-                    tint = JewelTheme.globalColors.text.normal
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AgentTab(
-    type: AgentType,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val backgroundColor = if (isSelected) {
-        JewelTheme.defaultBannerStyle.information.colors.background.copy(alpha = 0.5f)
-    } else {
-        JewelTheme.globalColors.panelBackground
-    }
-
-    OutlinedButton(
-        onClick = onClick,
-        modifier = Modifier
-            .height(28.dp)
-            .background(backgroundColor)
-            .padding(horizontal = 4.dp, vertical = 2.dp)
-    ) {
-        Text(
-            text = type.getDisplayName(),
-            style = JewelTheme.defaultTextStyle.copy(
-                fontSize = 12.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-            )
-        )
-    }
-}
-
-@Composable
-private fun TerminalOutputBubble(item: JewelRenderer.TimelineItem.TerminalOutputItem) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 600.dp)
-                .background(AutoDevColors.Neutral.c900) // Terminal background from design system
-                .padding(8.dp)
-        ) {
-            Column {
-                // Command header
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "$ ${item.command}",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = AutoDevColors.Cyan.c400 // Cyan for commands from design system
-                        )
-                    )
-                    val exitColor = if (item.exitCode == 0) AutoDevColors.Green.c400 else AutoDevColors.Red.c400
-                    Text(
-                        text = "exit: ${item.exitCode}",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            fontSize = 11.sp,
-                            color = exitColor
-                        )
-                    )
-                    Text(
-                        text = "${item.executionTimeMs}ms",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            fontSize = 11.sp,
-                            color = JewelTheme.globalColors.text.info
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Output content
-                val outputText = item.output.take(1000) + if (item.output.length > 1000) "\n..." else ""
-                Text(
-                    text = outputText,
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontSize = 12.sp,
-                        color = AutoDevColors.Neutral.c300 // Light gray for output from design system
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ToolLoadingStatusBar(
-    viewModel: IdeaAgentViewModel,
-    modifier: Modifier = Modifier
-) {
-    val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
-    val mcpPreloadingStatus by viewModel.mcpPreloadingStatus.collectAsState()
-    // Recompute when preloading status changes to make it reactive
-    val toolStatus = remember(mcpPreloadingStatus) { viewModel.getToolLoadingStatus() }
-
-    Row(
-        modifier = modifier
-            .background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f))
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // SubAgents status
-        ToolStatusChip(
-            label = "SubAgents",
-            count = toolStatus.subAgentsEnabled,
-            total = toolStatus.subAgentsTotal,
-            isLoading = false,
-            color = AutoDevColors.Blue.c400
-        )
-
-        // MCP Tools status
-        ToolStatusChip(
-            label = "MCP Tools",
-            count = toolStatus.mcpToolsEnabled,
-            total = if (toolStatus.isLoading) -1 else toolStatus.mcpToolsTotal,
-            isLoading = toolStatus.isLoading,
-            color = if (!toolStatus.isLoading && toolStatus.mcpToolsEnabled > 0)
-                AutoDevColors.Green.c400
-            else
-                JewelTheme.globalColors.text.info
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Status message
-        if (mcpPreloadingMessage.isNotEmpty()) {
-            Text(
-                text = mcpPreloadingMessage,
-                style = JewelTheme.defaultTextStyle.copy(
-                    fontSize = 11.sp,
-                    color = JewelTheme.globalColors.text.info
-                ),
-                maxLines = 1
-            )
-        } else if (!toolStatus.isLoading && toolStatus.mcpServersLoaded > 0) {
-            Text(
-                text = "✓ All tools ready",
-                style = JewelTheme.defaultTextStyle.copy(
-                    fontSize = 11.sp,
-                    color = AutoDevColors.Green.c400
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun ToolStatusChip(
-    label: String,
-    count: Int,
-    total: Int,
-    isLoading: Boolean,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        // Status indicator dot
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .background(
-                    color = if (isLoading) JewelTheme.globalColors.text.info.copy(alpha = 0.5f) else color,
-                    shape = CircleShape
-                )
-        )
-
-        val totalDisplay = if (total < 0) "∞" else total.toString()
-        Text(
-            text = "$label ($count/$totalDisplay)",
-            style = JewelTheme.defaultTextStyle.copy(
-                fontSize = 11.sp,
-                color = if (isLoading)
-                    JewelTheme.globalColors.text.info.copy(alpha = 0.7f)
-                else
-                    JewelTheme.globalColors.text.info
-            )
         )
     }
 }
@@ -671,9 +285,10 @@ private fun ToolStatusChip(
  * - Token usage display
  * - Settings access
  * - Stop/Send button based on execution state
+ * - Model selector for switching between LLM configurations
  */
 @Composable
-private fun DevInInputArea(
+private fun IdeaDevInInputArea(
     project: Project,
     parentDisposable: Disposable,
     isProcessing: Boolean,
@@ -682,19 +297,23 @@ private fun DevInInputArea(
     workspacePath: String? = null,
     totalTokens: Int? = null,
     onSettingsClick: () -> Unit = {},
-    onAtClick: () -> Unit = {}
+    onAtClick: () -> Unit = {},
+    availableConfigs: List<NamedModelConfig> = emptyList(),
+    currentConfigName: String? = null,
+    onConfigSelect: (NamedModelConfig) -> Unit = {},
+    onConfigureClick: () -> Unit = {}
 ) {
     var inputText by remember { mutableStateOf("") }
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(8.dp)
+        modifier = Modifier.fillMaxSize().padding(8.dp)
     ) {
-        // DevIn Editor via SwingPanel
+        // DevIn Editor via SwingPanel - uses weight(1f) to fill available space
         SwingPanel(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .weight(1f),
             factory = {
                 val input = IdeaDevInInput(
                     project = project,
@@ -730,11 +349,11 @@ private fun DevInInputArea(
                 Disposer.register(parentDisposable, input)
                 devInInput = input
 
-                // Wrap in a JPanel to handle sizing
+                // Wrap in a JPanel to handle dynamic sizing
                 JPanel(BorderLayout()).apply {
                     add(input, BorderLayout.CENTER)
-                    preferredSize = Dimension(800, 120)
-                    minimumSize = Dimension(200, 80)
+                    // Don't set fixed preferredSize - let it fill available space
+                    minimumSize = Dimension(200, 60)
                 }
             },
             update = { panel ->
@@ -755,13 +374,12 @@ private fun DevInInputArea(
             sendEnabled = inputText.isNotBlank() && !isProcessing,
             isExecuting = isProcessing,
             onStopClick = onAbort,
-            onAtClick = {
-                devInInput?.appendText("@")
-                onAtClick()
-            },
             onSettingsClick = onSettingsClick,
-            workspacePath = workspacePath,
-            totalTokens = totalTokens
+            totalTokens = totalTokens,
+            availableConfigs = availableConfigs,
+            currentConfigName = currentConfigName,
+            onConfigSelect = onConfigSelect,
+            onConfigureClick = onConfigureClick
         )
     }
 }

@@ -19,7 +19,10 @@ actual fun LiveTerminalItem(
     sessionId: String,
     command: String,
     workingDirectory: String?,
-    ptyHandle: Any?
+    ptyHandle: Any?,
+    exitCode: Int?,
+    executionTimeMs: Long?,
+    output: String?
 ) {
     Card(
         colors =

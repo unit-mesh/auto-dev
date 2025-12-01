@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
 import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
@@ -159,23 +160,28 @@ fun AgentMessageList(
 
 @Composable
 fun RenderMessageItem(
-    timelineItem: ComposeRenderer.TimelineItem,
+    timelineItem: TimelineItem,
     onOpenFileViewer: ((String) -> Unit)?,
     renderer: ComposeRenderer,
     onExpand: () -> Unit = {}
 ) {
     when (timelineItem) {
-        is ComposeRenderer.TimelineItem.MessageItem -> {
+        is TimelineItem.MessageItem -> {
+            val msg = timelineItem.message ?: Message(
+                role = timelineItem.role,
+                content = timelineItem.content,
+                timestamp = timelineItem.timestamp
+            )
             MessageItem(
-                message = timelineItem.message,
+                message = msg,
                 tokenInfo = timelineItem.tokenInfo
             )
         }
 
-        is ComposeRenderer.TimelineItem.CombinedToolItem -> {
+        is TimelineItem.ToolCallItem -> {
             ToolItem(
                 toolName = timelineItem.toolName,
-                details = timelineItem.details,
+                details = timelineItem.params,
                 fullParams = timelineItem.fullParams,
                 filePath = timelineItem.filePath,
                 toolType = timelineItem.toolType,
@@ -190,28 +196,18 @@ fun RenderMessageItem(
             )
         }
 
-        is ComposeRenderer.TimelineItem.ToolResultItem -> {
-            ToolResultItem(
-                toolName = timelineItem.toolName,
-                success = timelineItem.success,
-                summary = timelineItem.summary,
-                output = timelineItem.output,
-                fullOutput = timelineItem.fullOutput
-            )
+        is TimelineItem.ErrorItem -> {
+            ToolErrorItem(error = timelineItem.message, onDismiss = { renderer.clearError() })
         }
 
-        is ComposeRenderer.TimelineItem.ToolErrorItem -> {
-            ToolErrorItem(error = timelineItem.error, onDismiss = { renderer.clearError() })
-        }
-
-        is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
+        is TimelineItem.TaskCompleteItem -> {
             TaskCompletedItem(
                 success = timelineItem.success,
                 message = timelineItem.message
             )
         }
 
-        is ComposeRenderer.TimelineItem.TerminalOutputItem -> {
+        is TimelineItem.TerminalOutputItem -> {
             TerminalOutputItem(
                 command = timelineItem.command,
                 output = timelineItem.output,
@@ -221,12 +217,15 @@ fun RenderMessageItem(
             )
         }
 
-        is ComposeRenderer.TimelineItem.LiveTerminalItem -> {
+        is TimelineItem.LiveTerminalItem -> {
             LiveTerminalItem(
                 sessionId = timelineItem.sessionId,
                 command = timelineItem.command,
                 workingDirectory = timelineItem.workingDirectory,
-                ptyHandle = timelineItem.ptyHandle
+                ptyHandle = timelineItem.ptyHandle,
+                exitCode = timelineItem.exitCode,
+                executionTimeMs = timelineItem.executionTimeMs,
+                output = timelineItem.output
             )
         }
     }
@@ -236,13 +235,20 @@ fun RenderMessageItem(
  * Platform-specific live terminal display.
  * On JVM with PTY support: Renders an interactive terminal widget
  * On other platforms: Shows a message that live terminal is not available
+ *
+ * @param exitCode Exit code when completed (null if still running)
+ * @param executionTimeMs Execution time when completed (null if still running)
+ * @param output Captured output when completed (null if still running or not captured)
  */
 @Composable
 expect fun LiveTerminalItem(
     sessionId: String,
     command: String,
     workingDirectory: String?,
-    ptyHandle: Any?
+    ptyHandle: Any?,
+    exitCode: Int? = null,
+    executionTimeMs: Long? = null,
+    output: String? = null
 )
 
 @Composable

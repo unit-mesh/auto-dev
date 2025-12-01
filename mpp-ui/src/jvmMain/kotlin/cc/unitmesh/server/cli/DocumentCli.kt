@@ -3,6 +3,7 @@ package cc.unitmesh.server.cli
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.document.DocumentAgent
+import cc.unitmesh.agent.document.DocumentAgentMode
 import cc.unitmesh.agent.document.DocumentTask
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.devins.db.DocumentIndexDatabaseRepository
@@ -20,36 +21,57 @@ import java.io.File
 import java.security.MessageDigest
 
 /**
- * JVM CLI for testing DocumentAgent with PPTX, DOCX, PDF files
- * 
+ * JVM CLI for testing DocumentAgent with PPTX, DOCX, PDF files and Product Feature Tree generation
+ *
  * Usage:
  * ```bash
- * ./gradlew :mpp-server:runDocumentCli -PprojectPath=/path/to/docs -Pquery="What is this about?" [-PdocumentPath=specific.pptx]
+ * # Document query mode (default)
+ * ./gradlew :mpp-ui:runDocumentCli -PdocProjectPath=/path/to/docs -PdocQuery="What is this about?" [-PdocPath=specific.pptx]
+ *
+ * # Feature tree mode - generate product feature tree from source code
+ * ./gradlew :mpp-ui:runDocumentCli -PdocProjectPath=/path/to/project -PdocMode=feature-tree [-PdocLanguage=ZH]
  * ```
  */
 object DocumentCli {
-    
+
     @JvmStatic
     fun main(args: Array<String>) {
         println("=".repeat(80))
         println("AutoDev Document CLI (JVM - Tika Support)")
         println("=".repeat(80))
-        
+
         // Parse arguments
         val projectPath = System.getProperty("projectPath") ?: args.getOrNull(0) ?: run {
-            System.err.println("Usage: -PprojectPath=<path> -Pquery=<query> [-PdocumentPath=<doc>]")
+            System.err.println("Usage: -PdocProjectPath=<path> -PdocQuery=<query> [-PdocPath=<doc>] [-PdocMode=feature-tree] [-PdocLanguage=EN|ZH]")
             return
         }
-        val query = System.getProperty("query") ?: args.getOrNull(1) ?: run {
-            System.err.println("Usage: -PprojectPath=<path> -Pquery=<query> [-PdocumentPath=<doc>]")
-            return
+
+        // Check mode - support both positional args and system properties
+        val mode = System.getProperty("mode") ?: args.lastOrNull()?.takeIf {
+            it.equals("feature-tree", ignoreCase = true) || it.equals("featuretree", ignoreCase = true) || it == "query"
+        } ?: "query"
+        val language = System.getProperty("language") ?: "EN"
+        val isFeatureTreeMode = mode.equals("feature-tree", ignoreCase = true) || mode.equals("featuretree", ignoreCase = true)
+
+        val query = if (isFeatureTreeMode) {
+            "Generate product feature tree for this codebase"
+        } else {
+            System.getProperty("query") ?: args.getOrNull(1) ?: run {
+                System.err.println("Usage: -PdocProjectPath=<path> -PdocQuery=<query> [-PdocPath=<doc>] [-PdocMode=feature-tree] [-PdocLanguage=EN|ZH]")
+                return
+            }
         }
         val documentPath = System.getProperty("documentPath") ?: args.getOrNull(2)
-        
+
         println("📂 Project Path: $projectPath")
-        println("❓ Query: $query")
-        if (documentPath != null) {
-            println("📄 Document: $documentPath")
+        if (isFeatureTreeMode) {
+            println("🌳 Mode: Feature Tree Generation")
+            println("🌐 Language: $language")
+        } else {
+            println("❓ Query: $query")
+            if (documentPath != null) {
+                println("📄 Document: $documentPath")
+            }
         }
         println()
         
@@ -240,14 +262,21 @@ object DocumentCli {
                 println()
                 
                 // Execute query
-                println("🔍 Executing query...")
+                if (isFeatureTreeMode) {
+                    println("🌳 Generating product feature tree...")
+                } else {
+                    println("🔍 Executing query...")
+                }
                 println()
-                
+
                 val queryStartTime = System.currentTimeMillis()
+                val agentMode = if (isFeatureTreeMode) DocumentAgentMode.FEATURE_TREE else DocumentAgentMode.DOCUMENT_QUERY
                 val result = agent.execute(
                     DocumentTask(
                         query = query,
-                        documentPath = documentPath
+                        documentPath = documentPath,
+                        mode = agentMode,
+                        language = language
                     ),
                     onProgress = { }
                 )

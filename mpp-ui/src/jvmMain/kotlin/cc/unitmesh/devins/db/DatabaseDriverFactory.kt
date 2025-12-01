@@ -25,6 +25,15 @@ actual class DatabaseDriverFactory {
         }
 
         val dbFile = File(dbDir, "autodev.db")
+
+        // Explicitly load SQLite JDBC driver for IntelliJ plugin environment
+        // This is needed due to classloader isolation in plugin context
+        try {
+            Class.forName("org.sqlite.JDBC")
+        } catch (e: ClassNotFoundException) {
+            println("SQLite JDBC driver not found: ${e.message}")
+        }
+
         val driver =
             JdbcSqliteDriver(
                 url = "jdbc:sqlite:${dbFile.absolutePath}",

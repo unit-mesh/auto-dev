@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
@@ -101,7 +102,7 @@ fun Preview_CurrentToolCallItem() {
     MaterialTheme {
         Surface {
             CurrentToolCallItem(
-                toolCall = ComposeRenderer.ToolCallInfo(
+                toolCall = ToolCallInfo(
                     toolName = "Shell",
                     description = "Executing sample command",
                     details = "Executing: echo hello"

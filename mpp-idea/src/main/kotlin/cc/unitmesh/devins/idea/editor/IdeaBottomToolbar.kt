@@ -2,21 +2,30 @@ package cc.unitmesh.devins.idea.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.llm.NamedModelConfig
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
+import org.jetbrains.jewel.ui.component.Icon
 
 /**
  * Bottom toolbar for the input section.
- * Provides send/stop buttons, @ trigger for agent completion, settings, and token info.
- * 
- * Uses Jewel components for native IntelliJ IDEA look and feel.
+ * Provides send/stop buttons, model selector, settings, and token info.
+ *
+ * Layout: ModelSelector - Token Info | MCP Settings - Prompt Optimization - Send Button
+ * - Left side: Model configuration (blends with background)
+ * - Right side: MCP, prompt optimization, and send
+ *
+ * Note: @ and / triggers are now in the top toolbar (IdeaTopToolbar).
  */
 @Composable
 fun IdeaBottomToolbar(
@@ -24,81 +33,46 @@ fun IdeaBottomToolbar(
     sendEnabled: Boolean,
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
-    onAtClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    workspacePath: String? = null,
+    onPromptOptimizationClick: () -> Unit = {},
     totalTokens: Int? = null,
+    // Model selector props
+    availableConfigs: List<NamedModelConfig> = emptyList(),
+    currentConfigName: String? = null,
+    onConfigSelect: (NamedModelConfig) -> Unit = {},
+    onConfigureClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left side: workspace and token info
+        // Left side: Model selector and token info
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f, fill = false)
         ) {
-            // Workspace indicator
-            if (!workspacePath.isNullOrEmpty()) {
-                // Extract project name from path, handling both Unix and Windows separators
-                val projectName = workspacePath
-                    .replace('\\', '/')  // Normalize to Unix separator
-                    .substringAfterLast('/')
-                    .ifEmpty { "Project" }
+            // Model selector (transparent, blends with background)
+            IdeaModelSelector(
+                availableConfigs = availableConfigs,
+                currentConfigName = currentConfigName,
+                onConfigSelect = onConfigSelect,
+                onConfigureClick = onConfigureClick
+            )
 
-                Box(
-                    modifier = Modifier
-                        .background(
-                            JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "📁",
-                            style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp)
-                        )
-                        Text(
-                            text = projectName,
-                            style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp),
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
-
-            // Token usage indicator
+            // Token usage indicator (subtle)
             if (totalTokens != null && totalTokens > 0) {
-                Box(
-                    modifier = Modifier
-                        .background(AutoDevColors.Blue.c400.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "Token",
-                            style = JewelTheme.defaultTextStyle.copy(fontSize = 11.sp)
-                        )
-                        Text(
-                            text = "$totalTokens",
-                            style = JewelTheme.defaultTextStyle.copy(
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-                }
+                Text(
+                    text = "${totalTokens}t",
+                    style = JewelTheme.defaultTextStyle.copy(
+                        fontSize = 11.sp,
+                        color = JewelTheme.globalColors.text.normal.copy(alpha = 0.6f)
+                    )
+                )
             }
         }
 
@@ -107,28 +81,29 @@ fun IdeaBottomToolbar(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // @ trigger button for agent completion
-            IconButton(
-                onClick = onAtClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Text(
-                    text = "@",
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-
-            // Settings button
+            // MCP Settings button
             IconButton(
                 onClick = onSettingsClick,
                 modifier = Modifier.size(32.dp)
             ) {
-                Text(
-                    text = "⚙",
-                    style = JewelTheme.defaultTextStyle.copy(fontSize = 14.sp)
+                Icon(
+                    imageVector = IdeaComposeIcons.Settings,
+                    contentDescription = "MCP Settings",
+                    tint = JewelTheme.globalColors.text.normal,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
+            // Prompt Optimization button
+            IconButton(
+                onClick = onPromptOptimizationClick,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = IdeaComposeIcons.AutoAwesome,
+                    contentDescription = "Prompt Optimization",
+                    tint = JewelTheme.globalColors.text.normal,
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
@@ -138,12 +113,23 @@ fun IdeaBottomToolbar(
                     onClick = onStopClick,
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Text(
-                        text = "⏹ Stop",
-                        style = JewelTheme.defaultTextStyle.copy(
-                            color = AutoDevColors.Red.c400
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = IdeaComposeIcons.Stop,
+                            contentDescription = "Stop",
+                            tint = AutoDevColors.Red.c400,
+                            modifier = Modifier.size(14.dp)
                         )
-                    )
+                        Text(
+                            text = "Stop",
+                            style = JewelTheme.defaultTextStyle.copy(
+                                color = AutoDevColors.Red.c400
+                            )
+                        )
+                    }
                 }
             } else {
                 DefaultButton(
@@ -151,10 +137,21 @@ fun IdeaBottomToolbar(
                     enabled = sendEnabled,
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Text(
-                        text = "Send",
-                        style = JewelTheme.defaultTextStyle
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = IdeaComposeIcons.Send,
+                            contentDescription = "Send",
+                            tint = JewelTheme.globalColors.text.normal,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "Send",
+                            style = JewelTheme.defaultTextStyle
+                        )
+                    }
                 }
             }
         }

@@ -20,8 +20,10 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.session.SessionClient
 import cc.unitmesh.session.Session
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 
 /**
@@ -679,10 +681,8 @@ fun formatTimestamp(timestamp: Long): String {
 
     val now = kotlinx.datetime.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
-    // Calculate yesterday's date
-    val yesterdayDate = now.date.let {
-        kotlinx.datetime.LocalDate(it.year, it.monthNumber, it.dayOfMonth - 1)
-    }
+    // Calculate yesterday's date properly (handles month/year boundaries)
+    val yesterdayDate = now.date.minus(DatePeriod(days = 1))
 
     return when {
         dateTime.date == now.date -> "Today"

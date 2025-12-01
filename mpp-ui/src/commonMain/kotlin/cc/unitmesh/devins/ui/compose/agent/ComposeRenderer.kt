@@ -2,13 +2,18 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.*
 import cc.unitmesh.agent.render.BaseRenderer
+import cc.unitmesh.agent.render.RendererUtils
+import cc.unitmesh.agent.render.TaskInfo
+import cc.unitmesh.agent.render.TaskStatus
+import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.agent.render.TimelineItem.*
+import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.llm.TimelineItemType
-import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer.TimelineItem.*
 import cc.unitmesh.llm.compression.TokenInfo
 import kotlinx.datetime.Clock
 
@@ -69,84 +74,6 @@ class ComposeRenderer : BaseRenderer() {
     // Task tracking from task-boundary tool
     private val _tasks = mutableStateListOf<TaskInfo>()
     val tasks: List<TaskInfo> = _tasks
-
-    // Timeline data structures for chronological rendering
-    sealed class TimelineItem(val timestamp: Long = Clock.System.now().toEpochMilliseconds()) {
-        data class MessageItem(
-            val message: Message,
-            val tokenInfo: TokenInfo? = null,
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-
-        /**
-         * Combined tool call and result item - displays both in a single compact row
-         * This replaces the separate ToolCallItem and ToolResultItem for better space efficiency
-         */
-        data class CombinedToolItem(
-            val toolName: String,
-            val description: String,
-            val details: String? = null,
-            val fullParams: String? = null, // 完整的原始参数，用于折叠展示
-            val filePath: String? = null, // 文件路径，用于点击查看
-            val toolType: ToolType? = null, // 工具类型，用于判断是否可点击
-            // Result fields
-            val success: Boolean? = null, // null means still executing
-            val summary: String? = null,
-            val output: String? = null, // 截断的输出用于直接展示
-            val fullOutput: String? = null, // 完整的输出，用于折叠展示或错误诊断
-            val executionTimeMs: Long? = null, // 执行时间
-            // DocQL-specific search statistics
-            val docqlStats: DocQLSearchStats? = null,
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-        @Deprecated("Use CombinedToolItem instead")
-        data class ToolResultItem(
-            val toolName: String,
-            val success: Boolean,
-            val summary: String,
-            val output: String? = null, // 截断的输出用于直接展示
-            val fullOutput: String? = null, // 完整的输出，用于折叠展示或错误诊断
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-
-        data class ToolErrorItem(
-            val error: String,
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-
-        data class TaskCompleteItem(
-            val success: Boolean,
-            val message: String,
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-
-        data class TerminalOutputItem(
-            val command: String,
-            val output: String,
-            val exitCode: Int,
-            val executionTimeMs: Long,
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-
-        /**
-         * Live terminal session - connected to a PTY process for real-time output
-         * This is only used on platforms that support PTY (JVM with JediTerm)
-         */
-        data class LiveTerminalItem(
-            val sessionId: String,
-            val command: String,
-            val workingDirectory: String?,
-            val ptyHandle: Any?, // Platform-specific: on JVM this is a PtyProcess
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
-    }
-
-    // Legacy data classes for compatibility
-    data class ToolCallInfo(
-        val toolName: String,
-        val description: String,
-        val details: String? = null
-    )
 
     // BaseRenderer implementation
 
@@ -230,12 +157,12 @@ class ComposeRenderer : BaseRenderer() {
                 else -> null
             }
 
-        // Create a combined tool item with only call information (result will be added later)
+        // Create a tool call item with only call information (result will be added later)
         _timeline.add(
-            TimelineItem.CombinedToolItem(
+            ToolCallItem(
                 toolName = toolInfo.toolName,
                 description = toolInfo.description,
-                details = toolInfo.details,
+                params = toolInfo.details ?: "",
                 fullParams = paramsStr, // 保存完整的原始参数
                 filePath = filePath, // 保存文件路径
                 toolType = toolType, // 保存工具类型
@@ -329,9 +256,9 @@ class ComposeRenderer : BaseRenderer() {
                     )
                 )
             } else {
-                // For non-live sessions, replace the combined tool item with terminal output
+                // For non-live sessions, replace the tool call item with terminal output
                 val lastItem = _timeline.lastOrNull()
-                if (lastItem is TimelineItem.CombinedToolItem && lastItem.toolType == ToolType.Shell) {
+                if (lastItem is ToolCallItem && lastItem.toolType == ToolType.Shell) {
                     _timeline.removeAt(_timeline.size - 1)
                 }
 
@@ -345,9 +272,9 @@ class ComposeRenderer : BaseRenderer() {
                 )
             }
         } else {
-            // Update the last CombinedToolItem with result information
+            // Update the last ToolCallItem with result information
             val lastItem = _timeline.lastOrNull()
-            if (lastItem is TimelineItem.CombinedToolItem && lastItem.success == null) {
+            if (lastItem is ToolCallItem && lastItem.success == null) {
                 // Remove the incomplete item
                 _timeline.removeAt(_timeline.size - 1)
 
@@ -415,7 +342,7 @@ class ComposeRenderer : BaseRenderer() {
     }
 
     override fun renderError(message: String) {
-        _timeline.add(TimelineItem.ToolErrorItem(error = message))
+        _timeline.add(ErrorItem(message = message))
         _errorMessage = message
         _isProcessing = false
     }
@@ -536,100 +463,16 @@ class ComposeRenderer : BaseRenderer() {
         _currentToolCall = null
     }
 
-    private fun formatToolCallDisplay(
-        toolName: String,
-        paramsStr: String
-    ): ToolCallInfo {
-        val params = parseParamsString(paramsStr)
-        val toolType = toolName.toToolType()
-
-        return when (toolType) {
-            ToolType.ReadFile ->
-                ToolCallInfo(
-                    toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                    description = "file reader",
-                    details = "Reading file: ${params["path"] ?: "unknown"}"
-                )
-
-            ToolType.WriteFile ->
-                ToolCallInfo(
-                    toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                    description = "file writer",
-                    details = "Writing to file: ${params["path"] ?: "unknown"}"
-                )
-
-            ToolType.Glob ->
-                ToolCallInfo(
-                    toolName = toolType.displayName,
-                    description = "pattern matcher",
-                    details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
-                )
-
-            ToolType.Shell ->
-                ToolCallInfo(
-                    toolName = toolType.displayName,
-                    description = "command executor",
-                    details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
-                )
-
-            else ->
-                ToolCallInfo(
-                    toolName = if (toolName == "docql") "DocQL" else toolName,
-                    description = "tool execution",
-                    details = paramsStr
-                )
-        }
+    private fun formatToolCallDisplay(toolName: String, paramsStr: String): ToolCallInfo {
+        return RendererUtils.toToolCallInfo(RendererUtils.formatToolCallDisplay(toolName, paramsStr))
     }
 
-    private fun formatToolResultSummary(
-        toolName: String,
-        success: Boolean,
-        output: String?
-    ): String {
-        if (!success) return "Failed"
-
-        val toolType = toolName.toToolType()
-        return when (toolType) {
-            ToolType.ReadFile -> {
-                val lines = output?.lines()?.size ?: 0
-                "Read $lines lines"
-            }
-
-            ToolType.WriteFile -> "File written successfully"
-            ToolType.Glob -> {
-                val firstLine = output?.lines()?.firstOrNull() ?: ""
-                if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
-                    val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
-                    "Found $count files"
-                } else if (output?.contains("No files found") == true) {
-                    "No files found"
-                } else {
-                    "Search completed"
-                }
-            }
-
-            ToolType.Shell -> {
-                val lines = output?.lines()?.size ?: 0
-                if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
-            }
-
-            else -> "Success"
-        }
+    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?): String {
+        return RendererUtils.formatToolResultSummary(toolName, success, output)
     }
 
     private fun parseParamsString(paramsStr: String): Map<String, String> {
-        val params = mutableMapOf<String, String>()
-
-        val regex = Regex("""(\w+)="([^"]*)"|\s*(\w+)=([^\s]+)""")
-        regex.findAll(paramsStr).forEach { match ->
-            val key = match.groups[1]?.value ?: match.groups[3]?.value
-            val value = match.groups[2]?.value ?: match.groups[4]?.value
-            if (key != null && value != null) {
-                params[key] = value
-            }
-        }
-
-        return params
+        return RendererUtils.parseParamsString(paramsStr)
     }
 
     /**
@@ -661,13 +504,13 @@ class ComposeRenderer : BaseRenderer() {
                 )
             }
 
-            is TimelineItem.CombinedToolItem -> {
+            is ToolCallItem -> {
                 val stats = item.docqlStats
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.COMBINED_TOOL,
                     toolName = item.toolName,
                     description = item.description,
-                    details = item.details,
+                    details = item.params,
                     fullParams = item.fullParams,
                     filePath = item.filePath,
                     toolType = item.toolType?.name,
@@ -690,21 +533,11 @@ class ComposeRenderer : BaseRenderer() {
                     docqlSmartSummary = stats?.smartSummary
                 )
             }
-            is TimelineItem.ToolResultItem -> {
-                cc.unitmesh.devins.llm.MessageMetadata(
-                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_RESULT,
-                    toolName = item.toolName,
-                    success = item.success,
-                    summary = item.summary,
-                    output = item.output,
-                    fullOutput = item.fullOutput
-                )
-            }
 
-            is TimelineItem.ToolErrorItem -> {
+            is ErrorItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_ERROR,
-                    taskMessage = item.error
+                    taskMessage = item.message
                 )
             }
 
@@ -751,10 +584,10 @@ class ComposeRenderer : BaseRenderer() {
                     )
                 } else null
 
-                TimelineItem.MessageItem(
+                MessageItem(
                     message = message,
                     tokenInfo = tokenInfo,
-                    itemTimestamp = message.timestamp
+                    timestamp = message.timestamp
                 )
             }
 
@@ -785,10 +618,10 @@ class ComposeRenderer : BaseRenderer() {
                     }
                 } else null
 
-                TimelineItem.CombinedToolItem(
+                ToolCallItem(
                     toolName = metadata.toolName ?: "",
                     description = metadata.description ?: "",
-                    details = metadata.details,
+                    params = metadata.details ?: "",
                     fullParams = metadata.fullParams,
                     filePath = metadata.filePath,
                     toolType = metadata.toolType?.toToolType(),
@@ -798,25 +631,28 @@ class ComposeRenderer : BaseRenderer() {
                     fullOutput = metadata.fullOutput,
                     executionTimeMs = metadata.executionTimeMs,
                     docqlStats = docqlStats,
-                    itemTimestamp = message.timestamp
+                    timestamp = message.timestamp
                 )
             }
 
             TimelineItemType.TOOL_RESULT -> {
-                TimelineItem.ToolResultItem(
+                // Legacy support: convert old ToolResultItem to ToolCallItem
+                ToolCallItem(
                     toolName = metadata.toolName ?: "",
-                    success = metadata.success ?: false,
-                    summary = metadata.summary ?: "",
+                    description = "",
+                    params = "",
+                    success = metadata.success,
+                    summary = metadata.summary,
                     output = metadata.output,
                     fullOutput = metadata.fullOutput,
-                    itemTimestamp = message.timestamp
+                    timestamp = message.timestamp
                 )
             }
 
             TimelineItemType.TOOL_ERROR -> {
-                TimelineItem.ToolErrorItem(
-                    error = metadata.taskMessage ?: "Unknown error",
-                    itemTimestamp = message.timestamp
+                ErrorItem(
+                    message = metadata.taskMessage ?: "Unknown error",
+                    timestamp = message.timestamp
                 )
             }
 
@@ -824,17 +660,17 @@ class ComposeRenderer : BaseRenderer() {
                 TaskCompleteItem(
                     success = metadata.taskSuccess ?: false,
                     message = metadata.taskMessage ?: "",
-                    itemTimestamp = message.timestamp
+                    timestamp = message.timestamp
                 )
             }
 
             TimelineItemType.TERMINAL_OUTPUT -> {
-                TimelineItem.TerminalOutputItem(
+                TerminalOutputItem(
                     command = metadata.command ?: "",
                     output = message.content,
                     exitCode = metadata.exitCode ?: 0,
                     executionTimeMs = metadata.executionTimeMs ?: 0,
-                    itemTimestamp = message.timestamp
+                    timestamp = message.timestamp
                 )
             }
             else -> null
@@ -855,10 +691,10 @@ class ComposeRenderer : BaseRenderer() {
                 fromMessageMetadata(messageMetadata, message)
             } else {
                 // Fallback: create a simple MessageItem for messages without metadata
-                TimelineItem.MessageItem(
+                MessageItem(
                     message = message,
                     tokenInfo = null,
-                    itemTimestamp = message.timestamp
+                    timestamp = message.timestamp
                 )
             }
 
@@ -873,58 +709,63 @@ class ComposeRenderer : BaseRenderer() {
     fun getTimelineSnapshot(): List<cc.unitmesh.devins.llm.Message> {
         return _timeline.mapNotNull { item ->
             when (item) {
-                is TimelineItem.MessageItem -> {
+                is MessageItem -> {
                     // Return the original message with metadata
-                    item.message.copy(
+                    item.message?.copy(
+                        metadata = toMessageMetadata(item)
+                    ) ?: cc.unitmesh.devins.llm.Message(
+                        role = item.role,
+                        content = item.content,
+                        timestamp = item.timestamp,
                         metadata = toMessageMetadata(item)
                     )
                 }
 
-                is TimelineItem.CombinedToolItem -> {
+                is ToolCallItem -> {
                     // Create a message representing the tool call and result
                     val content = buildString {
                         append("[${item.toolName}] ")
                         append(item.description)
                         if (item.summary != null) {
-                            append(" → ${item.summary}")
+                            append(" -> ${item.summary}")
                         }
                     }
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
                         content = content,
-                        timestamp = item.itemTimestamp,
+                        timestamp = item.timestamp,
                         metadata = toMessageMetadata(item)
                     )
                 }
 
-                is TimelineItem.TerminalOutputItem -> {
+                is TerminalOutputItem -> {
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
                         content = item.output,
-                        timestamp = item.itemTimestamp,
+                        timestamp = item.timestamp,
                         metadata = toMessageMetadata(item)
                     )
                 }
 
-                is TimelineItem.TaskCompleteItem -> {
+                is TaskCompleteItem -> {
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
                         content = item.message,
-                        timestamp = item.itemTimestamp,
+                        timestamp = item.timestamp,
                         metadata = toMessageMetadata(item)
                     )
                 }
 
-                is TimelineItem.ToolErrorItem -> {
+                is ErrorItem -> {
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
-                        content = item.error,
-                        timestamp = item.itemTimestamp,
+                        content = item.message,
+                        timestamp = item.timestamp,
                         metadata = toMessageMetadata(item)
                     )
                 }
-                is TimelineItem.ToolResultItem,
-                is TimelineItem.LiveTerminalItem -> null
+
+                is LiveTerminalItem -> null
             }
         }
     }
