@@ -1,6 +1,11 @@
 package cc.unitmesh.devins.idea.renderer
 
 import cc.unitmesh.agent.render.BaseRenderer
+import cc.unitmesh.agent.render.RendererUtils
+import cc.unitmesh.agent.render.TaskInfo
+import cc.unitmesh.agent.render.TaskStatus
+import cc.unitmesh.agent.render.ToolCallDisplayInfo
+import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.llm.compression.TokenInfo
@@ -129,40 +134,8 @@ class JewelRenderer : BaseRenderer() {
         }
     }
 
-    data class ToolCallInfo(
-        val toolName: String,
-        val description: String,
-        val details: String? = null
-    )
-
     enum class MessageRole {
         USER, ASSISTANT, SYSTEM
-    }
-
-    /**
-     * Task information from task-boundary tool.
-     * Aligned with ComposeRenderer's TaskInfo for consistency.
-     */
-    data class TaskInfo(
-        val taskName: String,
-        val status: TaskStatus,
-        val summary: String = "",
-        val timestamp: Long = System.currentTimeMillis(),
-        val startTime: Long = System.currentTimeMillis()
-    )
-
-    enum class TaskStatus(val displayName: String) {
-        PLANNING("Planning"),
-        WORKING("Working"),
-        COMPLETED("Completed"),
-        BLOCKED("Blocked"),
-        CANCELLED("Cancelled");
-
-        companion object {
-            fun fromString(status: String): TaskStatus {
-                return entries.find { it.name.equals(status, ignoreCase = true) } ?: WORKING
-            }
-        }
     }
 
     // BaseRenderer implementation
@@ -479,85 +452,13 @@ class JewelRenderer : BaseRenderer() {
         _timeline.update { it + item }
     }
 
-    private fun formatToolCallDisplay(toolName: String, paramsStr: String): ToolCallDisplayInfo {
-        val params = parseParamsString(paramsStr)
-        val toolType = toolName.toToolType()
+    private fun formatToolCallDisplay(toolName: String, paramsStr: String) =
+        RendererUtils.formatToolCallDisplay(toolName, paramsStr)
 
-        return when (toolType) {
-            ToolType.ReadFile -> ToolCallDisplayInfo(
-                toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                description = "file reader",
-                details = "Reading file: ${params["path"] ?: "unknown"}"
-            )
-            ToolType.WriteFile -> ToolCallDisplayInfo(
-                toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                description = "file writer",
-                details = "Writing to file: ${params["path"] ?: "unknown"}"
-            )
-            ToolType.Glob -> ToolCallDisplayInfo(
-                toolName = toolType.displayName,
-                description = "pattern matcher",
-                details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
-            )
-            ToolType.Shell -> ToolCallDisplayInfo(
-                toolName = toolType.displayName,
-                description = "command executor",
-                details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
-            )
-            else -> ToolCallDisplayInfo(
-                toolName = if (toolName == "docql") "DocQL" else toolName,
-                description = "tool execution",
-                details = paramsStr
-            )
-        }
-    }
+    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?) =
+        RendererUtils.formatToolResultSummary(toolName, success, output)
 
-    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?): String {
-        if (!success) return "Failed"
-
-        val toolType = toolName.toToolType()
-        return when (toolType) {
-            ToolType.ReadFile -> {
-                val lines = output?.lines()?.size ?: 0
-                "Read $lines lines"
-            }
-            ToolType.WriteFile -> "File written successfully"
-            ToolType.Glob -> {
-                val firstLine = output?.lines()?.firstOrNull() ?: ""
-                when {
-                    firstLine.contains("Found ") && firstLine.contains(" files matching") -> {
-                        val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
-                        "Found $count files"
-                    }
-                    output?.contains("No files found") == true -> "No files found"
-                    else -> "Search completed"
-                }
-            }
-            ToolType.Shell -> {
-                val lines = output?.lines()?.size ?: 0
-                if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
-            }
-            else -> "Success"
-        }
-    }
-
-    private fun parseParamsString(paramsStr: String): Map<String, String> {
-        val params = mutableMapOf<String, String>()
-        val regex = Regex("""(\w+)="([^"]*)"|\s*(\w+)=([^\s]+)""")
-        regex.findAll(paramsStr).forEach { match ->
-            val key = match.groups[1]?.value ?: match.groups[3]?.value
-            val value = match.groups[2]?.value ?: match.groups[4]?.value
-            if (key != null && value != null) {
-                params[key] = value
-            }
-        }
-        return params
-    }
-
-    private data class ToolCallDisplayInfo(
-        val toolName: String,
-        val description: String,
-        val details: String?
-    )
+    private fun parseParamsString(paramsStr: String) =
+        RendererUtils.parseParamsString(paramsStr)
 }
 

@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.idea.renderer
 
+import cc.unitmesh.agent.render.TaskStatus
 import cc.unitmesh.llm.compression.TokenInfo
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -210,7 +211,7 @@ class JewelRendererTest {
         val tasks = renderer.tasks.first()
         assertEquals(1, tasks.size)
         assertEquals("Build", tasks.first().taskName)
-        assertEquals(JewelRenderer.TaskStatus.WORKING, tasks.first().status)
+        assertEquals(TaskStatus.WORKING, tasks.first().status)
     }
 }
 

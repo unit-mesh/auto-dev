@@ -18,33 +18,31 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.Platform
+import cc.unitmesh.agent.render.TaskInfo
+import cc.unitmesh.agent.render.TaskStatus
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
-import kotlinx.datetime.Clock
 
 /**
- * Task information from task-boundary tool
+ * UI extension for TaskStatus - provides icon and color for display
  */
-data class TaskInfo(
-    val taskName: String,
-    val status: TaskStatus,
-    val summary: String = "",
-    val timestamp: Long = Clock.System.now().toEpochMilliseconds(),
-    val startTime: Long = Clock.System.now().toEpochMilliseconds()
-)
-
-enum class TaskStatus(val displayName: String, val icon: @Composable () -> Unit, val color: Color) {
-    PLANNING("Planning", { Icon(Icons.Default.Create, null) }, Color(0xFF9C27B0)),
-    WORKING("Working", { Icon(Icons.Default.Build, null) }, Color(0xFF2196F3)),
-    COMPLETED("Completed", { Icon(Icons.Default.CheckCircle, null) }, Color(0xFF4CAF50)),
-    BLOCKED("Blocked", { Icon(Icons.Default.Warning, null) }, Color(0xFFFF9800)),
-    CANCELLED("Cancelled", { Icon(Icons.Default.Cancel, null) }, Color(0xFF9E9E9E));
-
-    companion object {
-        fun fromString(status: String): TaskStatus {
-            return entries.find { it.name.equals(status, ignoreCase = true) } ?: WORKING
-        }
-    }
+@Composable
+fun TaskStatus.icon(): Unit = when (this) {
+    TaskStatus.PLANNING -> Icon(Icons.Default.Create, null)
+    TaskStatus.WORKING -> Icon(Icons.Default.Build, null)
+    TaskStatus.COMPLETED -> Icon(Icons.Default.CheckCircle, null)
+    TaskStatus.BLOCKED -> Icon(Icons.Default.Warning, null)
+    TaskStatus.CANCELLED -> Icon(Icons.Default.Cancel, null)
 }
+
+val TaskStatus.color: Color
+    get() = when (this) {
+        TaskStatus.PLANNING -> Color(0xFF9C27B0)
+        TaskStatus.WORKING -> Color(0xFF2196F3)
+        TaskStatus.COMPLETED -> Color(0xFF4CAF50)
+        TaskStatus.BLOCKED -> Color(0xFFFF9800)
+        TaskStatus.CANCELLED -> Color(0xFF9E9E9E)
+    }
 
 /**
  * Task Panel Component - displays active tasks from task-boundary tool
@@ -225,7 +223,7 @@ private fun TaskCard(task: TaskInfo, modifier: Modifier = Modifier) {
                 }
 
                 // Time elapsed
-                val elapsed = (Clock.System.now().toEpochMilliseconds() - task.startTime) / 1000
+                val elapsed = (Platform.getCurrentTimestamp() - task.startTime) / 1000
                 Text(
                     formatDuration(elapsed),
                     style = MaterialTheme.typography.labelSmall,

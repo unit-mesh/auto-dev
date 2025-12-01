@@ -2,6 +2,10 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.*
 import cc.unitmesh.agent.render.BaseRenderer
+import cc.unitmesh.agent.render.RendererUtils
+import cc.unitmesh.agent.render.TaskInfo
+import cc.unitmesh.agent.render.TaskStatus
+import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.impl.docql.DocQLSearchStats
 import cc.unitmesh.agent.tool.toToolType
@@ -140,13 +144,6 @@ class ComposeRenderer : BaseRenderer() {
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
     }
-
-    // Legacy data classes for compatibility
-    data class ToolCallInfo(
-        val toolName: String,
-        val description: String,
-        val details: String? = null
-    )
 
     // BaseRenderer implementation
 
@@ -536,100 +533,16 @@ class ComposeRenderer : BaseRenderer() {
         _currentToolCall = null
     }
 
-    private fun formatToolCallDisplay(
-        toolName: String,
-        paramsStr: String
-    ): ToolCallInfo {
-        val params = parseParamsString(paramsStr)
-        val toolType = toolName.toToolType()
-
-        return when (toolType) {
-            ToolType.ReadFile ->
-                ToolCallInfo(
-                    toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                    description = "file reader",
-                    details = "Reading file: ${params["path"] ?: "unknown"}"
-                )
-
-            ToolType.WriteFile ->
-                ToolCallInfo(
-                    toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
-                    description = "file writer",
-                    details = "Writing to file: ${params["path"] ?: "unknown"}"
-                )
-
-            ToolType.Glob ->
-                ToolCallInfo(
-                    toolName = toolType.displayName,
-                    description = "pattern matcher",
-                    details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
-                )
-
-            ToolType.Shell ->
-                ToolCallInfo(
-                    toolName = toolType.displayName,
-                    description = "command executor",
-                    details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
-                )
-
-            else ->
-                ToolCallInfo(
-                    toolName = if (toolName == "docql") "DocQL" else toolName,
-                    description = "tool execution",
-                    details = paramsStr
-                )
-        }
+    private fun formatToolCallDisplay(toolName: String, paramsStr: String): ToolCallInfo {
+        return RendererUtils.toToolCallInfo(RendererUtils.formatToolCallDisplay(toolName, paramsStr))
     }
 
-    private fun formatToolResultSummary(
-        toolName: String,
-        success: Boolean,
-        output: String?
-    ): String {
-        if (!success) return "Failed"
-
-        val toolType = toolName.toToolType()
-        return when (toolType) {
-            ToolType.ReadFile -> {
-                val lines = output?.lines()?.size ?: 0
-                "Read $lines lines"
-            }
-
-            ToolType.WriteFile -> "File written successfully"
-            ToolType.Glob -> {
-                val firstLine = output?.lines()?.firstOrNull() ?: ""
-                if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
-                    val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
-                    "Found $count files"
-                } else if (output?.contains("No files found") == true) {
-                    "No files found"
-                } else {
-                    "Search completed"
-                }
-            }
-
-            ToolType.Shell -> {
-                val lines = output?.lines()?.size ?: 0
-                if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
-            }
-
-            else -> "Success"
-        }
+    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?): String {
+        return RendererUtils.formatToolResultSummary(toolName, success, output)
     }
 
     private fun parseParamsString(paramsStr: String): Map<String, String> {
-        val params = mutableMapOf<String, String>()
-
-        val regex = Regex("""(\w+)="([^"]*)"|\s*(\w+)=([^\s]+)""")
-        regex.findAll(paramsStr).forEach { match ->
-            val key = match.groups[1]?.value ?: match.groups[3]?.value
-            val value = match.groups[2]?.value ?: match.groups[4]?.value
-            if (key != null && value != null) {
-                params[key] = value
-            }
-        }
-
-        return params
+        return RendererUtils.parseParamsString(paramsStr)
     }
 
     /**
