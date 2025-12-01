@@ -61,6 +61,16 @@ enum class TaskStatus(val displayName: String) {
 /**
  * Base timeline item for chronological rendering.
  * This is the shared base class for timeline items in both ComposeRenderer and JewelRenderer.
+ *
+ * **Important**: When using `copy()` on data class instances, the `id` and `timestamp`
+ * default parameters are NOT re-evaluated. This means copied items will retain the
+ * original `id` and `timestamp` unless explicitly overridden:
+ * ```kotlin
+ * val item1 = TimelineItem.MessageItem(role = MessageRole.USER, content = "Hello")
+ * val item2 = item1.copy(content = "World") // item2.id == item1.id (same ID!)
+ * // To get a new ID:
+ * val item3 = item1.copy(content = "World", id = TimelineItem.generateId())
+ * ```
  */
 sealed class TimelineItem(
     open val timestamp: Long = Platform.getCurrentTimestamp(),
@@ -165,8 +175,17 @@ sealed class TimelineItem(
     ) : TimelineItem(timestamp, id)
 
     companion object {
-        private var idCounter = 0L
-        fun generateId(): String = "${Platform.getCurrentTimestamp()}-${idCounter++}"
+        /**
+         * Thread-safe counter for generating unique IDs.
+         * Uses timestamp + random component to avoid collisions across threads/instances.
+         */
+        private val random = kotlin.random.Random
+
+        /**
+         * Generates a unique ID for timeline items.
+         * Uses timestamp + random component for thread-safety without requiring atomic operations.
+         */
+        fun generateId(): String = "${Platform.getCurrentTimestamp()}-${random.nextInt(0, Int.MAX_VALUE)}"
     }
 }
 

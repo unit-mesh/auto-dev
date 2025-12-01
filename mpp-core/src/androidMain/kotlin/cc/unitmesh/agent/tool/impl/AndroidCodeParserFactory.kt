@@ -83,40 +83,45 @@ private class AndroidCodeParser : CodeParser {
 
     private fun extractJvmImports(content: String, filePath: String): List<ImportInfo> {
         val importRegex = Regex("""import\s+(static\s+)?([a-zA-Z_][\w.]*[\w*])""")
-        return importRegex.findAll(content).mapIndexed { index, match ->
+        return importRegex.findAll(content).map { match ->
+            // Calculate actual line number from match position
+            val lineNumber = content.substring(0, match.range.first).count { it == '\n' } + 1
             ImportInfo(
                 path = match.groupValues[2].removeSuffix(".*"),
                 type = ImportType.MODULE,
                 filePath = filePath,
-                startLine = index,
-                endLine = index
+                startLine = lineNumber,
+                endLine = lineNumber
             )
         }.toList()
     }
 
     private fun extractPythonImports(content: String, filePath: String): List<ImportInfo> {
         val imports = mutableListOf<ImportInfo>()
-        var lineIndex = 0
 
         val fromImportRegex = Regex("""from\s+([\w.]+)\s+import""")
         fromImportRegex.findAll(content).forEach { match ->
+            // Calculate actual line number from match position
+            val lineNumber = content.substring(0, match.range.first).count { it == '\n' } + 1
             imports.add(ImportInfo(
                 path = match.groupValues[1],
                 type = ImportType.MODULE,
                 filePath = filePath,
-                startLine = lineIndex++,
-                endLine = lineIndex
+                startLine = lineNumber,
+                endLine = lineNumber
             ))
         }
 
         val importRegex = Regex("""^import\s+([\w.]+)""", RegexOption.MULTILINE)
         importRegex.findAll(content).forEach { match ->
+            // Calculate actual line number from match position
+            val lineNumber = content.substring(0, match.range.first).count { it == '\n' } + 1
             imports.add(ImportInfo(
                 path = match.groupValues[1],
                 type = ImportType.MODULE,
                 filePath = filePath,
-                startLine = lineIndex++,
-                endLine = lineIndex
+                startLine = lineNumber,
+                endLine = lineNumber
             ))
         }
 
@@ -125,16 +130,17 @@ private class AndroidCodeParser : CodeParser {
 
     private fun extractJsImports(content: String, filePath: String): List<ImportInfo> {
         val imports = mutableListOf<ImportInfo>()
-        var lineIndex = 0
 
         val es6ImportRegex = Regex("""import\s+(?:.+\s+from\s+)?['"]([@\w./-]+)['"]""")
         es6ImportRegex.findAll(content).forEach { match ->
+            // Calculate actual line number from match position
+            val lineNumber = content.substring(0, match.range.first).count { it == '\n' } + 1
             imports.add(ImportInfo(
                 path = match.groupValues[1],
                 type = ImportType.MODULE,
                 filePath = filePath,
-                startLine = lineIndex++,
-                endLine = lineIndex
+                startLine = lineNumber,
+                endLine = lineNumber
             ))
         }
 
@@ -228,14 +234,18 @@ private class AndroidCodeParser : CodeParser {
         language: Language
     ): CodeNode {
         val qualifiedName = if (packageName.isNotEmpty()) "$packageName.$name" else name
+        // Use deterministic composite ID to avoid collisions
+        val id = "$filePath:$startLine:$qualifiedName"
 
         return CodeNode(
-            id = qualifiedName.hashCode().toString(),
+            id = id,
             type = type,
             name = name,
             packageName = packageName,
             filePath = filePath,
             startLine = startLine,
+            // Approximate end line: regex parsing cannot determine actual end line,
+            // so we use a reasonable default. For accurate end lines, use TreeSitter-based parsing.
             endLine = startLine + 10,
             startColumn = 0,
             endColumn = 0,
