@@ -21,7 +21,9 @@ import org.jetbrains.jewel.ui.component.Icon
  * Bottom toolbar for the input section.
  * Provides send/stop buttons, @ trigger for agent completion, / command trigger, model selector, settings, and token info.
  *
- * Layout: Workspace - Token Info - ModelSelector - @ Symbol - / Symbol - Settings - Send Button
+ * Layout: ModelSelector - Workspace - Token Info | @ Symbol - / Symbol - MCP Settings - Prompt Optimization - Send Button
+ * - Left side: Model configuration
+ * - Right side: MCP and prompt optimization
  *
  * Uses Jewel components for native IntelliJ IDEA look and feel.
  */
@@ -34,6 +36,7 @@ fun IdeaBottomToolbar(
     onAtClick: () -> Unit = {},
     onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
+    onPromptOptimizationClick: () -> Unit = {},
     workspacePath: String? = null,
     totalTokens: Int? = null,
     // Model selector props
@@ -50,12 +53,20 @@ fun IdeaBottomToolbar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left side: workspace and token info
+        // Left side: Model selector, workspace and token info
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f, fill = false)
         ) {
+            // Model selector (moved to left)
+            IdeaModelSelector(
+                availableConfigs = availableConfigs,
+                currentConfigName = currentConfigName,
+                onConfigSelect = onConfigSelect,
+                onConfigureClick = onConfigureClick
+            )
+
             // Workspace indicator
             if (!workspacePath.isNullOrEmpty()) {
                 // Extract project name from path, handling both Unix and Windows separators
@@ -117,18 +128,11 @@ fun IdeaBottomToolbar(
             }
         }
 
-        // Right side: action buttons
+        // Right side: action buttons (MCP and prompt optimization on the right)
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Model selector
-            IdeaModelSelector(
-                availableConfigs = availableConfigs,
-                currentConfigName = currentConfigName,
-                onConfigSelect = onConfigSelect,
-                onConfigureClick = onConfigureClick
-            )
 
             // @ trigger button for agent completion
             IconButton(
@@ -157,14 +161,27 @@ fun IdeaBottomToolbar(
                 )
             }
 
-            // Settings button
+            // MCP Settings button (moved to right side)
             IconButton(
                 onClick = onSettingsClick,
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
                     imageVector = IdeaComposeIcons.Settings,
-                    contentDescription = "Settings",
+                    contentDescription = "MCP Settings",
+                    tint = JewelTheme.globalColors.text.normal,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
+            // Prompt Optimization button (new, on right side)
+            IconButton(
+                onClick = onPromptOptimizationClick,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = IdeaComposeIcons.AutoAwesome,
+                    contentDescription = "Prompt Optimization",
                     tint = JewelTheme.globalColors.text.normal,
                     modifier = Modifier.size(16.dp)
                 )
