@@ -22,6 +22,7 @@ import org.jetbrains.jewel.ui.component.CircularProgressIndicator
  * - Thinking -> IdeaThinkingBlockRenderer
  * - Walkthrough -> IdeaWalkthroughBlockRenderer
  * - Mermaid -> MermaidDiagramView
+ * - DevIn -> IdeaDevInBlockRenderer
  */
 object IdeaSketchRenderer {
 
@@ -92,6 +93,17 @@ object IdeaSketchRenderer {
                                 mermaidCode = fence.text,
                                 isDarkTheme = true, // TODO: detect theme
                                 parentDisposable = parentDisposable,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
+                    "devin" -> {
+                        if (fence.text.isNotBlank()) {
+                            IdeaDevInBlockRenderer(
+                                devinContent = fence.text,
+                                isComplete = blockIsComplete,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
