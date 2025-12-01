@@ -19,14 +19,13 @@ import org.jetbrains.jewel.ui.component.Icon
 
 /**
  * Bottom toolbar for the input section.
- * Provides send/stop buttons, @ trigger for agent completion, / command trigger, model selector, settings, and token info.
+ * Provides send/stop buttons, model selector, settings, and token info.
  *
- * Layout: ModelSelector - Token Info | @ Symbol - / Symbol - MCP Settings - Prompt Optimization - Send Button
+ * Layout: ModelSelector - Token Info | MCP Settings - Prompt Optimization - Send Button
  * - Left side: Model configuration (blends with background)
- * - Right side: MCP and prompt optimization
+ * - Right side: MCP, prompt optimization, and send
  *
- * Uses Jewel components for native IntelliJ IDEA look and feel.
- * Note: Workspace/project name is not shown in IDEA version as it's already visible in the IDE.
+ * Note: @ and / triggers are now in the top toolbar (IdeaTopToolbar).
  */
 @Composable
 fun IdeaBottomToolbar(
@@ -34,8 +33,6 @@ fun IdeaBottomToolbar(
     sendEnabled: Boolean,
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
-    onAtClick: () -> Unit = {},
-    onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onPromptOptimizationClick: () -> Unit = {},
     totalTokens: Int? = null,
@@ -79,40 +76,12 @@ fun IdeaBottomToolbar(
             }
         }
 
-        // Right side: action buttons (MCP and prompt optimization on the right)
+        // Right side: action buttons
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            // @ trigger button for agent completion
-            IconButton(
-                onClick = onAtClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = IdeaComposeIcons.AlternateEmail,
-                    contentDescription = "@ Agent",
-                    tint = JewelTheme.globalColors.text.normal,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-
-            // / trigger button for slash commands
-            IconButton(
-                onClick = onSlashClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Text(
-                    text = "/",
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-
-            // MCP Settings button (moved to right side)
+            // MCP Settings button
             IconButton(
                 onClick = onSettingsClick,
                 modifier = Modifier.size(32.dp)
@@ -125,7 +94,7 @@ fun IdeaBottomToolbar(
                 )
             }
 
-            // Prompt Optimization button (new, on right side)
+            // Prompt Optimization button
             IconButton(
                 onClick = onPromptOptimizationClick,
                 modifier = Modifier.size(32.dp)

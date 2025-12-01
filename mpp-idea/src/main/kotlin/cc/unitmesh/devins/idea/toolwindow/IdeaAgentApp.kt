@@ -369,14 +369,6 @@ private fun IdeaDevInInputArea(
             sendEnabled = inputText.isNotBlank() && !isProcessing,
             isExecuting = isProcessing,
             onStopClick = onAbort,
-            onAtClick = {
-                devInInput?.appendText("@")
-                onAtClick()
-            },
-            onSlashClick = {
-                // Insert / at current cursor position to trigger slash commands
-                devInInput?.appendText("/")
-            },
             onSettingsClick = onSettingsClick,
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,

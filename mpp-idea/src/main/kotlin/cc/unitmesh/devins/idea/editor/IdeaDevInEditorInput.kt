@@ -122,6 +122,9 @@ fun IdeaDevInEditorInput(
         }
     }
     
+    // State for selected files
+    var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
+
     // Main container with border and rounded corners
     Column(
         modifier = modifier
@@ -133,6 +136,28 @@ fun IdeaDevInEditorInput(
             )
             .background(JewelTheme.globalColors.panelBackground)
     ) {
+        // Top toolbar with @ trigger, file selection, etc.
+        IdeaTopToolbar(
+            onAtClick = { inputComponent.appendText("@") },
+            onSlashClick = { inputComponent.appendText("/") },
+            onClipboardClick = {
+                // TODO: Paste from clipboard
+            },
+            onSaveClick = {
+                // TODO: Save to workspace
+            },
+            onCursorClick = {
+                // TODO: Insert current selection
+            },
+            onAddFileClick = {
+                // TODO: Show file picker popup
+            },
+            selectedFiles = selectedFiles,
+            onRemoveFile = { file ->
+                selectedFiles = selectedFiles.filter { it != file }
+            }
+        )
+
         // Swing editor panel
         SwingPanel(
             factory = {
@@ -147,7 +172,7 @@ fun IdeaDevInEditorInput(
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         )
 
-        // Compose toolbar
+        // Bottom toolbar with model selector and send button
         IdeaBottomToolbar(
             onSendClick = {
                 val text = inputComponent.text.trim()
@@ -159,20 +184,8 @@ fun IdeaDevInEditorInput(
             sendEnabled = inputComponent.text.isNotBlank(),
             isExecuting = isExecuting,
             onStopClick = onStopClick,
-            onAtClick = {
-                // Insert @ and trigger agent completion
-                inputComponent.appendText("@")
-            },
-            onSlashClick = {
-                // Insert / and trigger command completion
-                inputComponent.appendText("/")
-            },
-            onSettingsClick = {
-                showMcpConfigDialog = true
-            },
-            onPromptOptimizationClick = {
-                showPromptOptimizationDialog = true
-            },
+            onSettingsClick = { showMcpConfigDialog = true },
+            onPromptOptimizationClick = { showPromptOptimizationDialog = true },
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,
             currentConfigName = currentConfigName,
@@ -183,9 +196,7 @@ fun IdeaDevInEditorInput(
                     currentModelConfig = config.toModelConfig()
                 }
             },
-            onConfigureClick = {
-                showModelConfigDialog = true
-            }
+            onConfigureClick = { showModelConfigDialog = true }
         )
     }
 

@@ -1361,5 +1361,184 @@ object IdeaComposeIcons {
         }.build()
     }
 
+    /**
+     * ContentPaste icon (clipboard paste)
+     */
+    val ContentPaste: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "ContentPaste",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(19f, 2f)
+                horizontalLineToRelative(-4.18f)
+                curveTo(14.4f, 0.84f, 13.3f, 0f, 12f, 0f)
+                curveToRelative(-1.3f, 0f, -2.4f, 0.84f, -2.82f, 2f)
+                horizontalLineTo(5f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(16f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(14f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineTo(4f)
+                curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                close()
+                moveTo(12f, 2f)
+                curveToRelative(0.55f, 0f, 1f, 0.45f, 1f, 1f)
+                reflectiveCurveToRelative(-0.45f, 1f, -1f, 1f)
+                reflectiveCurveToRelative(-1f, -0.45f, -1f, -1f)
+                reflectiveCurveToRelative(0.45f, -1f, 1f, -1f)
+                close()
+                moveTo(19f, 20f)
+                horizontalLineTo(5f)
+                verticalLineTo(4f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(3f)
+                horizontalLineToRelative(10f)
+                verticalLineTo(4f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(16f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Save icon (floppy disk)
+     */
+    val Save: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Save",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(17f, 3f)
+                horizontalLineTo(5f)
+                curveToRelative(-1.11f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(14f)
+                curveToRelative(0f, 1.1f, 0.89f, 2f, 2f, 2f)
+                horizontalLineToRelative(14f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineTo(7f)
+                lineToRelative(-4f, -4f)
+                close()
+                moveTo(12f, 19f)
+                curveToRelative(-1.66f, 0f, -3f, -1.34f, -3f, -3f)
+                reflectiveCurveToRelative(1.34f, -3f, 3f, -3f)
+                reflectiveCurveToRelative(3f, 1.34f, 3f, 3f)
+                reflectiveCurveToRelative(-1.34f, 3f, -3f, 3f)
+                close()
+                moveTo(15f, 9f)
+                horizontalLineTo(5f)
+                verticalLineTo(5f)
+                horizontalLineToRelative(10f)
+                verticalLineToRelative(4f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * TextFields icon (cursor/text selection)
+     */
+    val TextFields: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "TextFields",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(2.5f, 4f)
+                verticalLineToRelative(3f)
+                horizontalLineToRelative(5f)
+                verticalLineToRelative(12f)
+                horizontalLineToRelative(3f)
+                verticalLineTo(7f)
+                horizontalLineToRelative(5f)
+                verticalLineTo(4f)
+                horizontalLineTo(2.5f)
+                close()
+                moveTo(21.5f, 9f)
+                horizontalLineToRelative(-9f)
+                verticalLineToRelative(3f)
+                horizontalLineToRelative(3f)
+                verticalLineToRelative(7f)
+                horizontalLineToRelative(3f)
+                verticalLineToRelative(-7f)
+                horizontalLineToRelative(3f)
+                verticalLineTo(9f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * InsertDriveFile icon (file document)
+     */
+    val InsertDriveFile: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "InsertDriveFile",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(6f, 2f)
+                curveToRelative(-1.1f, 0f, -1.99f, 0.9f, -1.99f, 2f)
+                lineTo(4f, 20f)
+                curveToRelative(0f, 1.1f, 0.89f, 2f, 1.99f, 2f)
+                horizontalLineTo(18f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineTo(8f)
+                lineToRelative(-6f, -6f)
+                horizontalLineTo(6f)
+                close()
+                moveTo(13f, 9f)
+                verticalLineTo(3.5f)
+                lineTo(18.5f, 9f)
+                horizontalLineTo(13f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Close icon (X)
+     */
+    val Close: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Close",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(19f, 6.41f)
+                lineTo(17.59f, 5f)
+                lineTo(12f, 10.59f)
+                lineTo(6.41f, 5f)
+                lineTo(5f, 6.41f)
+                lineTo(10.59f, 12f)
+                lineTo(5f, 17.59f)
+                lineTo(6.41f, 19f)
+                lineTo(12f, 13.41f)
+                lineTo(17.59f, 19f)
+                lineTo(19f, 17.59f)
+                lineTo(13.41f, 12f)
+                close()
+            }
+        }.build()
+    }
+
 }
 
