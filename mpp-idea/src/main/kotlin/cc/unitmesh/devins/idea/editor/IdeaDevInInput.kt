@@ -1,8 +1,9 @@
 package cc.unitmesh.devins.idea.editor
 
+import cc.unitmesh.devti.language.DevInLanguage
+import cc.unitmesh.devti.util.InsertUtil
 import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.lookup.LookupManagerListener
-import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
@@ -10,7 +11,6 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -18,8 +18,6 @@ import com.intellij.openapi.editor.actions.IncrementalFindAction
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.fileTypes.FileType
-import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
@@ -53,15 +51,6 @@ class IdeaDevInInput(
     val disposable: Disposable?,
     private val showAgent: Boolean = true
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
-
-    // Try to get DevIn file type if available, otherwise use plain text
-    private val devInFileType: FileType? by lazy {
-        try {
-            FileTypeManager.getInstance().getFileTypeByExtension("devin")
-        } catch (e: Exception) {
-            null
-        }
-    }
 
     private val editorListeners = EventDispatcher.create(IdeaInputListener::class.java)
 
@@ -206,25 +195,18 @@ class IdeaDevInInput(
             }
         }
 
-        // Create new document with DevIn language support if available
+        // Create new document with DevIn language support
+        val id = UUID.randomUUID()
         val document = ReadAction.compute<Document, Throwable> {
-            val doc = EditorFactory.getInstance().createDocument("")
-
-            // Try to create a PsiFile with DevIn language support
-            devInFileType?.let { fileType ->
-                try {
-                    val psiFile = PsiFileFactory.getInstance(project)
-                        .createFileFromText("input.devin", fileType, "")
-                    PsiDocumentManager.getInstance(project).getDocument(psiFile) ?: doc
-                } catch (e: Exception) {
-                    // Fall back to plain document if DevIn language is not available
-                    doc
-                }
-            } ?: doc
+            val psiFile = PsiFileFactory.getInstance(project)
+                .createFileFromText("IdeaDevInInput-$id.devin", DevInLanguage, "")
+            PsiDocumentManager.getInstance(project).getDocument(psiFile)
         }
 
-        initializeDocumentListeners(document)
-        setDocument(document)
+        if (document != null) {
+            initializeDocumentListeners(document)
+            setDocument(document)
+        }
     }
 
     private fun initializeDocumentListeners(inputDocument: Document) {
@@ -251,21 +233,12 @@ class IdeaDevInInput(
 
     /**
      * Append text at the end of the document.
-     * If the text is a completion trigger character (@, /, $, :), auto-trigger completion.
+     * Uses InsertUtil for proper text insertion with DevIn language support.
      */
     fun appendText(textToAppend: String) {
         WriteCommandAction.runWriteCommandAction(project, "Append text", "intentions.write.action", {
             val document = this.editor?.document ?: return@runWriteCommandAction
-            val currentEditor = this.editor ?: return@runWriteCommandAction
-
-            document.insertString(document.textLength, textToAppend)
-            currentEditor.caretModel.moveToOffset(document.textLength)
-
-            // Auto-trigger completion for special characters
-            if (textToAppend in listOf("@", "/", "$", ":")) {
-                PsiDocumentManager.getInstance(project).commitDocument(document)
-                AutoPopupController.getInstance(project).autoPopupMemberLookup(currentEditor, null)
-            }
+            InsertUtil.insertStringAndSaveChange(project, textToAppend, document, document.textLength, false)
         })
     }
 

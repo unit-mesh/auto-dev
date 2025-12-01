@@ -5,7 +5,6 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.intellij.platform")
     kotlin("plugin.compose")
-    kotlin("plugin.serialization")
 }
 
 group = "cc.unitmesh.devins"
@@ -102,14 +101,39 @@ dependencies {
     }
 
     // Use platform-provided kotlinx libraries to avoid classloader conflicts
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+
+    // Gson for JSON serialization (used by IdeaRemoteAgentClient)
+    compileOnly("com.google.code.gson:gson:2.11.0")
 
     // Note: We use SimpleJewelMarkdown with intellij-markdown parser instead of mikepenz
     // to avoid Compose runtime version mismatch with IntelliJ's bundled Compose
 
     // SQLite JDBC driver for SQLDelight (required at runtime)
     implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+
+    // DevIn language support for @ and / completion
+    // These provide the DevIn language parser, completion contributors, and core functionality
+    implementation("AutoDev-Intellij:exts-devins-lang:$mppVersion") {
+        // Exclude kotlinx libraries - IntelliJ provides its own
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-swing")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+    }
+    implementation("AutoDev-Intellij:core:$mppVersion") {
+        // Exclude kotlinx libraries - IntelliJ provides its own
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-swing")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+    }
 
     // Ktor HTTP Client for LLM API calls - use compileOnly for libraries that may conflict
     compileOnly("io.ktor:ktor-client-core:3.2.2")
@@ -128,7 +152,7 @@ dependencies {
         // Target IntelliJ IDEA 2025.2+ for Compose support
         create("IC", "2025.2.1")
 
-        bundledPlugins("com.intellij.java")
+        bundledPlugins("com.intellij.java", "org.intellij.plugins.markdown", "com.jetbrains.sh", "Git4Idea")
 
         // Compose support dependencies (bundled in IDEA 252+)
         bundledModules(
