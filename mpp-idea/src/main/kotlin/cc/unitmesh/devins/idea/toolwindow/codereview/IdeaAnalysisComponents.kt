@@ -56,7 +56,7 @@ internal fun IdeaAIAnalysisPanel(state: CodeReviewState, viewModel: IdeaCodeRevi
                         item { IdeaAIAnalysisSection(progress.analysisOutput, progress.stage == AnalysisStage.ANALYZING_LINT, parentDisposable) }
                     }
                     if (progress.planOutput.isNotEmpty()) {
-                        item { IdeaModificationPlanSection(progress.planOutput, progress.stage == AnalysisStage.GENERATING_PLAN, parentDisposable) { viewModel.setSelectedPlanItems(it) } }
+                        item { IdeaModificationPlanSection(progress.planOutput, progress.stage == AnalysisStage.GENERATING_PLAN, parentDisposable) }
                     }
                     if (progress.stage == AnalysisStage.WAITING_FOR_USER_INPUT) {
                         item { IdeaUserInputSection({ viewModel.proceedToGenerateFixes(it) }, { viewModel.cancelAnalysis() }) }
@@ -152,7 +152,7 @@ internal fun IdeaAIAnalysisSection(analysisOutput: String, isActive: Boolean, pa
 }
 
 @Composable
-internal fun IdeaModificationPlanSection(planOutput: String, isActive: Boolean, parentDisposable: Disposable, onItemSelectionChanged: (Set<Int>) -> Unit) {
+internal fun IdeaModificationPlanSection(planOutput: String, isActive: Boolean, parentDisposable: Disposable) {
     var isExpanded by remember { mutableStateOf(true) }
     IdeaCollapsibleCard("Modification Plan", isExpanded, { isExpanded = it }, isActive, { if (isActive) IdeaBadge("Generating...", AutoDevColors.Blue.c400) }) {
         IdeaSketchRenderer.RenderResponse(planOutput, !isActive, parentDisposable, Modifier.fillMaxWidth())
