@@ -696,7 +696,8 @@ tasks.register<DownloadWasmFontsTask>("downloadWasmFonts") {
     group = "build"
     description = "Download fonts for WASM UTF-8 support (not committed to Git)"
 
-    fontDir.set(file("src/commonMain/composeResources/font"))
+    // Fonts are only needed for WASM platform, so download to wasmJsMain
+    fontDir.set(file("src/wasmJsMain/composeResources/font"))
     useCJKFont.set(project.findProperty("useCJKFont")?.toString()?.toBoolean() ?: true)
 }
 

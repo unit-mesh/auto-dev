@@ -17,17 +17,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
-import autodev_intellij.mpp_ui.generated.resources.Res
-import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
+import cc.unitmesh.devins.ui.compose.sketch.getUtf8FontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.Font
 
 @Composable
 fun AgentMessageList(
@@ -278,7 +275,7 @@ fun MessageItem(
                     } else {
                         Text(
                             text = message.content,
-                            fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
+                            fontFamily = getUtf8FontFamily(),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

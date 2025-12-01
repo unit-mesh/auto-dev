@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 
 /**
@@ -14,3 +15,10 @@ actual fun getFiraCodeFontFamily(): FontFamily {
     // The browser will use the system's monospace font
     return FontFamily.Monospace
 }
+
+/**
+ * JS implementation - use default font family
+ * Browser has good system font support for UTF-8
+ */
+@Composable
+actual fun getUtf8FontFamily(): FontFamily = FontFamily.Default

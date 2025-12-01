@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -30,3 +31,10 @@ actual fun getFiraCodeFontFamily(): FontFamily {
         FontFamily.Monospace
     }
 }
+
+/**
+ * Android implementation - use default font family
+ * Android has good system font support for UTF-8
+ */
+@Composable
+actual fun getUtf8FontFamily(): FontFamily = FontFamily.Default

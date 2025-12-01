@@ -25,8 +25,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
-import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.mcp.McpClientManager
 import cc.unitmesh.agent.mcp.McpConfig
@@ -41,13 +39,13 @@ import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
 import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.devins.ui.compose.sketch.getUtf8FontFamily
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.PromptEnhancer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.Font
 
 /**
  * DevIn 编辑器输入组件
@@ -485,7 +483,7 @@ fun DevInEditorInput(
                                     .onPreviewKeyEvent { handleKeyEvent(it) },
                             textStyle =
                                 TextStyle(
-                                    fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
+                                    fontFamily = getUtf8FontFamily(),
                                     fontSize = inputFontSize,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     lineHeight = inputLineHeight

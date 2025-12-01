@@ -37,6 +37,31 @@ repositories {
     }
 }
 
+// Global exclusions for heavy dependencies not needed in IntelliJ plugin
+// These exclusions apply to ALL configurations including transitive dependencies from includeBuild projects
+configurations.all {
+    exclude(group = "aws.sdk.kotlin")           // AWS SDK (~30MB) - from ai.koog:prompt-executor-bedrock-client
+    exclude(group = "aws.smithy.kotlin")        // AWS Smithy runtime
+    exclude(group = "org.apache.tika")          // Apache Tika (~100MB) - document parsing
+    exclude(group = "org.apache.poi")           // Apache POI - Office document parsing (from Tika)
+    exclude(group = "org.apache.pdfbox")        // PDFBox (~10MB) - PDF parsing
+    exclude(group = "net.sourceforge.plantuml") // PlantUML (~20MB) - from dev.snipme:highlights
+    exclude(group = "org.jsoup")                // Jsoup HTML parser
+    exclude(group = "ai.koog", module = "prompt-executor-bedrock-client")  // Bedrock executor
+    // Redis/Lettuce - not needed in IDEA plugin (~5MB)
+    exclude(group = "io.lettuce")
+    exclude(group = "io.projectreactor")
+    // RxJava - not needed (~2.6MB)
+    exclude(group = "io.reactivex.rxjava3")
+    // RSyntaxTextArea - IDEA has its own editor (~1.3MB)
+    exclude(group = "com.fifesoft")
+    // Netty - not needed for IDEA plugin (~3MB)
+    exclude(group = "io.netty")
+    // pty4j/jediterm - IDEA has its own terminal (~3MB)
+    exclude(group = "org.jetbrains.pty4j")
+    exclude(group = "org.jetbrains.jediterm")
+}
+
 dependencies {
     // Depend on mpp-ui and mpp-core JVM targets for shared UI components and ConfigManager
     // For KMP projects, we need to depend on the JVM target specifically
@@ -98,6 +123,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-io-core")
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-io-core-jvm")
+        // Note: Heavy dependencies (AWS, Tika, POI, PDFBox, PlantUML, Jsoup) are excluded globally above
     }
 
     // Use platform-provided kotlinx libraries to avoid classloader conflicts
@@ -190,6 +216,21 @@ intellijPlatform {
 tasks {
     test {
         useJUnitPlatform()
+    }
+
+    // Exclude large font files from mpp-ui that are not needed in IDEA plugin
+    // These fonts are for Desktop/WASM apps, IDEA has its own fonts
+    named<org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask>("prepareSandbox") {
+        // Exclude font files from the plugin distribution
+        // NotoSansSC-Regular.ttf (~18MB), NotoColorEmoji.ttf (~11MB x2), FiraCode fonts (~1MB)
+        exclude("**/fonts/**")
+        exclude("**/composeResources/**/font/**")
+        exclude("**/*.ttf")
+        exclude("**/*.otf")
+        // Also exclude icon files meant for desktop app
+        exclude("**/icon.icns")
+        exclude("**/icon.ico")
+        exclude("**/icon-512.png")
     }
 
     // Task to verify no conflicting dependencies are included
