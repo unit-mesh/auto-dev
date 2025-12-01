@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.agent.render.MessageRole
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Text
 import org.jetbrains.jewel.ui.theme.defaultBannerStyle
@@ -16,11 +16,11 @@ import org.jetbrains.jewel.ui.theme.defaultBannerStyle
  */
 @Composable
 fun IdeaMessageBubble(
-    role: JewelRenderer.MessageRole,
+    role: MessageRole,
     content: String,
     modifier: Modifier = Modifier
 ) {
-    val isUser = role == JewelRenderer.MessageRole.USER
+    val isUser = role == MessageRole.USER
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start

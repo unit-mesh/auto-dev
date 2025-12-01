@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.ide.CopyPasteManager
@@ -39,7 +39,7 @@ import java.awt.datatransfer.StringSelection
  */
 @Composable
 fun IdeaToolCallBubble(
-    item: JewelRenderer.TimelineItem.ToolCallItem,
+    item: TimelineItem.ToolCallItem,
     modifier: Modifier = Modifier
 ) {
     // Auto-expand on error
@@ -123,8 +123,8 @@ fun IdeaToolCallBubble(
                 }
 
                 // Execution time (if available)
-                item.executionTimeMs?.let { time ->
-                    if (time > 0) {
+                item.executionTimeMs?.let { time: Long ->
+                    if (time > 0L) {
                         Text(
                             text = "${time}ms",
                             style = JewelTheme.defaultTextStyle.copy(

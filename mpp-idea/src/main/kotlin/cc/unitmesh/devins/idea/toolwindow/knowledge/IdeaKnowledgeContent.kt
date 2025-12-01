@@ -14,7 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.agent.render.MessageRole
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.idea.components.IdeaResizableSplitPane
 import cc.unitmesh.devins.idea.components.IdeaVerticalResizableSplitPane
@@ -443,7 +444,7 @@ private fun DocumentContentPanel(
  */
 @Composable
 private fun AIChatPanel(
-    timeline: List<JewelRenderer.TimelineItem>,
+    timeline: List<TimelineItem>,
     streamingOutput: String,
     isGenerating: Boolean,
     onSendMessage: (String) -> Unit,
@@ -602,10 +603,10 @@ private fun AIChatPanel(
  * Chat message item renderer
  */
 @Composable
-private fun ChatMessageItem(item: JewelRenderer.TimelineItem) {
+private fun ChatMessageItem(item: TimelineItem) {
     when (item) {
-        is JewelRenderer.TimelineItem.MessageItem -> {
-            val isUser = item.role == JewelRenderer.MessageRole.USER
+        is TimelineItem.MessageItem -> {
+            val isUser = item.role == MessageRole.USER
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
@@ -627,7 +628,7 @@ private fun ChatMessageItem(item: JewelRenderer.TimelineItem) {
             }
         }
 
-        is JewelRenderer.TimelineItem.ToolCallItem -> {
+        is TimelineItem.ToolCallItem -> {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
@@ -665,10 +666,10 @@ private fun ChatMessageItem(item: JewelRenderer.TimelineItem) {
                                 )
                             )
                         }
-                        if (item.output != null) {
+                        item.output?.let { output ->
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = item.output.take(200) + if (item.output.length > 200) "..." else "",
+                                text = output.take(200) + if (output.length > 200) "..." else "",
                                 style = JewelTheme.defaultTextStyle.copy(fontSize = 11.sp)
                             )
                         }
@@ -677,7 +678,7 @@ private fun ChatMessageItem(item: JewelRenderer.TimelineItem) {
             }
         }
 
-        is JewelRenderer.TimelineItem.ErrorItem -> {
+        is TimelineItem.ErrorItem -> {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -705,7 +706,7 @@ private fun ChatMessageItem(item: JewelRenderer.TimelineItem) {
             }
         }
 
-        is JewelRenderer.TimelineItem.TaskCompleteItem -> {
+        is TimelineItem.TaskCompleteItem -> {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -726,7 +727,7 @@ private fun ChatMessageItem(item: JewelRenderer.TimelineItem) {
             }
         }
 
-        is JewelRenderer.TimelineItem.TerminalOutputItem -> {
+        is TimelineItem.TerminalOutputItem -> {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.jetbrains.jewel.foundation.theme.JewelTheme
@@ -21,7 +21,7 @@ import org.jetbrains.jewel.ui.component.Text
  */
 @Composable
 fun IdeaTaskCompleteBubble(
-    item: JewelRenderer.TimelineItem.TaskCompleteItem,
+    item: TimelineItem.TaskCompleteItem,
     modifier: Modifier = Modifier
 ) {
     Row(

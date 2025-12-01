@@ -1,10 +1,11 @@
 package cc.unitmesh.devins.idea.renderer
 
 import cc.unitmesh.agent.render.BaseRenderer
+import cc.unitmesh.agent.render.MessageRole
 import cc.unitmesh.agent.render.RendererUtils
 import cc.unitmesh.agent.render.TaskInfo
 import cc.unitmesh.agent.render.TaskStatus
-import cc.unitmesh.agent.render.ToolCallDisplayInfo
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
@@ -74,69 +75,6 @@ class JewelRenderer : BaseRenderer() {
     // Task tracking (from task-boundary tool)
     private val _tasks = MutableStateFlow<List<TaskInfo>>(emptyList())
     val tasks: StateFlow<List<TaskInfo>> = _tasks.asStateFlow()
-
-    // Data classes for timeline items - aligned with ComposeRenderer
-    sealed class TimelineItem(val timestamp: Long = System.currentTimeMillis(), val id: String = generateId()) {
-        data class MessageItem(
-            val role: MessageRole,
-            val content: String,
-            val tokenInfo: TokenInfo? = null,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        /**
-         * Combined tool call and result item - displays both in a single compact row.
-         * This is aligned with ComposeRenderer's CombinedToolItem for consistency.
-         */
-        data class ToolCallItem(
-            val toolName: String,
-            val description: String = "",
-            val params: String,
-            val fullParams: String? = null,
-            val filePath: String? = null,
-            val toolType: ToolType? = null,
-            val success: Boolean? = null,
-            val summary: String? = null,
-            val output: String? = null,
-            val fullOutput: String? = null,
-            val executionTimeMs: Long? = null,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        data class ErrorItem(
-            val message: String,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        data class TaskCompleteItem(
-            val success: Boolean,
-            val message: String,
-            val iterations: Int,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        data class TerminalOutputItem(
-            val command: String,
-            val output: String,
-            val exitCode: Int,
-            val executionTimeMs: Long,
-            val itemTimestamp: Long = System.currentTimeMillis(),
-            val itemId: String = generateId()
-        ) : TimelineItem(itemTimestamp, itemId)
-
-        companion object {
-            private var idCounter = 0L
-            fun generateId(): String = "${System.currentTimeMillis()}-${idCounter++}"
-        }
-    }
-
-    enum class MessageRole {
-        USER, ASSISTANT, SYSTEM
-    }
 
     // BaseRenderer implementation
 

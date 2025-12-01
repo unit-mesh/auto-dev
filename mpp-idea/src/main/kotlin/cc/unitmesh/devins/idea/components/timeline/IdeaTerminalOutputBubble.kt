@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.ide.CopyPasteManager
@@ -34,7 +34,7 @@ import java.awt.datatransfer.StringSelection
  */
 @Composable
 fun IdeaTerminalOutputBubble(
-    item: JewelRenderer.TimelineItem.TerminalOutputItem,
+    item: TimelineItem.TerminalOutputItem,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(true) }

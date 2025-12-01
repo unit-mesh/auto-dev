@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.idea.renderer
 
+import cc.unitmesh.agent.render.MessageRole
 import cc.unitmesh.agent.render.TaskStatus
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.llm.compression.TokenInfo
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -53,8 +55,8 @@ class JewelRendererTest {
         assertEquals(1, timeline.size)
 
         val item = timeline.first()
-        assertTrue(item is JewelRenderer.TimelineItem.MessageItem)
-        assertEquals(JewelRenderer.MessageRole.USER, (item as JewelRenderer.TimelineItem.MessageItem).role)
+        assertTrue(item is TimelineItem.MessageItem)
+        assertEquals(MessageRole.USER, (item as TimelineItem.MessageItem).role)
         assertEquals("Hello, world!", item.content)
     }
 
@@ -91,7 +93,7 @@ class JewelRendererTest {
 
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
-        assertTrue(timeline.first() is JewelRenderer.TimelineItem.ToolCallItem)
+        assertTrue(timeline.first() is TimelineItem.ToolCallItem)
     }
 
     @Test
@@ -111,7 +113,7 @@ class JewelRendererTest {
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
 
-        val toolItem = timeline.first() as JewelRenderer.TimelineItem.ToolCallItem
+        val toolItem = timeline.first() as TimelineItem.ToolCallItem
         assertTrue(toolItem.success == true)
         assertNotNull(toolItem.output)
     }
@@ -125,7 +127,7 @@ class JewelRendererTest {
 
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
-        assertTrue(timeline.first() is JewelRenderer.TimelineItem.ErrorItem)
+        assertTrue(timeline.first() is TimelineItem.ErrorItem)
     }
 
     @Test
@@ -135,7 +137,7 @@ class JewelRendererTest {
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
 
-        val item = timeline.first() as JewelRenderer.TimelineItem.TaskCompleteItem
+        val item = timeline.first() as TimelineItem.TaskCompleteItem
         assertTrue(item.success)
         assertEquals("Task completed successfully", item.message)
         assertEquals(5, item.iterations)
@@ -200,8 +202,8 @@ class JewelRendererTest {
         val timeline = renderer.timeline.first()
         assertTrue(timeline.isNotEmpty())
         val lastItem = timeline.last()
-        assertTrue(lastItem is JewelRenderer.TimelineItem.MessageItem)
-        assertTrue((lastItem as JewelRenderer.TimelineItem.MessageItem).content.contains("[Interrupted]"))
+        assertTrue(lastItem is TimelineItem.MessageItem)
+        assertTrue((lastItem as TimelineItem.MessageItem).content.contains("[Interrupted]"))
     }
 
     @Test

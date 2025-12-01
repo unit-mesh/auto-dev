@@ -1,5 +1,7 @@
 package cc.unitmesh.devins.idea.toolwindow.remote
 
+import cc.unitmesh.agent.render.MessageRole
+import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -103,7 +105,7 @@ class IdeaRemoteAgentViewModelTest {
 
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
-        assertTrue(timeline.first() is JewelRenderer.TimelineItem.ToolCallItem)
+        assertTrue(timeline.first() is TimelineItem.ToolCallItem)
     }
 
     @Test
@@ -126,7 +128,7 @@ class IdeaRemoteAgentViewModelTest {
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
 
-        val toolItem = timeline.first() as JewelRenderer.TimelineItem.ToolCallItem
+        val toolItem = timeline.first() as TimelineItem.ToolCallItem
         assertEquals(true, toolItem.success)
     }
 
@@ -141,7 +143,7 @@ class IdeaRemoteAgentViewModelTest {
 
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
-        assertTrue(timeline.first() is JewelRenderer.TimelineItem.ErrorItem)
+        assertTrue(timeline.first() is TimelineItem.ErrorItem)
     }
 
     @Test
@@ -153,7 +155,7 @@ class IdeaRemoteAgentViewModelTest {
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
 
-        val item = timeline.first() as JewelRenderer.TimelineItem.TaskCompleteItem
+        val item = timeline.first() as TimelineItem.TaskCompleteItem
         assertTrue(item.success)
         assertEquals("Task completed", item.message)
         assertEquals(5, item.iterations)
@@ -199,8 +201,8 @@ class IdeaRemoteAgentViewModelTest {
         val timeline = renderer.timeline.first()
         assertTrue(timeline.isNotEmpty())
         val lastItem = timeline.last()
-        assertTrue(lastItem is JewelRenderer.TimelineItem.MessageItem)
-        assertTrue((lastItem as JewelRenderer.TimelineItem.MessageItem).content.contains("[Interrupted]"))
+        assertTrue(lastItem is TimelineItem.MessageItem)
+        assertTrue((lastItem as TimelineItem.MessageItem).content.contains("[Interrupted]"))
     }
 
     @Test
@@ -225,8 +227,8 @@ class IdeaRemoteAgentViewModelTest {
         val timeline = renderer.timeline.first()
         assertEquals(1, timeline.size)
 
-        val item = timeline.first() as JewelRenderer.TimelineItem.MessageItem
-        assertEquals(JewelRenderer.MessageRole.USER, item.role)
+        val item = timeline.first() as TimelineItem.MessageItem
+        assertEquals(MessageRole.USER, item.role)
         assertEquals("Hello from user", item.content)
     }
 
