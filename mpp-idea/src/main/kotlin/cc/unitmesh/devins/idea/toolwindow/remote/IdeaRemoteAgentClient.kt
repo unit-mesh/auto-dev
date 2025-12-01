@@ -86,6 +86,11 @@ class IdeaRemoteAgentClient(
                     setBody(json.encodeToString(RemoteAgentRequest.serializer(), request))
                 }
             ) {
+                // Check HTTP status before processing SSE events
+                if (!call.response.status.isSuccess()) {
+                    throw RemoteAgentException("Stream connection failed: ${call.response.status}")
+                }
+
                 incoming
                     .mapNotNull { event ->
                         event.data?.takeIf { data ->

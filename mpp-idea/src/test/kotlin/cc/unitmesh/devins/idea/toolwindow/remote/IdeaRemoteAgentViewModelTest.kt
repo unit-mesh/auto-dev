@@ -357,5 +357,121 @@ class IdeaRemoteAgentViewModelTest {
         val result = getEffectiveProjectId("fallback", "https://github.com/user/my-repo")
         assertEquals("my-repo", result)
     }
+
+    // Tests for IdeaRemoteAgentClient data classes and state management
+
+    @Test
+    fun testRemoteAgentClientDataClassDefaultValues() {
+        // Test RemoteAgentRequest with minimal required fields
+        val request = RemoteAgentRequest(
+            projectId = "test-project",
+            task = "Test task"
+        )
+
+        assertEquals("test-project", request.projectId)
+        assertEquals("Test task", request.task)
+        assertNull(request.llmConfig)
+        assertNull(request.gitUrl)
+        assertNull(request.branch)
+        assertNull(request.username)
+        assertNull(request.password)
+    }
+
+    @Test
+    fun testRemoteAgentRequestWithAllFields() {
+        val llmConfig = LLMConfig(
+            provider = "OpenAI",
+            modelName = "gpt-4",
+            apiKey = "test-key",
+            baseUrl = "https://api.openai.com"
+        )
+
+        val request = RemoteAgentRequest(
+            projectId = "test-project",
+            task = "Test task",
+            llmConfig = llmConfig,
+            gitUrl = "https://github.com/user/repo.git",
+            branch = "main",
+            username = "user",
+            password = "pass"
+        )
+
+        assertEquals("test-project", request.projectId)
+        assertEquals("Test task", request.task)
+        assertNotNull(request.llmConfig)
+        assertEquals("https://github.com/user/repo.git", request.gitUrl)
+        assertEquals("main", request.branch)
+        assertEquals("user", request.username)
+        assertEquals("pass", request.password)
+    }
+
+    @Test
+    fun testLLMConfigWithNullBaseUrl() {
+        val config = LLMConfig(
+            provider = "Claude",
+            modelName = "claude-3",
+            apiKey = "test-key",
+            baseUrl = null
+        )
+
+        assertEquals("Claude", config.provider)
+        assertEquals("claude-3", config.modelName)
+        assertEquals("test-key", config.apiKey)
+        assertNull(config.baseUrl)
+    }
+
+    @Test
+    fun testProjectListResponseEmpty() {
+        val response = ProjectListResponse(projects = emptyList())
+        assertTrue(response.projects.isEmpty())
+    }
+
+    @Test
+    fun testProjectListResponseWithMultipleProjects() {
+        val projects = listOf(
+            ProjectInfo(id = "proj-1", name = "Project 1", path = "/path/1", description = "First"),
+            ProjectInfo(id = "proj-2", name = "Project 2", path = "/path/2", description = "Second")
+        )
+        val response = ProjectListResponse(projects = projects)
+
+        assertEquals(2, response.projects.size)
+        assertEquals("proj-1", response.projects[0].id)
+        assertEquals("proj-2", response.projects[1].id)
+    }
+
+    @Test
+    fun testRemoteAgentExceptionWithCause() {
+        val cause = RuntimeException("Original error")
+        val exception = RemoteAgentException("Wrapper error", cause)
+
+        assertEquals("Wrapper error", exception.message)
+        assertEquals(cause, exception.cause)
+    }
+
+    @Test
+    fun testRemoteAgentExceptionWithoutCause() {
+        val exception = RemoteAgentException("Simple error")
+
+        assertEquals("Simple error", exception.message)
+        assertNull(exception.cause)
+    }
+
+    // Test utility function for extracting project ID from various URL formats
+
+    @Test
+    fun testGetEffectiveProjectIdWithSshUrl() {
+        // SSH URLs like git@github.com:user/repo.git
+        val result = getEffectiveProjectId("fallback", "git@github.com:user/repo.git")
+        // The function splits by '/', so for SSH URLs it would get "user/repo.git" and then take last
+        // Actually it splits by '/' so git@github.com:user would be first, repo.git second
+        assertEquals("repo", result)
+    }
+
+    @Test
+    fun testGetEffectiveProjectIdWithDeepPath() {
+        // URLs with deeper paths
+        val result = getEffectiveProjectId("fallback", "https://gitlab.com/group/subgroup/repo.git")
+        assertEquals("repo", result)
+    }
 }
 
