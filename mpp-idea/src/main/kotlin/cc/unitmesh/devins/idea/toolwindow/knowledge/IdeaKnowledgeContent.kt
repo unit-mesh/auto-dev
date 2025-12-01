@@ -16,8 +16,8 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
-import cc.unitmesh.devins.idea.toolwindow.components.IdeaResizableSplitPane
-import cc.unitmesh.devins.idea.toolwindow.components.IdeaVerticalResizableSplitPane
+import cc.unitmesh.devins.idea.components.IdeaResizableSplitPane
+import cc.unitmesh.devins.idea.components.IdeaVerticalResizableSplitPane
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme

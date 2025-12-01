@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.idea.toolwindow.status
+package cc.unitmesh.devins.idea.components.status
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

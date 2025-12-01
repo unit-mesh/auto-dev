@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.idea.toolwindow.header
+package cc.unitmesh.devins.idea.components.header
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring

@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.idea.toolwindow.timeline.IdeaTimelineContent
+import cc.unitmesh.devins.idea.components.timeline.IdeaTimelineContent
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.jewel.foundation.theme.JewelTheme

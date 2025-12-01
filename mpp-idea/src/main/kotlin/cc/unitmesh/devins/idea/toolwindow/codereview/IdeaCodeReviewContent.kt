@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +29,7 @@ import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.linter.LintIssue
 import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.devins.idea.renderer.sketch.IdeaSketchRenderer
-import cc.unitmesh.devins.idea.toolwindow.components.IdeaResizableSplitPane
+import cc.unitmesh.devins.idea.components.IdeaResizableSplitPane
 import cc.unitmesh.devins.ui.compose.agent.codereview.*
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.Disposable

@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.idea.toolwindow.timeline
+package cc.unitmesh.devins.idea.components.timeline
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
