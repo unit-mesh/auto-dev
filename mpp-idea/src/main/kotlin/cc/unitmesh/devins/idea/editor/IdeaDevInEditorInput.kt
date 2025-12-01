@@ -1,9 +1,13 @@
 package cc.unitmesh.devins.idea.editor
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.WorkspaceManager
@@ -15,6 +19,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
+import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Text
 import javax.swing.JPanel
 import java.awt.BorderLayout
@@ -117,7 +122,17 @@ fun IdeaDevInEditorInput(
         }
     }
     
-    Column(modifier = modifier) {
+    // Main container with border and rounded corners
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .border(
+                width = 1.dp,
+                color = JewelTheme.globalColors.borders.normal,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .background(JewelTheme.globalColors.panelBackground)
+    ) {
         // Swing editor panel
         SwingPanel(
             factory = {
@@ -129,8 +144,9 @@ fun IdeaDevInEditorInput(
                 .fillMaxWidth()
                 .weight(1f)
                 .heightIn(min = 80.dp, max = 200.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         )
-        
+
         // Compose toolbar
         IdeaBottomToolbar(
             onSendClick = {
@@ -157,7 +173,6 @@ fun IdeaDevInEditorInput(
             onPromptOptimizationClick = {
                 showPromptOptimizationDialog = true
             },
-            workspacePath = WorkspaceManager.currentWorkspace?.rootPath,
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,
             currentConfigName = currentConfigName,

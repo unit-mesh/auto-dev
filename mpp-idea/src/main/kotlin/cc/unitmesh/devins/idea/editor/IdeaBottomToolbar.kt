@@ -21,11 +21,12 @@ import org.jetbrains.jewel.ui.component.Icon
  * Bottom toolbar for the input section.
  * Provides send/stop buttons, @ trigger for agent completion, / command trigger, model selector, settings, and token info.
  *
- * Layout: ModelSelector - Workspace - Token Info | @ Symbol - / Symbol - MCP Settings - Prompt Optimization - Send Button
- * - Left side: Model configuration
+ * Layout: ModelSelector - Token Info | @ Symbol - / Symbol - MCP Settings - Prompt Optimization - Send Button
+ * - Left side: Model configuration (blends with background)
  * - Right side: MCP and prompt optimization
  *
  * Uses Jewel components for native IntelliJ IDEA look and feel.
+ * Note: Workspace/project name is not shown in IDEA version as it's already visible in the IDE.
  */
 @Composable
 fun IdeaBottomToolbar(
@@ -37,7 +38,6 @@ fun IdeaBottomToolbar(
     onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onPromptOptimizationClick: () -> Unit = {},
-    workspacePath: String? = null,
     totalTokens: Int? = null,
     // Model selector props
     availableConfigs: List<NamedModelConfig> = emptyList(),
@@ -49,17 +49,17 @@ fun IdeaBottomToolbar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left side: Model selector, workspace and token info
+        // Left side: Model selector and token info
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f, fill = false)
         ) {
-            // Model selector (moved to left)
+            // Model selector (transparent, blends with background)
             IdeaModelSelector(
                 availableConfigs = availableConfigs,
                 currentConfigName = currentConfigName,
@@ -67,64 +67,15 @@ fun IdeaBottomToolbar(
                 onConfigureClick = onConfigureClick
             )
 
-            // Workspace indicator
-            if (!workspacePath.isNullOrEmpty()) {
-                // Extract project name from path, handling both Unix and Windows separators
-                val projectName = workspacePath
-                    .replace('\\', '/')  // Normalize to Unix separator
-                    .substringAfterLast('/')
-                    .ifEmpty { "Project" }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.8f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = IdeaComposeIcons.Folder,
-                            contentDescription = null,
-                            tint = JewelTheme.globalColors.text.normal,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Text(
-                            text = projectName,
-                            style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp),
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
-
-            // Token usage indicator
+            // Token usage indicator (subtle)
             if (totalTokens != null && totalTokens > 0) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(AutoDevColors.Blue.c400.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "Token",
-                            style = JewelTheme.defaultTextStyle.copy(fontSize = 11.sp)
-                        )
-                        Text(
-                            text = "$totalTokens",
-                            style = JewelTheme.defaultTextStyle.copy(
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-                }
+                Text(
+                    text = "${totalTokens}t",
+                    style = JewelTheme.defaultTextStyle.copy(
+                        fontSize = 11.sp,
+                        color = JewelTheme.globalColors.text.normal.copy(alpha = 0.6f)
+                    )
+                )
             }
         }
 

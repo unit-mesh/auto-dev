@@ -378,7 +378,6 @@ private fun IdeaDevInInputArea(
                 devInInput?.appendText("/")
             },
             onSettingsClick = onSettingsClick,
-            workspacePath = workspacePath,
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,
             currentConfigName = currentConfigName,

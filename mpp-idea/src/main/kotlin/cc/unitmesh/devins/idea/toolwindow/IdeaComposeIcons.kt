@@ -1256,6 +1256,64 @@ object IdeaComposeIcons {
     }
 
     /**
+     * SmartToy icon (robot/AI model)
+     */
+    val SmartToy: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "SmartToy",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black)
+            ) {
+                // Robot head
+                moveTo(20f, 9f)
+                verticalLineTo(7f)
+                curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                horizontalLineToRelative(-3f)
+                curveToRelative(0f, -1.66f, -1.34f, -3f, -3f, -3f)
+                reflectiveCurveTo(9f, 3.34f, 9f, 5f)
+                horizontalLineTo(6f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(2f)
+                curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
+                reflectiveCurveToRelative(1.34f, 3f, 3f, 3f)
+                verticalLineToRelative(4f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(12f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineToRelative(-4f)
+                curveToRelative(1.66f, 0f, 3f, -1.34f, 3f, -3f)
+                reflectiveCurveToRelative(-1.34f, -3f, -3f, -3f)
+                close()
+                // Left eye
+                moveTo(7.5f, 11.5f)
+                curveToRelative(0f, -0.83f, 0.67f, -1.5f, 1.5f, -1.5f)
+                reflectiveCurveToRelative(1.5f, 0.67f, 1.5f, 1.5f)
+                reflectiveCurveTo(9.83f, 13f, 9f, 13f)
+                reflectiveCurveToRelative(-1.5f, -0.67f, -1.5f, -1.5f)
+                close()
+                // Right eye
+                moveTo(13.5f, 11.5f)
+                curveToRelative(0f, -0.83f, 0.67f, -1.5f, 1.5f, -1.5f)
+                reflectiveCurveToRelative(1.5f, 0.67f, 1.5f, 1.5f)
+                reflectiveCurveTo(15.83f, 13f, 15f, 13f)
+                reflectiveCurveToRelative(-1.5f, -0.67f, -1.5f, -1.5f)
+                close()
+                // Mouth
+                moveTo(8f, 15f)
+                horizontalLineToRelative(8f)
+                verticalLineToRelative(2f)
+                horizontalLineTo(8f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
      * AutoAwesome icon (sparkles/stars for AI/optimization)
      */
     val AutoAwesome: ImageVector by lazy {
