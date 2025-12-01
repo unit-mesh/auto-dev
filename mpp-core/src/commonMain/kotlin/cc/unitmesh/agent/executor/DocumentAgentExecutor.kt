@@ -299,17 +299,25 @@ class DocumentAgentExecutor(
     /**
      * P1: Check for long content and delegate to AnalysisAgent for summarization
      * NOTE: Code content (from $.code.* queries) is NOT summarized to preserve actual code
+     * NOTE: Live Session output is NOT summarized to preserve real-time terminal output
      */
     private suspend fun checkForLongContent(
         toolName: String,
         output: String,
         executionResult: ToolExecutionResult
     ): ToolResult.AgentResult? {
-        
+
         if (subAgentManager == null) {
             return null
         }
-        
+
+        // 对于 Live Session，不要用分析结果替换原始输出
+        // Live Terminal 已经在 Timeline 中显示实时输出了
+        val isLiveSession = executionResult.metadata["isLiveSession"] == "true"
+        if (isLiveSession) {
+            return null
+        }
+
         val isCodeContent = output.contains("📘 class ") ||
                            output.contains("⚡ fun ") ||
                            output.contains("Found") && output.contains("entities") ||
@@ -317,7 +325,7 @@ class DocumentAgentExecutor(
                            output.contains("fun ") && output.contains("(") ||
                            output.contains("def ") && output.contains(":") ||
                            output.contains("function ") && output.contains("{")
-        
+
         val contentType = when {
             isCodeContent -> "code"  // Don't summarize code!
             toolName == "docql" -> "document-content"
@@ -326,23 +334,23 @@ class DocumentAgentExecutor(
             output.contains("```") -> "code"
             else -> "text"
         }
-        
+
         // Skip summarization for code content - we want to show actual code
         if (contentType == "code") {
             logger.debug { "📊 Skipping summarization for code content (${output.length} chars)" }
             return null
         }
-        
+
         // Build metadata
         val metadata = mutableMapOf<String, String>()
         metadata["toolName"] = toolName
         metadata["executionId"] = executionResult.executionId
         metadata["success"] = executionResult.isSuccess.toString()
-        
+
         executionResult.metadata.forEach { (key, value) ->
             metadata["tool_$key"] = value
         }
-        
+
         return subAgentManager.checkAndHandleLongContent(
             content = output,
             contentType = contentType,

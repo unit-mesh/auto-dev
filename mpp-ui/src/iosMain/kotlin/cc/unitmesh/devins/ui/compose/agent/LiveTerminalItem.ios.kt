@@ -14,7 +14,10 @@ actual fun LiveTerminalItem(
     sessionId: String,
     command: String,
     workingDirectory: String?,
-    ptyHandle: Any?
+    ptyHandle: Any?,
+    exitCode: Int?,
+    executionTimeMs: Long?,
+    output: String?
 ) {
     Column(modifier = androidx.compose.ui.Modifier.padding(16.dp)) {
         Text("Terminal functionality is not available on iOS")

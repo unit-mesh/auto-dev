@@ -222,7 +222,10 @@ fun RenderMessageItem(
                 sessionId = timelineItem.sessionId,
                 command = timelineItem.command,
                 workingDirectory = timelineItem.workingDirectory,
-                ptyHandle = timelineItem.ptyHandle
+                ptyHandle = timelineItem.ptyHandle,
+                exitCode = timelineItem.exitCode,
+                executionTimeMs = timelineItem.executionTimeMs,
+                output = timelineItem.output
             )
         }
     }
@@ -232,13 +235,20 @@ fun RenderMessageItem(
  * Platform-specific live terminal display.
  * On JVM with PTY support: Renders an interactive terminal widget
  * On other platforms: Shows a message that live terminal is not available
+ *
+ * @param exitCode Exit code when completed (null if still running)
+ * @param executionTimeMs Execution time when completed (null if still running)
+ * @param output Captured output when completed (null if still running or not captured)
  */
 @Composable
 expect fun LiveTerminalItem(
     sessionId: String,
     command: String,
     workingDirectory: String?,
-    ptyHandle: Any?
+    ptyHandle: Any?,
+    exitCode: Int? = null,
+    executionTimeMs: Long? = null,
+    output: String? = null
 )
 
 @Composable

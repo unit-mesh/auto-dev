@@ -96,7 +96,7 @@ object TerminalApiCompat {
     
     /**
      * Fallback approach for older IDEA versions or when new API is not available.
-     * Uses ToolWindowManager to open terminal tool window.
+     * Uses TerminalToolWindowManager to create shell widget and execute command.
      */
     private fun tryFallbackTerminalApi(
         project: Project,
@@ -105,23 +105,67 @@ object TerminalApiCompat {
         requestFocus: Boolean
     ): Boolean {
         try {
-            // Try to use ToolWindowManager to activate terminal
-            val toolWindowManager = com.intellij.openapi.wm.ToolWindowManager.getInstance(project)
-            val terminalToolWindow = toolWindowManager.getToolWindow("Terminal")
-            
-            if (terminalToolWindow != null) {
-                if (requestFocus) {
-                    terminalToolWindow.activate(null)
-                }
-                LOG.info("Activated Terminal tool window (command not sent): $command")
-                return true
-            }
-            
-            LOG.warn("Terminal tool window not found")
-            return false
+            // Try to use TerminalToolWindowManager (Classic Terminal API)
+            val managerClass = Class.forName("org.jetbrains.plugins.terminal.TerminalToolWindowManager")
+            val getInstanceMethod = managerClass.getMethod("getInstance", Project::class.java)
+            val manager = getInstanceMethod.invoke(null, project)
+
+            // Create shell widget
+            val effectiveTabName = tabName ?: "AutoDev: $command"
+            val createShellWidgetMethod = managerClass.getMethod(
+                "createShellWidget",
+                String::class.java,  // workingDirectory
+                String::class.java,  // tabName
+                Boolean::class.javaPrimitiveType,  // requestFocus
+                Boolean::class.javaPrimitiveType   // deferSessionStartUntilUiShown
+            )
+
+            val widget = createShellWidgetMethod.invoke(
+                manager,
+                null,  // workingDirectory (use default)
+                effectiveTabName,
+                requestFocus,
+                false  // don't defer, start immediately
+            )
+
+            // Execute command on the widget
+            val widgetClass = widget.javaClass
+            val executeCommandMethod = widgetClass.getMethod("executeCommand", String::class.java)
+            executeCommandMethod.invoke(widget, command)
+
+            LOG.info("Successfully executed command in terminal using fallback API: $command")
+            return true
+        } catch (e: ClassNotFoundException) {
+            LOG.warn("TerminalToolWindowManager not found, trying basic activation")
+            return tryBasicTerminalActivation(project, requestFocus)
+        } catch (e: NoSuchMethodException) {
+            LOG.warn("Terminal API method not found: ${e.message}")
+            return tryBasicTerminalActivation(project, requestFocus)
         } catch (e: Exception) {
             LOG.warn("Fallback terminal API failed: ${e.message}", e)
-            return false
+            return tryBasicTerminalActivation(project, requestFocus)
+        }
+    }
+
+    /**
+     * Last resort: just activate the terminal tool window without executing command.
+     */
+    private fun tryBasicTerminalActivation(project: Project, requestFocus: Boolean): Boolean {
+        return try {
+            val toolWindowManager = com.intellij.openapi.wm.ToolWindowManager.getInstance(project)
+            val terminalToolWindow = toolWindowManager.getToolWindow("Terminal")
+
+            if (terminalToolWindow != null && requestFocus) {
+                terminalToolWindow.activate(null)
+                LOG.info("Activated Terminal tool window (command not sent)")
+                return true
+            }
+
+            LOG.warn("Terminal tool window not found")
+            false
+        } catch (e: Exception) {
+            LOG.warn("Basic terminal activation failed: ${e.message}", e)
+            false
         }
     }
     

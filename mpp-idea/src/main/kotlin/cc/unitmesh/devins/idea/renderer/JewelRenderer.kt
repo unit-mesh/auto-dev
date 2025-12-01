@@ -213,23 +213,29 @@ class JewelRenderer : BaseRenderer() {
 
         // For shell commands, check if it's a live session
         val isLiveSession = metadata["isLiveSession"] == "true"
-        val liveExitCode = metadata["live_exit_code"]?.toIntOrNull()
+        val sessionId = metadata["sessionId"]
+        val liveExitCode = metadata["exit_code"]?.toIntOrNull()
 
         if (toolType == ToolType.Shell && output != null) {
             val exitCode = liveExitCode ?: (if (success) 0 else 1)
             val executionTimeMs = executionTime ?: 0L
             val command = currentToolCallInfo?.details?.removePrefix("Executing: ") ?: "unknown"
 
-            if (isLiveSession) {
-                // Add terminal output after live terminal
-                addTimelineItem(
-                    TimelineItem.TerminalOutputItem(
-                        command = command,
-                        output = fullOutput ?: output,
-                        exitCode = exitCode,
-                        executionTimeMs = executionTimeMs
-                    )
-                )
+            if (isLiveSession && sessionId != null) {
+                // Update the existing LiveTerminalItem with completion status
+                _timeline.update { items ->
+                    items.map { item ->
+                        if (item is TimelineItem.LiveTerminalItem && item.sessionId == sessionId) {
+                            item.copy(
+                                exitCode = exitCode,
+                                executionTimeMs = executionTimeMs,
+                                output = fullOutput ?: output
+                            )
+                        } else {
+                            item
+                        }
+                    }
+                }
             } else {
                 // Replace the last tool call with terminal output
                 _timeline.update { items ->

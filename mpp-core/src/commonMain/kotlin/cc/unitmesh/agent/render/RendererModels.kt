@@ -164,15 +164,31 @@ sealed class TimelineItem(
     /**
      * Live terminal session - connected to a PTY process for real-time output.
      * This is only used on platforms that support PTY (JVM with JediTerm).
+     *
+     * When the session completes, exitCode and executionTimeMs will be set.
+     * The UI can use these to show completion status without creating a separate TerminalOutputItem.
      */
     data class LiveTerminalItem(
         val sessionId: String,
         val command: String,
         val workingDirectory: String?,
         val ptyHandle: Any?, // Platform-specific: on JVM this is a PtyProcess
+        val exitCode: Int? = null, // null = still running, non-null = completed
+        val executionTimeMs: Long? = null, // null = still running
+        val output: String? = null, // Captured output when completed (optional)
         override val timestamp: Long = Platform.getCurrentTimestamp(),
         override val id: String = generateId()
-    ) : TimelineItem(timestamp, id)
+    ) : TimelineItem(timestamp, id) {
+        /**
+         * Check if the terminal session is still running
+         */
+        fun isRunning(): Boolean = exitCode == null
+
+        /**
+         * Check if the terminal session completed successfully
+         */
+        fun isSuccess(): Boolean = exitCode == 0
+    }
 
     companion object {
         /**

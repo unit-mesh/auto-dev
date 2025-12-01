@@ -30,13 +30,17 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
  * - Compact header (32-36dp) to save space in timeline
  * - Inline status indicator
  * - Clean, minimal design using AutoDevColors
+ * - Shows completion status when exitCode is provided
  */
 @Composable
 actual fun LiveTerminalItem(
     sessionId: String,
     command: String,
     workingDirectory: String?,
-    ptyHandle: Any?
+    ptyHandle: Any?,
+    exitCode: Int?,
+    executionTimeMs: Long?,
+    output: String?
 ) {
     var expanded by remember { mutableStateOf(true) } // Auto-expand live terminal
     val process =
@@ -54,7 +58,8 @@ actual fun LiveTerminalItem(
             process?.let { ProcessTtyConnector(it) }
         }
 
-    val isRunning = process?.isAlive == true
+    // Determine if running: if exitCode is provided, it's completed
+    val isRunning = exitCode == null && (process?.isAlive == true)
 
     Card(
         colors =
@@ -119,30 +124,42 @@ actual fun LiveTerminalItem(
                     modifier = Modifier.weight(1f)
                 )
 
-//                 Status badge - compact
+                // Status badge - compact, shows exit code when completed
+                val (statusText, statusColor) = when {
+                    isRunning -> "RUNNING" to AutoDevColors.Green.c400
+                    exitCode == 0 -> "✓ EXIT 0" to AutoDevColors.Green.c400
+                    exitCode != null -> "✗ EXIT $exitCode" to AutoDevColors.Red.c400
+                    else -> "DONE" to MaterialTheme.colorScheme.onSurfaceVariant
+                }
+
                 Surface(
-                    color =
-                        if (isRunning) {
-                            AutoDevColors.Green.c400.copy(alpha = 0.15f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
+                    color = statusColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.height(20.dp)
                 ) {
-                    Text(
-                        text = if (isRunning) "RUNNING" else "DONE",
+                    Row(
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        color =
-                            if (isRunning) {
-                                AutoDevColors.Green.c400
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = statusText,
+                            color = statusColor,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        // Show execution time when completed
+                        if (executionTimeMs != null) {
+                            Text(
+                                text = "${executionTimeMs}ms",
+                                color = statusColor.copy(alpha = 0.7f),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 9.sp
+                            )
+                        }
+                    }
                 }
             }
 

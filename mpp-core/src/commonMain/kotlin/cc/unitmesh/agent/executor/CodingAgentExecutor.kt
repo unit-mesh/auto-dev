@@ -336,6 +336,13 @@ class CodingAgentExecutor(
             return null
         }
 
+        // 对于 Live Session，不要用分析结果替换原始输出
+        // Live Terminal 已经在 Timeline 中显示实时输出了
+        val isLiveSession = executionResult.metadata["isLiveSession"] == "true"
+        if (isLiveSession) {
+            return null
+        }
+
         // 检测内容类型
         val contentType = when {
             toolName == "glob" -> "file-list"
