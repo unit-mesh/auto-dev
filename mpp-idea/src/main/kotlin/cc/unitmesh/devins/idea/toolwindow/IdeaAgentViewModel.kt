@@ -43,7 +43,8 @@ class IdeaAgentViewModel(
     val renderer = JewelRenderer()
 
     // Current agent type tab (using mpp-core's AgentType)
-    private val _currentAgentType = MutableStateFlow(AgentType.CODING)
+    // Initialize with value from config to avoid flicker
+    private val _currentAgentType = MutableStateFlow(loadInitialAgentType())
     val currentAgentType: StateFlow<AgentType> = _currentAgentType.asStateFlow()
 
     // Is executing a task
@@ -91,6 +92,24 @@ class IdeaAgentViewModel(
     }
 
     /**
+     * Load initial agent type synchronously to avoid UI flicker.
+     * This is called during initialization before the UI is rendered.
+     */
+    private fun loadInitialAgentType(): AgentType {
+        return try {
+            // Use runBlocking to load config synchronously during initialization
+            // This is acceptable here as it only happens once during ViewModel creation
+            runBlocking {
+                val wrapper = ConfigManager.load()
+                wrapper.getAgentType()
+            }
+        } catch (e: Exception) {
+            // If config doesn't exist or is invalid, default to CODING
+            AgentType.CODING
+        }
+    }
+
+    /**
      * Load configuration from ConfigManager (~/.autodev/config.yaml)
      */
     private fun loadConfiguration() {
@@ -108,8 +127,8 @@ class IdeaAgentViewModel(
                     startMcpPreloading()
                 }
 
-                // Set agent type from config
-                _currentAgentType.value = wrapper.getAgentType()
+                // Agent type is already loaded in initialization, no need to update again
+                // This prevents the flicker issue where the tab changes after UI is rendered
             } catch (e: Exception) {
                 // Config file doesn't exist or is invalid, use defaults
                 _configWrapper.value = null
@@ -177,10 +196,27 @@ class IdeaAgentViewModel(
     }
 
     /**
-     * Change the current agent type tab.
+     * Change the current agent type tab and persist to config.
      */
     fun onAgentTypeChange(agentType: AgentType) {
         _currentAgentType.value = agentType
+
+        // Save to config file for persistence
+        coroutineScope.launch {
+            try {
+                val typeString = when (agentType) {
+                    AgentType.REMOTE -> "Remote"
+                    AgentType.LOCAL_CHAT -> "Local"
+                    AgentType.CODING -> "Coding"
+                    AgentType.CODE_REVIEW -> "CodeReview"
+                    AgentType.KNOWLEDGE -> "Documents"
+                }
+                cc.unitmesh.devins.ui.config.saveAgentTypePreference(typeString)
+            } catch (e: Exception) {
+                // Silently fail - not critical if we can't save preference
+                println("⚠️ Failed to save agent type preference: ${e.message}")
+            }
+        }
     }
 
     /**

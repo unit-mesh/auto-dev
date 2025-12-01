@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * This is adapted from mpp-ui's RemoteCodingAgentViewModel.
  */
 class IdeaRemoteAgentViewModel(
-    private val project: Project,
+    val project: Project,
     private val coroutineScope: CoroutineScope,
     serverUrl: String = "http://localhost:8080",
     private val useServerConfig: Boolean = false

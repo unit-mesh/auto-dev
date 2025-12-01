@@ -88,7 +88,8 @@ fun IdeaRemoteAgentContent(
             IdeaTimelineContent(
                 timeline = timeline,
                 streamingOutput = streamingOutput,
-                listState = listState
+                listState = listState,
+                project = viewModel.project
             )
         }
     }

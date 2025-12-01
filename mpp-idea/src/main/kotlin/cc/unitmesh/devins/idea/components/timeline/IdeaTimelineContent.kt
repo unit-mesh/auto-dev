@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.render.TimelineItem
+import com.intellij.openapi.project.Project
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Text
 
@@ -22,7 +23,8 @@ fun IdeaTimelineContent(
     timeline: List<TimelineItem>,
     streamingOutput: String,
     listState: LazyListState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    project: Project? = null
 ) {
     if (timeline.isEmpty() && streamingOutput.isEmpty()) {
         IdeaEmptyStateMessage("Start a conversation with your AI Assistant!")
@@ -34,7 +36,7 @@ fun IdeaTimelineContent(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(timeline, key = { it.id }) { item ->
-                IdeaTimelineItemView(item)
+                IdeaTimelineItemView(item, project)
             }
 
             // Show streaming output
@@ -51,7 +53,7 @@ fun IdeaTimelineContent(
  * Dispatch timeline item to appropriate bubble component.
  */
 @Composable
-fun IdeaTimelineItemView(item: TimelineItem) {
+fun IdeaTimelineItemView(item: TimelineItem, project: Project? = null) {
     when (item) {
         is TimelineItem.MessageItem -> {
             IdeaMessageBubble(
@@ -69,17 +71,18 @@ fun IdeaTimelineItemView(item: TimelineItem) {
             IdeaTaskCompleteBubble(item)
         }
         is TimelineItem.TerminalOutputItem -> {
-            IdeaTerminalOutputBubble(item)
+            IdeaTerminalOutputBubble(item, project = project)
         }
         is TimelineItem.LiveTerminalItem -> {
             // Live terminal not supported in IDEA yet, show placeholder
             IdeaTerminalOutputBubble(
-                TimelineItem.TerminalOutputItem(
+                item = TimelineItem.TerminalOutputItem(
                     command = item.command,
                     output = "[Live terminal session: ${item.sessionId}]",
                     exitCode = 0,
                     executionTimeMs = 0
-                )
+                ),
+                project = project
             )
         }
     }

@@ -158,7 +158,8 @@ fun IdeaAgentApp(
                     IdeaTimelineContent(
                         timeline = timeline,
                         streamingOutput = streamingOutput,
-                        listState = listState
+                        listState = listState,
+                        project = project
                     )
                 }
                 AgentType.REMOTE -> {

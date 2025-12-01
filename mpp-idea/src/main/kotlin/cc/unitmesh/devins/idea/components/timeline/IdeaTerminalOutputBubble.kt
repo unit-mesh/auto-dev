@@ -7,22 +7,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.devins.idea.renderer.terminal.IdeaAnsiTerminalRenderer
+import cc.unitmesh.devins.idea.terminal.TerminalApiCompat
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.Project
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
@@ -30,20 +30,22 @@ import java.awt.datatransfer.StringSelection
 
 /**
  * Terminal output bubble for displaying shell command results.
- * Shows output with scrollable area (4 lines visible), full width layout.
+ * Uses Jewel-themed ANSI terminal renderer for proper color and formatting support.
+ * Shows output with scrollable area, full width layout.
+ *
+ * Features:
+ * - ANSI color and formatting support
+ * - Collapsible output with header
+ * - Copy to clipboard
+ * - Open in native terminal (when available)
  */
 @Composable
 fun IdeaTerminalOutputBubble(
     item: TimelineItem.TerminalOutputItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    project: Project? = null
 ) {
     var expanded by remember { mutableStateOf(true) }
-    val scrollState = rememberScrollState()
-
-    // Auto-scroll to bottom when output changes
-    LaunchedEffect(item.output) {
-        scrollState.animateScrollTo(scrollState.maxValue)
-    }
 
     Box(
         modifier = modifier
@@ -61,52 +63,46 @@ fun IdeaTerminalOutputBubble(
                 onExpandToggle = { expanded = !expanded },
                 onCopy = {
                     CopyPasteManager.getInstance().setContents(StringSelection(item.output))
+                },
+                onOpenInTerminal = project?.let { proj ->
+                    { openCommandInTerminal(proj, item.command) }
                 }
             )
 
-            // Collapsible output content with scrolling
+            // Collapsible output content using Jewel ANSI terminal renderer
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
-                Box(
+                // Use Jewel-themed ANSI terminal renderer
+                IdeaAnsiTerminalRenderer(
+                    ansiText = item.output,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 120.dp) // ~4 lines at 12sp + padding
-                        .background(Color(0xFF1E1E1E))
-                        .padding(12.dp)
-                ) {
-                    if (item.output.isNotEmpty()) {
-                        Text(
-                            text = item.output,
-                            style = JewelTheme.defaultTextStyle.copy(
-                                fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = AutoDevColors.Neutral.c300,
-                                lineHeight = 18.sp
-                            ),
-                            modifier = Modifier.verticalScroll(scrollState)
-                        )
-                    } else {
-                        Text(
-                            text = "(No output)",
-                            style = JewelTheme.defaultTextStyle.copy(
-                                fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = AutoDevColors.Neutral.c500
-                            )
-                        )
-                    }
-                }
+                        .heightIn(min = 80.dp, max = 300.dp),
+                    maxHeight = 300,
+                    backgroundColor = AutoDevColors.Neutral.c900
+                )
             }
         }
     }
 }
 
+/**
+ * Opens the command in IDEA's native terminal using compatibility layer.
+ */
+private fun openCommandInTerminal(project: Project, command: String) {
+    TerminalApiCompat.openCommandInTerminal(
+        project = project,
+        command = command,
+        tabName = "AutoDev: $command",
+        requestFocus = true
+    )
+}
 
 /**
- * Header component for terminal bubble with command, status, and copy button.
+ * Header component for terminal bubble with command, status, and action buttons.
  */
 @Composable
 private fun TerminalHeader(
@@ -115,7 +111,8 @@ private fun TerminalHeader(
     executionTimeMs: Long,
     expanded: Boolean,
     onExpandToggle: () -> Unit,
-    onCopy: () -> Unit
+    onCopy: () -> Unit,
+    onOpenInTerminal: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -152,7 +149,7 @@ private fun TerminalHeader(
             )
 
             // Command text (truncated if too long)
-            val displayCommand = if (command.length > 60) command.take(60) + "..." else command
+            val displayCommand = if (command.length > 50) command.take(50) + "..." else command
             Text(
                 text = "$ $displayCommand",
                 style = JewelTheme.defaultTextStyle.copy(
@@ -164,13 +161,32 @@ private fun TerminalHeader(
             )
         }
 
-        // Right side: Status and copy
+        // Right side: Status and actions
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Status badge
             TerminalStatusBadge(exitCode = exitCode, executionTimeMs = executionTimeMs)
+
+            // Open in terminal button (if available)
+            if (onOpenInTerminal != null) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(AutoDevColors.Neutral.c700)
+                        .clickable { onOpenInTerminal() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = IdeaComposeIcons.Terminal,
+                        contentDescription = "Open in Terminal",
+                        tint = AutoDevColors.Neutral.c300,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
 
             // Copy button
             Box(
@@ -206,6 +222,7 @@ private fun TerminalStatusBadge(
             AutoDevColors.Green.c400,
             "exit: 0  ${executionTimeMs}ms"
         )
+
         else -> Triple(
             AutoDevColors.Red.c600.copy(alpha = 0.3f),
             AutoDevColors.Red.c400,
@@ -228,4 +245,3 @@ private fun TerminalStatusBadge(
         )
     }
 }
-

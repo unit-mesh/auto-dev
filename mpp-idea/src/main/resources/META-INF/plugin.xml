@@ -12,6 +12,7 @@
     <!-- Required for Compose support in IDEA 252+ -->
     <dependencies>
         <module name="intellij.platform.compose"/>
+        <plugin id="org.jetbrains.plugins.terminal"/>
     </dependencies>
 
     <resource-bundle>messages.AutoDevIdeaBundle</resource-bundle>
