@@ -307,13 +307,13 @@ private fun IdeaDevInInputArea(
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(8.dp)
+        modifier = Modifier.fillMaxSize().padding(8.dp)
     ) {
-        // DevIn Editor via SwingPanel
+        // DevIn Editor via SwingPanel - uses weight(1f) to fill available space
         SwingPanel(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .weight(1f),
             factory = {
                 val input = IdeaDevInInput(
                     project = project,
@@ -349,11 +349,11 @@ private fun IdeaDevInInputArea(
                 Disposer.register(parentDisposable, input)
                 devInInput = input
 
-                // Wrap in a JPanel to handle sizing
+                // Wrap in a JPanel to handle dynamic sizing
                 JPanel(BorderLayout()).apply {
                     add(input, BorderLayout.CENTER)
-                    preferredSize = Dimension(800, 120)
-                    minimumSize = Dimension(200, 80)
+                    // Don't set fixed preferredSize - let it fill available space
+                    minimumSize = Dimension(200, 60)
                 }
             },
             update = { panel ->
