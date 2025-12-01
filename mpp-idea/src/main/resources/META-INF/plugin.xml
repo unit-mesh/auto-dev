@@ -1,11 +1,11 @@
 <!-- Plugin Configuration File for mpp-idea Compose UI module -->
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <id>cc.unitmesh.devins.idea</id>
-    <name>AutoDev Compose UI</name>
-    <vendor email="phodal@gmail.com" url="https://github.com/unit-mesh">UnitMesh</vendor>
+    <name>AutoDev Next</name>
+    <vendor email="h@phodal.com" url="https://github.com/unit-mesh">UnitMesh</vendor>
 
     <description><![CDATA[
-    AutoDev Compose UI module - Provides Compose-based UI components for IntelliJ IDEA 2025.2+.
+    AutoDev Idea - Provides Compose-based UI components for IntelliJ IDEA 2025.2+.
     This module leverages Jewel theme for native IDE integration with DevIn language support.
     ]]></description>
 
