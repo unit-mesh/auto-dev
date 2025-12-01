@@ -13,16 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import cc.unitmesh.devins.idea.renderer.markdown.MarkdownInlineRenderer.appendMarkdownChildren
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.findChildOfType
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.gfm.GFMElementTypes
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
@@ -47,7 +44,7 @@ import java.net.URI
  * - Checkboxes (GFM task lists)
  */
 @Composable
-fun SimpleJewelMarkdown(
+fun JewelMarkdownRenderer(
     content: String,
     modifier: Modifier = Modifier.fillMaxWidth(),
     onLinkClick: ((String) -> Unit)? = null
@@ -136,8 +133,6 @@ private fun RenderNode(
     }
 }
 
-// ============ Header Component ============
-
 @Composable
 private fun MarkdownHeader(node: ASTNode, content: String, level: Int) {
     val text = MarkdownTextParser.extractHeaderText(node, content)
@@ -164,8 +159,6 @@ private fun MarkdownHeader(node: ASTNode, content: String, level: Int) {
         modifier = Modifier.padding(vertical = verticalPadding)
     )
 }
-
-// ============ Paragraph Component with Inline Formatting ============
 
 @Composable
 private fun MarkdownParagraph(
@@ -306,8 +299,6 @@ private fun MarkdownCodeBlock(node: ASTNode, content: String) {
     }
 }
 
-// ============ Block Quote Component ============
-
 @Composable
 private fun MarkdownBlockQuote(
     node: ASTNode,
@@ -340,8 +331,6 @@ private fun MarkdownBlockQuote(
         }
     }
 }
-
-// ============ List Components ============
 
 @Composable
 private fun MarkdownUnorderedList(
@@ -452,8 +441,6 @@ private fun MarkdownListItem(
     }
 }
 
-// ============ Horizontal Rule Component ============
-
 @Composable
 private fun MarkdownHorizontalRule() {
     Box(
@@ -465,160 +452,3 @@ private fun MarkdownHorizontalRule() {
     )
 }
 
-// ============ Table Component ============
-
-/** Default cell width for table columns */
-private val TABLE_CELL_WIDTH = 120.dp
-
-/**
- * GFM Table renderer following the intellij-markdown AST structure.
- * Table structure:
- * - TABLE (GFMElementTypes.TABLE)
- *   - HEADER (GFMElementTypes.HEADER) - first row with column headers
- *     - CELL (GFMTokenTypes.CELL) - individual header cells
- *   - TABLE_SEPARATOR (GFMTokenTypes.TABLE_SEPARATOR) - the |---|---| row
- *   - ROW (GFMElementTypes.ROW) - data rows
- *     - CELL (GFMTokenTypes.CELL) - individual data cells
- *
- * Uses BoxWithConstraints to determine if horizontal scrolling is needed.
- */
-@Composable
-private fun MarkdownTable(node: ASTNode, content: String) {
-    val headerRow = node.children.find { it.type == GFMElementTypes.HEADER }
-    val bodyRows = node.children.filter { it.type == GFMElementTypes.ROW }
-
-    // Calculate column count from header
-    val columnsCount = headerRow?.children?.count { it.type == GFMTokenTypes.CELL } ?: 0
-    if (columnsCount == 0) return
-
-    // Calculate table width based on column count
-    val tableWidth = columnsCount * TABLE_CELL_WIDTH
-
-    // Calculate adaptive column weights based on content length
-    val columnWeights = remember(node, content) {
-        val lengths = IntArray(columnsCount) { 0 }
-        // Iterate header + rows to find max length per column
-        node.children
-            .filter { it.type == GFMElementTypes.HEADER || it.type == GFMElementTypes.ROW }
-            .forEach { rowNode ->
-                val cells = rowNode.children.filter { it.type == GFMTokenTypes.CELL }
-                cells.forEachIndexed { idx, cell ->
-                    if (idx < columnsCount) {
-                        val raw = MarkdownTextParser.extractCellText(cell, content)
-                        if (raw.length > lengths[idx]) lengths[idx] = raw.length
-                    }
-                }
-            }
-        // Convert to weights with min/max constraints
-        val floatLengths = lengths.map { it.coerceAtLeast(1).toFloat() }
-        val total = floatLengths.sum()
-        val constrained = floatLengths.map { (it / total).coerceIn(0.15f, 0.65f) }
-        val constrainedTotal = constrained.sum()
-        constrained.map { it / constrainedTotal }
-    }
-
-    BoxWithConstraints(
-        modifier = Modifier
-            .padding(vertical = 4.dp)
-            .background(
-                JewelTheme.globalColors.panelBackground.copy(alpha = 0.3f),
-                RoundedCornerShape(6.dp)
-            )
-            .border(
-                1.dp,
-                JewelTheme.globalColors.borders.normal,
-                RoundedCornerShape(6.dp)
-            )
-    ) {
-        // Determine if scrolling is needed
-        val scrollable = maxWidth < tableWidth
-
-        Column(
-            modifier = if (scrollable) {
-                Modifier.horizontalScroll(rememberScrollState()).requiredWidth(tableWidth)
-            } else {
-                Modifier.fillMaxWidth()
-            }
-        ) {
-            // Header row
-            if (headerRow != null) {
-                MarkdownTableRow(
-                    node = headerRow,
-                    content = content,
-                    isHeader = true,
-                    columnWeights = columnWeights,
-                    tableWidth = tableWidth
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(JewelTheme.globalColors.borders.normal)
-                )
-            }
-
-            // Body rows (skip TABLE_SEPARATOR which is handled implicitly)
-            bodyRows.forEachIndexed { index, row ->
-                MarkdownTableRow(
-                    node = row,
-                    content = content,
-                    isHeader = false,
-                    columnWeights = columnWeights,
-                    tableWidth = tableWidth
-                )
-                if (index < bodyRows.size - 1) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(JewelTheme.globalColors.borders.normal.copy(alpha = 0.5f))
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MarkdownTableRow(
-    node: ASTNode,
-    content: String,
-    isHeader: Boolean,
-    columnWeights: List<Float>,
-    tableWidth: Dp
-) {
-    val cells = node.children.filter { it.type == GFMTokenTypes.CELL }
-
-    if (cells.isEmpty()) return
-
-    Row(
-        modifier = Modifier
-            .widthIn(min = tableWidth)
-            .height(IntrinsicSize.Max)
-            .then(
-                if (isHeader) {
-                    Modifier.background(JewelTheme.globalColors.panelBackground.copy(alpha = 0.5f))
-                } else {
-                    Modifier
-                }
-            )
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        cells.forEachIndexed { idx, cell ->
-            val weight = if (idx < columnWeights.size) columnWeights[idx] else 1f / cells.size.coerceAtLeast(1)
-            val cellText = MarkdownTextParser.extractCellText(cell, content)
-
-            Text(
-                text = cellText,
-                style = JewelTheme.defaultTextStyle.copy(
-                    fontSize = 12.sp,
-                    fontWeight = if (isHeader) FontWeight.SemiBold else FontWeight.Normal
-                ),
-                modifier = Modifier
-                    .weight(weight)
-                    .padding(horizontal = 8.dp)
-            )
-        }
-    }
-}
