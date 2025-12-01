@@ -10,16 +10,14 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import cc.unitmesh.devins.idea.renderer.markdown.MarkdownInlineRenderer.appendMarkdownChildren
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
@@ -142,7 +140,7 @@ private fun RenderNode(
 
 @Composable
 private fun MarkdownHeader(node: ASTNode, content: String, level: Int) {
-    val text = extractHeaderText(node, content)
+    val text = MarkdownTextParser.extractHeaderText(node, content)
     val (fontSize, fontWeight) = when (level) {
         1 -> 24.sp to FontWeight.Bold
         2 -> 20.sp to FontWeight.Bold
@@ -212,147 +210,12 @@ private fun MarkdownParagraph(
     }
 }
 
-/**
- * Build annotated string with inline formatting support
- */
-private fun AnnotatedString.Builder.appendMarkdownChildren(
-    node: ASTNode,
-    content: String,
-    codeBackground: Color
-) {
-    node.children.forEach { child ->
-        when (child.type) {
-            MarkdownTokenTypes.TEXT -> {
-                append(child.getTextInNode(content).toString())
-            }
-            MarkdownTokenTypes.WHITE_SPACE -> {
-                append(" ")
-            }
-            MarkdownTokenTypes.EOL -> {
-                append(" ")
-            }
-            MarkdownTokenTypes.SINGLE_QUOTE -> append("'")
-            MarkdownTokenTypes.DOUBLE_QUOTE -> append("\"")
-            MarkdownTokenTypes.LPAREN -> append("(")
-            MarkdownTokenTypes.RPAREN -> append(")")
-            MarkdownTokenTypes.LBRACKET -> append("[")
-            MarkdownTokenTypes.RBRACKET -> append("]")
-            MarkdownTokenTypes.LT -> append("<")
-            MarkdownTokenTypes.GT -> append(">")
-            MarkdownTokenTypes.COLON -> append(":")
-            MarkdownTokenTypes.EXCLAMATION_MARK -> append("!")
-            MarkdownTokenTypes.HARD_LINE_BREAK -> append("\n")
-
-            MarkdownElementTypes.EMPH -> {
-                withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
-                    appendMarkdownChildren(child, content, codeBackground)
-                }
-            }
-            MarkdownElementTypes.STRONG -> {
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                    appendMarkdownChildren(child, content, codeBackground)
-                }
-            }
-            GFMElementTypes.STRIKETHROUGH -> {
-                withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) {
-                    appendMarkdownChildren(child, content, codeBackground)
-                }
-            }
-            MarkdownElementTypes.CODE_SPAN -> {
-                withStyle(SpanStyle(
-                    fontFamily = FontFamily.Monospace,
-                    background = codeBackground,
-                    fontSize = 12.sp
-                )) {
-                    val codeText = extractCodeSpanText(child, content)
-                    append(" $codeText ")
-                }
-            }
-            MarkdownElementTypes.INLINE_LINK -> {
-                appendInlineLink(child, content)
-            }
-            MarkdownElementTypes.AUTOLINK -> {
-                appendAutoLink(child, content)
-            }
-            GFMTokenTypes.GFM_AUTOLINK -> {
-                val url = child.getTextInNode(content).toString()
-                pushStringAnnotation("URL", url)
-                withStyle(SpanStyle(
-                    color = AutoDevColors.Blue.c400,
-                    textDecoration = TextDecoration.Underline
-                )) {
-                    append(url)
-                }
-                pop()
-            }
-            MarkdownElementTypes.SHORT_REFERENCE_LINK,
-            MarkdownElementTypes.FULL_REFERENCE_LINK -> {
-                // For reference links, just show the text
-                appendMarkdownChildren(child, content, codeBackground)
-            }
-            MarkdownElementTypes.IMAGE -> {
-                // Show image alt text in brackets
-                val altText = child.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-                    ?.getTextInNode(content)?.toString()?.trim('[', ']') ?: "image"
-                withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
-                    append("[$altText]")
-                }
-            }
-            else -> {
-                // Recursively handle other children
-                if (child.children.isNotEmpty()) {
-                    appendMarkdownChildren(child, content, codeBackground)
-                }
-            }
-        }
-    }
-}
-
-private fun AnnotatedString.Builder.appendInlineLink(node: ASTNode, content: String) {
-    val linkText = node.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-    val linkDest = node.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
-
-    val text = linkText?.children?.filter { it.type == MarkdownTokenTypes.TEXT }
-        ?.joinToString("") { it.getTextInNode(content).toString() }
-        ?: node.getTextInNode(content).toString()
-    val url = linkDest?.getTextInNode(content)?.toString() ?: ""
-
-    pushStringAnnotation("URL", url)
-    withStyle(SpanStyle(
-        color = AutoDevColors.Blue.c400,
-        textDecoration = TextDecoration.Underline
-    )) {
-        append(text)
-    }
-    pop()
-}
-
-private fun AnnotatedString.Builder.appendAutoLink(node: ASTNode, content: String) {
-    val url = node.getTextInNode(content).toString().trim('<', '>')
-    pushStringAnnotation("URL", url)
-    withStyle(SpanStyle(
-        color = AutoDevColors.Blue.c400,
-        textDecoration = TextDecoration.Underline
-    )) {
-        append(url)
-    }
-    pop()
-}
-
-private fun extractCodeSpanText(node: ASTNode, content: String): String {
-    return node.children
-        .filter { it.type != MarkdownTokenTypes.BACKTICK }
-        .joinToString("") { it.getTextInNode(content).toString() }
-        .trim()
-}
-
 // ============ Code Block Components ============
 
 @Composable
 private fun MarkdownCodeFence(node: ASTNode, content: String) {
-    val language = node.findChildOfType(MarkdownTokenTypes.FENCE_LANG)
-        ?.getTextInNode(content)?.toString()?.trim()
-    val codeText = extractCodeFenceContent(node, content)
+    val language = MarkdownTextParser.extractCodeFenceLanguage(node, content)
+    val codeText = MarkdownTextParser.extractCodeFenceContent(node, content)
 
     Column(
         modifier = Modifier
@@ -641,7 +504,7 @@ private fun MarkdownTable(node: ASTNode, content: String) {
                 val cells = rowNode.children.filter { it.type == GFMTokenTypes.CELL }
                 cells.forEachIndexed { idx, cell ->
                     if (idx < columnsCount) {
-                        val raw = extractCellText(cell, content)
+                        val raw = MarkdownTextParser.extractCellText(cell, content)
                         if (raw.length > lengths[idx]) lengths[idx] = raw.length
                     }
                 }
@@ -744,7 +607,7 @@ private fun MarkdownTableRow(
     ) {
         cells.forEachIndexed { idx, cell ->
             val weight = if (idx < columnWeights.size) columnWeights[idx] else 1f / cells.size.coerceAtLeast(1)
-            val cellText = extractCellText(cell, content)
+            val cellText = MarkdownTextParser.extractCellText(cell, content)
 
             Text(
                 text = cellText,
@@ -758,76 +621,4 @@ private fun MarkdownTableRow(
             )
         }
     }
-}
-
-/**
- * Extract clean text from a table cell node.
- * Uses the raw cell text and strips markdown formatting.
- */
-private fun extractCellText(cell: ASTNode, content: String): String {
-    return cell.getTextInNode(content).toString()
-        .replace("|", "")
-        .replace("`", "")
-        .replace("**", "")
-        .replace("*", "")
-        .trim()
-}
-
-// ============ Helper Functions ============
-
-/**
- * Extract header text, removing the # prefix
- */
-private fun extractHeaderText(node: ASTNode, content: String): String {
-    // For ATX headers, find the ATX_CONTENT child
-    val contentNode = node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)
-    if (contentNode != null) {
-        return contentNode.getTextInNode(content).toString().trim()
-    }
-
-    // For SETEXT headers, find the SETEXT_CONTENT child
-    val setextContent = node.findChildOfType(MarkdownTokenTypes.SETEXT_CONTENT)
-    if (setextContent != null) {
-        return setextContent.getTextInNode(content).toString().trim()
-    }
-
-    // Fallback: remove # prefix manually
-    val fullText = node.getTextInNode(content).toString()
-    return fullText.trimStart('#').trim()
-}
-
-/**
- * Extract code fence content, removing the ``` markers and language identifier
- */
-private fun extractCodeFenceContent(node: ASTNode, content: String): String {
-    val children = node.children
-    if (children.size < 3) return ""
-
-    // Find the start of actual code content (after FENCE_LANG and EOL)
-    var startIndex = 0
-    for (i in children.indices) {
-        if (children[i].type == MarkdownTokenTypes.EOL) {
-            startIndex = i + 1
-            break
-        }
-    }
-
-    // Find the end (before CODE_FENCE_END)
-    var endIndex = children.size - 1
-    for (i in children.indices.reversed()) {
-        if (children[i].type == MarkdownTokenTypes.CODE_FENCE_END) {
-            endIndex = i - 1
-            break
-        }
-    }
-
-    if (startIndex > endIndex) return ""
-
-    // Collect code content
-    val codeBuilder = StringBuilder()
-    for (i in startIndex..endIndex) {
-        codeBuilder.append(children[i].getTextInNode(content))
-    }
-
-    return codeBuilder.toString().trimEnd()
 }
