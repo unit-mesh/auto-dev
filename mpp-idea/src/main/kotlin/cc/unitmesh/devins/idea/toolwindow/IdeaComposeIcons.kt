@@ -1582,5 +1582,122 @@ object IdeaComposeIcons {
         }.build()
     }
 
+    /**
+     * CheckBox icon (checked checkbox)
+     */
+    val CheckBox: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "CheckBox",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black),
+                fillAlpha = 1f,
+                stroke = null,
+                strokeAlpha = 1f,
+                strokeLineWidth = 1f,
+                strokeLineCap = StrokeCap.Butt,
+                strokeLineJoin = StrokeJoin.Miter,
+                strokeLineMiter = 1f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(19f, 3f)
+                horizontalLineTo(5f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(14f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(14f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineTo(5f)
+                curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                close()
+                moveTo(10f, 17f)
+                lineToRelative(-5f, -5f)
+                lineToRelative(1.41f, -1.41f)
+                lineTo(10f, 14.17f)
+                lineToRelative(7.59f, -7.59f)
+                lineTo(19f, 8f)
+                lineToRelative(-9f, 9f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * CheckBoxOutlineBlank icon (unchecked checkbox)
+     */
+    val CheckBoxOutlineBlank: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "CheckBoxOutlineBlank",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black),
+                fillAlpha = 1f,
+                stroke = null,
+                strokeAlpha = 1f,
+                strokeLineWidth = 1f,
+                strokeLineCap = StrokeCap.Butt,
+                strokeLineJoin = StrokeJoin.Miter,
+                strokeLineMiter = 1f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(19f, 5f)
+                verticalLineToRelative(14f)
+                horizontalLineTo(5f)
+                verticalLineTo(5f)
+                horizontalLineToRelative(14f)
+                moveTo(19f, 3f)
+                horizontalLineTo(5f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(14f)
+                curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                horizontalLineToRelative(14f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineTo(5f)
+                curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                close()
+            }
+        }.build()
+    }
+
+    /**
+     * Remove icon (minus sign)
+     */
+    val Remove: ImageVector by lazy {
+        ImageVector.Builder(
+            name = "Remove",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black),
+                fillAlpha = 1f,
+                stroke = null,
+                strokeAlpha = 1f,
+                strokeLineWidth = 1f,
+                strokeLineCap = StrokeCap.Butt,
+                strokeLineJoin = StrokeJoin.Miter,
+                strokeLineMiter = 1f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(19f, 13f)
+                horizontalLineTo(5f)
+                verticalLineToRelative(-2f)
+                horizontalLineToRelative(14f)
+                verticalLineToRelative(2f)
+                close()
+            }
+        }.build()
+    }
+
 }
 
