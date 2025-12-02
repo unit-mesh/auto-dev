@@ -32,49 +32,55 @@ mpp-vscode/
 
 ### Phase 1: 项目基础设施 ✅
 - [x] 创建项目目录结构
-- [ ] 创建 package.json (VSCode 扩展配置)
-- [ ] 创建 tsconfig.json
-- [ ] 配置 esbuild 打包
+- [x] 创建 package.json (VSCode 扩展配置)
+- [x] 创建 tsconfig.json
+- [x] 配置 esbuild 打包
+- [x] 配置 vitest 测试框架
 
-### Phase 2: 核心服务
-- [ ] 实现 mpp-core 桥接层 (`src/bridge/mpp-core.ts`)
-  - [ ] 导入 @autodev/mpp-core
-  - [ ] 封装 JsKoogLLMService
-  - [ ] 封装 JsCodingAgent
-  - [ ] 封装 JsToolRegistry
-  - [ ] 封装 JsCompletionManager
-- [ ] 实现 extension.ts 入口
-  - [ ] 扩展激活/停用
-  - [ ] 服务初始化
+### Phase 2: 核心服务 ✅
+- [x] 实现 mpp-core 桥接层 (`src/bridge/mpp-core.ts`)
+  - [x] 导入 @autodev/mpp-core
+  - [x] 封装 LLMService (JsKoogLLMService)
+  - [x] 封装 CodingAgent (JsCodingAgent)
+  - [x] 封装 ToolRegistry (JsToolRegistry)
+  - [x] 封装 CompletionManager (JsCompletionManager)
+  - [x] 封装 DevInsCompiler (JsDevInsCompiler)
+- [x] 实现 extension.ts 入口
+  - [x] 扩展激活/停用
+  - [x] 服务初始化
+- [x] 添加单元测试 (`test/bridge/mpp-core.test.ts`)
 
-### Phase 3: IDE 集成
-- [ ] 实现 IDE Server (MCP 协议)
-  - [ ] Express HTTP 服务器
-  - [ ] MCP 工具注册 (openDiff, closeDiff)
-  - [ ] 会话管理
-- [ ] 实现 Diff Manager
-  - [ ] showDiff() - 显示差异
-  - [ ] acceptDiff() - 接受更改
-  - [ ] cancelDiff() - 取消更改
-  - [ ] Diff Content Provider
+### Phase 3: IDE 集成 ✅
+- [x] 实现 IDE Server (MCP 协议)
+  - [x] Express HTTP 服务器
+  - [x] 端点: /health, /context, /diff/open, /diff/close, /file/read, /file/write
+  - [x] 认证和 CORS 保护
+  - [x] 端口文件写入 (~/.autodev/ide-server.json)
+- [x] 实现 Diff Manager
+  - [x] showDiff() - 显示差异
+  - [x] acceptDiff() - 接受更改
+  - [x] cancelDiff() - 取消更改
+  - [x] closeDiffByPath() - 按路径关闭
+  - [x] DiffContentProvider
+- [x] 添加单元测试 (`test/services/`)
 
-### Phase 4: Chat 界面
-- [ ] 实现 Chat Webview Provider
-  - [ ] Webview 创建和管理
-  - [ ] 消息桥接 (VSCode ↔ Webview)
-- [ ] 创建 Webview UI
-  - [ ] React 项目配置
-  - [ ] 聊天消息组件
-  - [ ] 输入框组件
-  - [ ] 代码高亮组件
+### Phase 4: Chat 界面 ✅
+- [x] 实现 Chat Webview Provider
+  - [x] Webview 创建和管理
+  - [x] 消息桥接 (VSCode ↔ Webview)
+  - [x] LLM 服务集成
+- [x] 创建 Webview UI (内嵌 HTML)
+  - [x] 聊天消息组件
+  - [x] 输入框组件
+  - [x] 流式响应显示
 
-### Phase 5: 命令和功能
-- [ ] 注册 VSCode 命令
-  - [ ] autodev.chat - 打开聊天
-  - [ ] autodev.acceptDiff - 接受差异
-  - [ ] autodev.cancelDiff - 取消差异
-  - [ ] autodev.runAgent - 运行 Agent
-- [ ] 快捷键绑定
+### Phase 5: 命令和功能 ✅
+- [x] 注册 VSCode 命令
+  - [x] autodev.chat - 打开聊天
+  - [x] autodev.acceptDiff - 接受差异
+  - [x] autodev.cancelDiff - 取消差异
+  - [x] autodev.runAgent - 运行 Agent
+- [x] 快捷键绑定 (Cmd+Shift+A)
 - [ ] 状态栏集成
 
 ### Phase 6: 高级功能
@@ -83,6 +89,7 @@ mpp-vscode/
   - [ ] 自动补全
 - [ ] 代码索引集成
 - [ ] 领域词典支持
+- [ ] React Webview UI (替换内嵌 HTML)
 
 ## 参考项目
 
