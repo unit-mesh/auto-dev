@@ -9,6 +9,7 @@ import cc.unitmesh.devins.idea.renderer.MermaidDiagramView
 import cc.unitmesh.devins.idea.renderer.markdown.JewelMarkdownRenderer
 import cc.unitmesh.devins.parser.CodeFence
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
 import org.jetbrains.jewel.ui.component.CircularProgressIndicator
 
 /**
@@ -18,22 +19,31 @@ import org.jetbrains.jewel.ui.component.CircularProgressIndicator
  * Handles various content block types:
  * - Markdown/Text -> JewelMarkdown
  * - Code -> IdeaCodeBlockRenderer
- * - Diff -> IdeaDiffRenderer
+ * - Diff -> IdeaDiffRenderer (with action buttons when project is provided)
  * - Thinking -> IdeaThinkingBlockRenderer
  * - Walkthrough -> IdeaWalkthroughBlockRenderer
  * - Mermaid -> MermaidDiagramView
  * - DevIn -> IdeaDevInBlockRenderer
+ * 
+ * Related GitHub Issue: https://github.com/phodal/auto-dev/issues/25
  */
 object IdeaSketchRenderer {
 
     /**
      * Render LLM response content with full sketch support.
+     * 
+     * @param content The content to render
+     * @param isComplete Whether the content is complete (not streaming)
+     * @param parentDisposable Parent disposable for resource cleanup
+     * @param project Optional project for action buttons (Accept/Reject/View Diff)
+     * @param modifier Compose modifier
      */
     @Composable
     fun RenderResponse(
         content: String,
         isComplete: Boolean = false,
         parentDisposable: Disposable,
+        project: Project? = null,
         modifier: Modifier = Modifier
     ) {
         Column(modifier = modifier) {
@@ -58,6 +68,7 @@ object IdeaSketchRenderer {
                         if (fence.text.isNotBlank()) {
                             IdeaDiffRenderer(
                                 diffContent = fence.text,
+                                project = project,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -130,4 +141,3 @@ object IdeaSketchRenderer {
         }
     }
 }
-
