@@ -12,6 +12,7 @@ import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.devins.compiler.service.DevInsCompilerService
 import cc.unitmesh.devins.idea.compiler.IdeaDevInsCompilerService
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
+import cc.unitmesh.devins.idea.services.IdeaToolConfigService
 import cc.unitmesh.devins.ui.config.AutoDevConfigWrapper
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService
@@ -156,7 +157,11 @@ class IdeaAgentViewModel(
     private suspend fun startMcpPreloading() {
         try {
             _mcpPreloadingMessage.value = "Loading MCP servers configuration..."
-            val toolConfig = ConfigManager.loadToolConfig()
+
+            // Use IdeaToolConfigService to get and cache tool config
+            val toolConfigService = IdeaToolConfigService.getInstance(project)
+            toolConfigService.reloadConfig()
+            val toolConfig = toolConfigService.getToolConfig()
             cachedToolConfig = toolConfig
 
             if (toolConfig.mcpServers.isEmpty()) {
@@ -463,18 +468,25 @@ class IdeaAgentViewModel(
     /**
      * Get tool loading status.
      * Aligned with CodingAgentViewModel's getToolLoadingStatus().
+     * Uses IdeaToolConfigService for up-to-date configuration.
      */
     fun getToolLoadingStatus(): ToolLoadingStatus {
-        val toolConfig = cachedToolConfig
+        // Get fresh config from service to ensure we have latest changes
+        val toolConfigService = IdeaToolConfigService.getInstance(project)
+        val toolConfig = toolConfigService.getToolConfig()
+
+        // Update cached config
+        cachedToolConfig = toolConfig
+
         val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
         val subAgentsEnabled = subAgentTools.size
-        val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
+        val mcpServersTotal = toolConfig.mcpServers.filter { !it.value.disabled }.size
         val mcpServersLoaded = _mcpPreloadingStatus.value.preloadedServers.size
 
         val mcpToolsEnabled = if (McpToolConfigManager.isPreloading()) {
             0
         } else {
-            val enabledMcpToolsCount = toolConfig?.enabledMcpTools?.size ?: 0
+            val enabledMcpToolsCount = toolConfig.enabledMcpTools.size
             if (enabledMcpToolsCount > 0) enabledMcpToolsCount else 0
         }
 
