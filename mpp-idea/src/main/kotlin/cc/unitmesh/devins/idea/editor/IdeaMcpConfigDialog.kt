@@ -1,18 +1,29 @@
 package cc.unitmesh.devins.idea.editor
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.distinctUntilChanged
 import cc.unitmesh.agent.config.McpLoadingState
 import cc.unitmesh.agent.config.McpLoadingStateCallback
@@ -21,10 +32,12 @@ import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.config.ToolItem
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
 
 // JSON serialization helpers
@@ -52,17 +65,33 @@ private fun deserializeMcpConfig(jsonString: String): Result<Map<String, McpServ
 
 /**
  * MCP Configuration Dialog for IntelliJ IDEA.
- * 
+ *
  * Features:
  * - Two tabs: Tools and MCP Servers
  * - Auto-save functionality (2 seconds delay)
  * - Real-time JSON validation
  * - Incremental MCP server loading
- * 
- * Migrated from mpp-ui/ToolConfigDialog.kt to use Jewel UI components.
+ *
+ * Styled to match IdeaModelConfigDialog for consistency.
  */
 @Composable
 fun IdeaMcpConfigDialog(
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        IdeaMcpConfigDialogContent(onDismiss = onDismiss)
+    }
+}
+
+/**
+ * Content for the MCP configuration dialog.
+ * Extracted to be used both in Compose Dialog and DialogWrapper.
+ */
+@Composable
+fun IdeaMcpConfigDialogContent(
     onDismiss: () -> Unit
 ) {
     var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
@@ -84,7 +113,7 @@ fun IdeaMcpConfigDialog(
         hasUnsavedChanges = true
         autoSaveJob?.cancel()
         autoSaveJob = scope.launch {
-            kotlinx.coroutines.delay(2000) // Wait 2 seconds before auto-saving
+            kotlinx.coroutines.delay(2000)
             try {
                 val enabledMcpTools = mcpTools.values
                     .flatten()
@@ -102,10 +131,9 @@ fun IdeaMcpConfigDialog(
                     ConfigManager.saveToolConfig(updatedConfig)
                     toolConfig = updatedConfig
                     hasUnsavedChanges = false
-                    println("✅ Auto-saved tool configuration")
                 }
             } catch (e: Exception) {
-                println("❌ Auto-save failed: ${e.message}")
+                // Silent fail for auto-save
             }
         }
     }
@@ -119,12 +147,9 @@ fun IdeaMcpConfigDialog(
 
                 if (toolConfig.mcpServers.isNotEmpty()) {
                     scope.launch {
-                        // Create callback for incremental loading
                         val callback = object : McpLoadingStateCallback {
                             override fun onServerStateChanged(serverName: String, state: McpServerState) {
                                 mcpLoadingState = mcpLoadingState.updateServerState(serverName, state)
-
-                                // Update tools when server is loaded
                                 if (state.isLoaded) {
                                     mcpTools = mcpTools + (serverName to state.tools)
                                 }
@@ -140,7 +165,6 @@ fun IdeaMcpConfigDialog(
                         }
 
                         try {
-                            // Use incremental loading
                             mcpLoadingState = McpToolConfigManager.discoverMcpToolsIncremental(
                                 toolConfig.mcpServers,
                                 toolConfig.enabledMcpTools.toSet(),
@@ -149,35 +173,41 @@ fun IdeaMcpConfigDialog(
                             mcpLoadError = null
                         } catch (e: Exception) {
                             mcpLoadError = "Failed to load MCP tools: ${e.message}"
-                            println("❌ Error loading MCP tools: ${e.message}")
                         }
                     }
                 }
 
                 isLoading = false
             } catch (e: Exception) {
-                println("Error loading tool config: ${e.message}")
                 mcpLoadError = "Failed to load configuration: ${e.message}"
                 isLoading = false
             }
         }
     }
 
-    // Cancel auto-save job on dispose
     DisposableEffect(Unit) {
         onDispose {
             autoSaveJob?.cancel()
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Box(
+        modifier = Modifier
+            .width(600.dp)
+            .heightIn(max = 700.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(JewelTheme.globalColors.panelBackground)
+            .onKeyEvent { event ->
+                if (event.key == Key.Escape) {
+                    onDismiss()
+                    true
+                } else false
+            }
+    ) {
         Column(
-            modifier = Modifier
-                .width(800.dp)
-                .height(600.dp)
-                .padding(16.dp)
+            modifier = Modifier.padding(24.dp)
         ) {
-            // Header
+            // Title
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -187,55 +217,69 @@ fun IdeaMcpConfigDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Tool Configuration")
+                    Text(
+                        text = "MCP Configuration",
+                        style = JewelTheme.defaultTextStyle.copy(fontSize = 18.sp)
+                    )
                     if (hasUnsavedChanges) {
-                        Text("(Auto-saving...)", color = org.jetbrains.jewel.foundation.theme.JewelTheme.globalColors.text.info)
+                        Text(
+                            text = "(Saving...)",
+                            style = JewelTheme.defaultTextStyle.copy(
+                                fontSize = 12.sp,
+                                color = JewelTheme.globalColors.text.info
+                            )
+                        )
                     }
-                }
-                IconButton(onClick = onDismiss) {
-                    Text("×")
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (isLoading) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Loading...")
+                    Text("Loading configuration...")
                 }
             } else {
-                // Tab Row
+                // Tab selector
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    DefaultButton(
-                        onClick = { selectedTab = 0 },
-                        enabled = selectedTab != 0
-                    ) {
-                        Text("Tools")
-                    }
-                    DefaultButton(
-                        onClick = { selectedTab = 1 },
-                        enabled = selectedTab != 1
-                    ) {
-                        Text("MCP Servers")
-                    }
+                    McpTabButton(
+                        text = "Tools",
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 }
+                    )
+                    McpTabButton(
+                        text = "MCP Servers",
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 }
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Error message
                 mcpLoadError?.let { error ->
-                    Text(error, color = org.jetbrains.jewel.foundation.theme.JewelTheme.globalColors.text.error)
+                    Text(
+                        text = error,
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontSize = 12.sp,
+                            color = JewelTheme.globalColors.text.error
+                        )
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 // Tab content
-                Box(modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
                     when (selectedTab) {
                         0 -> McpToolsTab(
                             mcpTools = mcpTools,
@@ -271,7 +315,6 @@ fun IdeaMcpConfigDialog(
                                         val newServers = result.getOrThrow()
                                         toolConfig = toolConfig.copy(mcpServers = newServers)
                                         ConfigManager.saveToolConfig(toolConfig)
-                                        // Reload MCP tools
                                         try {
                                             val callback = object : McpLoadingStateCallback {
                                                 override fun onServerStateChanged(serverName: String, state: McpServerState) {
@@ -304,7 +347,7 @@ fun IdeaMcpConfigDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Footer
                 Row(
@@ -314,16 +357,47 @@ fun IdeaMcpConfigDialog(
                 ) {
                     val enabledMcp = mcpTools.values.flatten().count { it.enabled }
                     val totalMcp = mcpTools.values.flatten().size
-                    Text("MCP Tools: $enabledMcp/$totalMcp enabled")
+                    Text(
+                        text = "MCP Tools: $enabledMcp/$totalMcp enabled",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontSize = 12.sp,
+                            color = JewelTheme.globalColors.text.normal.copy(alpha = 0.7f)
+                        )
+                    )
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = onDismiss) {
-                            Text("Close")
-                        }
+                    OutlinedButton(onClick = onDismiss) {
+                        Text("Close")
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun McpTabButton(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(
+                if (selected) JewelTheme.globalColors.borders.normal.copy(alpha = 0.3f)
+                else androidx.compose.ui.graphics.Color.Transparent
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            style = JewelTheme.defaultTextStyle.copy(
+                fontSize = 13.sp,
+                color = if (selected) JewelTheme.globalColors.text.normal
+                else JewelTheme.globalColors.text.normal.copy(alpha = 0.7f)
+            )
+        )
     }
 }
 

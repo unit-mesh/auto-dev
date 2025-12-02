@@ -1,18 +1,16 @@
 package cc.unitmesh.devins.idea.editor
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import cc.unitmesh.llm.NamedModelConfig
+import com.intellij.openapi.project.Project
+import kotlinx.coroutines.launch
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
 import org.jetbrains.jewel.ui.component.Icon
@@ -29,11 +27,13 @@ import org.jetbrains.jewel.ui.component.Icon
  */
 @Composable
 fun IdeaBottomToolbar(
+    project: Project? = null,
     onSendClick: () -> Unit,
     sendEnabled: Boolean,
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
     onPromptOptimizationClick: () -> Unit = {},
+    isEnhancing: Boolean = false,
     totalTokens: Int? = null,
     // Model selector props
     availableConfigs: List<NamedModelConfig> = emptyList(),
@@ -95,16 +95,22 @@ fun IdeaBottomToolbar(
             }
 
             // Prompt Optimization button
-            IconButton(
-                onClick = onPromptOptimizationClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = IdeaComposeIcons.AutoAwesome,
-                    contentDescription = "Prompt Optimization",
-                    tint = JewelTheme.globalColors.text.normal,
-                    modifier = Modifier.size(16.dp)
-                )
+            Tooltip({
+                Text(if (isEnhancing) "Enhancing prompt..." else "Enhance prompt with AI")
+            }) {
+                IconButton(
+                    onClick = onPromptOptimizationClick,
+                    enabled = !isEnhancing && !isExecuting,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = IdeaComposeIcons.AutoAwesome,
+                        contentDescription = "Prompt Optimization",
+                        tint = if (isEnhancing) JewelTheme.globalColors.text.info
+                        else JewelTheme.globalColors.text.normal,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
 
             // Send or Stop button
