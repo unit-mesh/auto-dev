@@ -32,7 +32,8 @@ class IdeaPromptEnhancer(private val project: Project) {
      */
     suspend fun enhance(input: String): String = withContext(Dispatchers.IO) {
         try {
-            logger.info("Starting enhancement for input: ${input.take(50)}...")
+            // Log only metadata to avoid leaking sensitive information
+            logger.info("Starting enhancement for input (length: ${input.length})")
 
             val dict = loadDomainDict()
             val readme = loadReadme()
@@ -82,11 +83,13 @@ class IdeaPromptEnhancer(private val project: Project) {
         return try {
             runReadAction {
                 val baseDir = project.guessProjectDir() ?: return@runReadAction ""
-                val promptsDir = baseDir.findChild(".autodev") ?: baseDir.findChild("prompts")
-                val dictFile = promptsDir?.findChild("domain.csv")
+                // Try .autodev/domain.csv first, then prompts/domain.csv
+                val dictFile = baseDir.findChild(".autodev")?.findChild("domain.csv")
+                    ?: baseDir.findChild("prompts")?.findChild("domain.csv")
                 dictFile?.contentsToByteArray()?.toString(Charsets.UTF_8) ?: ""
             }
         } catch (e: Exception) {
+            logger.debug("Failed to load domain dictionary: ${e.message}")
             ""
         }
     }
@@ -107,6 +110,7 @@ class IdeaPromptEnhancer(private val project: Project) {
                 if (content.length > 2000) content.take(2000) + "\n..." else content
             }
         } catch (e: Exception) {
+            logger.debug("Failed to load README: ${e.message}")
             ""
         }
     }
@@ -152,8 +156,8 @@ class IdeaPromptEnhancer(private val project: Project) {
      * Looks for content in markdown code blocks.
      */
     private fun extractEnhancedPrompt(response: String): String? {
-        // Try to extract from markdown code block
-        val codeBlockRegex = Regex("```(?:\\w+)?\\s*\\n([\\s\\S]*?)\\n```")
+        // Try to extract from markdown code block (trailing newline is optional)
+        val codeBlockRegex = Regex("```(?:\\w+)?\\s*\\n([\\s\\S]*?)\\n?```")
         val match = codeBlockRegex.find(response)
         if (match != null) {
             return match.groupValues[1].trim()
