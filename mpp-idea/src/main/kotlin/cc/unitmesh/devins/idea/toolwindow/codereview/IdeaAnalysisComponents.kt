@@ -147,7 +147,12 @@ private fun IdeaLintIssueRow(issue: LintIssue, modifiedRanges: List<ModifiedCode
 internal fun IdeaAIAnalysisSection(analysisOutput: String, isActive: Boolean, parentDisposable: Disposable) {
     var isExpanded by remember { mutableStateOf(true) }
     IdeaCollapsibleCard("AI Analysis", isExpanded, { isExpanded = it }, isActive) {
-        IdeaSketchRenderer.RenderResponse(analysisOutput, !isActive, parentDisposable, Modifier.fillMaxWidth())
+        IdeaSketchRenderer.RenderResponse(
+            content = analysisOutput,
+            isComplete = !isActive,
+            parentDisposable = parentDisposable,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -155,7 +160,12 @@ internal fun IdeaAIAnalysisSection(analysisOutput: String, isActive: Boolean, pa
 internal fun IdeaModificationPlanSection(planOutput: String, isActive: Boolean, parentDisposable: Disposable) {
     var isExpanded by remember { mutableStateOf(true) }
     IdeaCollapsibleCard("Modification Plan", isExpanded, { isExpanded = it }, isActive, { if (isActive) IdeaBadge("Generating...", AutoDevColors.Blue.c400) }) {
-        IdeaSketchRenderer.RenderResponse(planOutput, !isActive, parentDisposable, Modifier.fillMaxWidth())
+        IdeaSketchRenderer.RenderResponse(
+            content = planOutput,
+            isComplete = !isActive,
+            parentDisposable = parentDisposable,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -186,7 +196,12 @@ internal fun IdeaSuggestedFixesSection(fixOutput: String, isGenerating: Boolean,
         } else if (fixOutput.isNotEmpty()) IdeaBadge("Complete", AutoDevColors.Green.c400)
     }) {
         when {
-            fixOutput.isNotEmpty() -> IdeaSketchRenderer.RenderResponse(fixOutput, !isGenerating, parentDisposable, Modifier.fillMaxWidth())
+            fixOutput.isNotEmpty() -> IdeaSketchRenderer.RenderResponse(
+                content = fixOutput,
+                isComplete = !isGenerating,
+                parentDisposable = parentDisposable,
+                modifier = Modifier.fillMaxWidth()
+            )
             isGenerating -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             else -> Text("No fixes generated yet.", style = JewelTheme.defaultTextStyle.copy(color = JewelTheme.globalColors.text.info, fontSize = 12.sp))
         }
