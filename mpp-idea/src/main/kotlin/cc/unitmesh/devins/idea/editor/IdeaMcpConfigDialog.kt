@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.util.ui.JBUI
 import kotlinx.coroutines.flow.distinctUntilChanged
 import cc.unitmesh.agent.config.McpLoadingState
 import cc.unitmesh.agent.config.McpLoadingStateCallback
@@ -37,8 +40,11 @@ import cc.unitmesh.devins.ui.config.ConfigManager
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.jetbrains.jewel.bridge.compose
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
+import java.awt.Dimension
+import javax.swing.JComponent
 
 // JSON serialization helpers
 private val json = Json {
@@ -64,6 +70,43 @@ private fun deserializeMcpConfig(jsonString: String): Result<Map<String, McpServ
 }
 
 /**
+ * DialogWrapper for MCP configuration that uses IntelliJ's native dialog system.
+ * This ensures proper z-index handling and centers the dialog in the IDE window.
+ */
+class IdeaMcpConfigDialogWrapper(
+    private val project: Project?
+) : DialogWrapper(project) {
+
+    init {
+        title = "MCP Configuration"
+        init()
+        contentPanel.border = JBUI.Borders.empty()
+        rootPane.border = JBUI.Borders.empty()
+    }
+
+    override fun createSouthPanel(): JComponent? = null
+
+    override fun createCenterPanel(): JComponent {
+        val dialogPanel = compose {
+            IdeaMcpConfigDialogContent(onDismiss = { close(CANCEL_EXIT_CODE) })
+        }
+        dialogPanel.preferredSize = Dimension(600, 600)
+        return dialogPanel
+    }
+
+    companion object {
+        /**
+         * Show the MCP configuration dialog.
+         * @return true if the dialog was closed with OK, false otherwise
+         */
+        fun show(project: Project?): Boolean {
+            val dialog = IdeaMcpConfigDialogWrapper(project)
+            return dialog.showAndGet()
+        }
+    }
+}
+
+/**
  * MCP Configuration Dialog for IntelliJ IDEA.
  *
  * Features:
@@ -73,6 +116,8 @@ private fun deserializeMcpConfig(jsonString: String): Result<Map<String, McpServ
  * - Incremental MCP server loading
  *
  * Styled to match IdeaModelConfigDialog for consistency.
+ *
+ * @deprecated Use IdeaMcpConfigDialogWrapper.show() instead for proper z-index handling with SwingPanel.
  */
 @Composable
 fun IdeaMcpConfigDialog(

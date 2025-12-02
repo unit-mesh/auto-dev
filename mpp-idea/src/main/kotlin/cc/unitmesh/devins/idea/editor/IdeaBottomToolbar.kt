@@ -42,7 +42,6 @@ fun IdeaBottomToolbar(
     onConfigureClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var showMcpConfigDialog by remember { mutableStateOf(false) }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -81,9 +80,9 @@ fun IdeaBottomToolbar(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // MCP Config button - opens MCP configuration dialog
+            // MCP Config button - opens MCP configuration dialog using DialogWrapper
             IconButton(
-                onClick = { showMcpConfigDialog = true },
+                onClick = { IdeaMcpConfigDialogWrapper.show(project) },
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
@@ -161,13 +160,6 @@ fun IdeaBottomToolbar(
                 }
             }
         }
-    }
-
-    // MCP Configuration Dialog
-    if (showMcpConfigDialog) {
-        IdeaMcpConfigDialog(
-            onDismiss = { showMcpConfigDialog = false }
-        )
     }
 }
 
