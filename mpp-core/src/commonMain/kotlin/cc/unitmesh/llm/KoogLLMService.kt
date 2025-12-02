@@ -7,8 +7,7 @@ import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.streaming.StreamFrame
 import cc.unitmesh.agent.logging.getLogger
-import cc.unitmesh.devins.compiler.DevInsCompilerFacade
-import cc.unitmesh.devins.compiler.context.CompilerContext
+import cc.unitmesh.devins.compiler.service.DevInsCompilerService
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.Message
@@ -17,29 +16,40 @@ import cc.unitmesh.llm.compression.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.serialization.json.Json
 import kotlinx.datetime.Clock
 
+/**
+ * LLM 服务
+ *
+ * @param config 模型配置
+ * @param compressionConfig 压缩配置
+ * @param compilerService 可选的编译器服务，用于编译 DevIns 命令
+ *                        如果不提供，将使用 DevInsCompilerService.getInstance()
+ */
 class KoogLLMService(
     private val config: ModelConfig,
-    private val compressionConfig: CompressionConfig = CompressionConfig()
+    private val compressionConfig: CompressionConfig = CompressionConfig(),
+    private val compilerService: DevInsCompilerService? = null
 ) {
     private val logger = getLogger("KoogLLMService")
 
     private val executor: SingleLLMPromptExecutor by lazy {
         ExecutorFactory.create(config)
     }
-    
+
     private val model: LLModel by lazy {
         ModelRegistry.createModel(config.provider, config.modelName)
             ?: ModelRegistry.createGenericModel(config.provider, config.modelName)
     }
-    
+
     private val compressionService: ChatCompressionService by lazy {
         ChatCompressionService(executor, model, compressionConfig)
     }
-    
+
+    // 获取实际使用的编译器服务
+    private val actualCompilerService: DevInsCompilerService
+        get() = compilerService ?: DevInsCompilerService.getInstance()
+
     // Token 追踪
     private var lastTokenInfo: TokenInfo = TokenInfo()
     private var messagesSinceLastCompression = 0
@@ -125,15 +135,13 @@ class KoogLLMService(
     }
 
     private suspend fun compilePrompt(userPrompt: String, fileSystem: ProjectFileSystem): String {
-        val context = CompilerContext().apply {
-            this.fileSystem = fileSystem
-        }
-
-        val compiledResult = DevInsCompilerFacade.compile(userPrompt, context)
+        val compiledResult = actualCompilerService.compile(userPrompt, fileSystem)
 
         if (compiledResult.hasError) {
-            logger.warn { "⚠️ [KoogLLMService] 编译错误: ${compiledResult.errorMessage}" }
+            logger.warn { "⚠️ [KoogLLMService] 编译错误 (${actualCompilerService.getName()}): ${compiledResult.errorMessage}" }
         }
+
+        logger.debug { "📝 [KoogLLMService] 使用编译器: ${actualCompilerService.getName()}, IDE功能: ${actualCompilerService.supportsIdeFeatures()}" }
 
         return compiledResult.output
     }
