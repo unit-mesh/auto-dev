@@ -1,0 +1,138 @@
+.terminal-renderer {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--vscode-terminal-background, #1e1e1e);
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--vscode-editorWidget-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.terminal-icon {
+  font-size: 12px;
+}
+
+.terminal-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+  flex: 1;
+}
+
+.terminal-status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.terminal-status.success {
+  background-color: var(--vscode-testing-iconPassed, #4caf50);
+  color: white;
+}
+
+.terminal-status.error {
+  background-color: var(--vscode-testing-iconFailed, #f44336);
+  color: white;
+}
+
+.terminal-time {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.terminal-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.terminal-action-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  transition: background-color 0.2s;
+}
+
+.terminal-action-btn:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.terminal-action-btn.primary {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.terminal-action-btn.primary:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+.terminal-content {
+  padding: 12px;
+  font-family: var(--vscode-terminal-font-family, 'Consolas', 'Monaco', monospace);
+  font-size: var(--vscode-terminal-font-size, 13px);
+  line-height: 1.4;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.terminal-command {
+  display: flex;
+  gap: 8px;
+  color: var(--vscode-terminal-foreground, #cccccc);
+}
+
+.terminal-prompt {
+  color: var(--vscode-terminal-ansiGreen, #4ec9b0);
+  user-select: none;
+}
+
+.terminal-command-text {
+  color: var(--vscode-terminal-ansiBrightWhite, #ffffff);
+}
+
+.terminal-output {
+  margin-top: 8px;
+  color: var(--vscode-terminal-foreground, #cccccc);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal-running {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--vscode-terminal-ansiYellow, #dcdcaa);
+}
+
+.terminal-running .dot {
+  width: 4px;
+  height: 4px;
+  background-color: var(--vscode-terminal-ansiYellow, #dcdcaa);
+  border-radius: 50%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.terminal-running .dot:nth-child(1) { animation-delay: 0s; }
+.terminal-running .dot:nth-child(2) { animation-delay: 0.2s; }
+.terminal-running .dot:nth-child(3) { animation-delay: 0.4s; }
+
+.running-text {
+  font-size: 12px;
+}
+
+@keyframes pulse {
+  0%, 80%, 100% { opacity: 0.4; transform: scale(1); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+

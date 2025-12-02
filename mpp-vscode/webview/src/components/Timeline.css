@@ -1,0 +1,154 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Message items */
+.timeline-item.message {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.timeline-item.message.user {
+  background-color: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+}
+
+.timeline-item.message.assistant {
+  background-color: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-panel-border);
+}
+
+.timeline-item.message.system {
+  background-color: var(--vscode-textBlockQuote-background);
+  border-left: 3px solid var(--vscode-textBlockQuote-border);
+  padding-left: 16px;
+}
+
+.timeline-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-role {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--vscode-foreground);
+}
+
+.timeline-item.message.user .timeline-role {
+  color: var(--vscode-charts-green, #4ec9b0);
+}
+
+.timeline-item.message.assistant .timeline-role {
+  color: var(--vscode-charts-blue, #569cd6);
+}
+
+.timeline-item.message.system .timeline-role {
+  color: var(--vscode-charts-yellow, #dcdcaa);
+}
+
+.streaming-indicator {
+  display: flex;
+  gap: 3px;
+}
+
+.streaming-indicator .dot {
+  width: 4px;
+  height: 4px;
+  background-color: var(--vscode-foreground);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.streaming-indicator .dot:nth-child(1) { animation-delay: 0s; }
+.streaming-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+.streaming-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse {
+  0%, 80%, 100% { opacity: 0.4; transform: scale(1); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+.timeline-item-content {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.user-message {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Tool call items */
+.timeline-item.tool-call {
+  margin-left: 16px;
+}
+
+/* Terminal items */
+.timeline-item.terminal {
+  margin-left: 16px;
+}
+
+/* Task complete items */
+.timeline-item.task-complete {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.timeline-item.task-complete.success {
+  background-color: rgba(76, 175, 80, 0.1);
+  border: 1px solid var(--vscode-testing-iconPassed, #4caf50);
+}
+
+.timeline-item.task-complete.error {
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid var(--vscode-testing-iconFailed, #f44336);
+}
+
+.task-icon {
+  font-size: 16px;
+}
+
+.task-message {
+  flex: 1;
+}
+
+/* Error items */
+.timeline-item.error {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid var(--vscode-testing-iconFailed, #f44336);
+  font-size: 13px;
+}
+
+.error-icon {
+  font-size: 16px;
+}
+
+.error-message {
+  flex: 1;
+  color: var(--vscode-testing-iconFailed, #f44336);
+}
+
