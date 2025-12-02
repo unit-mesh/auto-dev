@@ -101,6 +101,25 @@
         "key": "ctrl+shift+a",
         "mac": "cmd+shift+a"
       }
+    ],
+    "languages": [
+      {
+        "id": "DevIns",
+        "aliases": ["devins", "devin"],
+        "extensions": [".devins", ".devin"],
+        "configuration": "syntaxes/language-configuration.json",
+        "icon": {
+          "light": "./resources/icon.svg",
+          "dark": "./resources/icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "DevIns",
+        "scopeName": "source.devins",
+        "path": "syntaxes/DevIns.tmLanguage.json"
+      }
     ]
   },
   "scripts": {
