@@ -276,8 +276,10 @@ class ToolOrchestrator(
 
                 logger.debug { "Session ${session.sessionId} completed with exit code: $exitCode" }
 
-                // Get output from session
-                val output = session.getStdout()
+                // Get output from ShellSessionManager (synced by UI's ProcessOutputCollector)
+                // or fall back to LiveShellSession's stdout buffer
+                val managedSession = cc.unitmesh.agent.tool.shell.ShellSessionManager.getSession(session.sessionId)
+                val output = managedSession?.getOutput()?.ifEmpty { null } ?: session.getStdout()
 
                 // Update renderer with final status
                 renderer.updateLiveTerminalStatus(
