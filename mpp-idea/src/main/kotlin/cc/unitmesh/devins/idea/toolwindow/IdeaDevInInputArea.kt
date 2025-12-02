@@ -17,6 +17,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import kotlinx.coroutines.launch
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -55,7 +56,9 @@ fun IdeaDevInInputArea(
     var inputText by remember { mutableStateOf("") }
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
     var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
+    var isEnhancing by remember { mutableStateOf(false) }
 
+    val scope = rememberCoroutineScope()
     val borderShape = RoundedCornerShape(8.dp)
 
     // Outer container with unified border
@@ -154,6 +157,7 @@ fun IdeaDevInInputArea(
 
         // Bottom toolbar with Compose (no individual border)
         IdeaBottomToolbar(
+            project = project,
             onSendClick = {
                 val text = devInInput?.text?.trim() ?: inputText.trim()
                 if (text.isNotBlank() && !isProcessing) {
@@ -174,6 +178,27 @@ fun IdeaDevInInputArea(
             sendEnabled = inputText.isNotBlank() && !isProcessing,
             isExecuting = isProcessing,
             onStopClick = onAbort,
+            onPromptOptimizationClick = {
+                val currentText = devInInput?.text?.trim() ?: inputText.trim()
+                if (currentText.isNotBlank() && !isEnhancing && !isProcessing) {
+                    isEnhancing = true
+                    scope.launch {
+                        try {
+                            val enhancer = IdeaPromptEnhancer.getInstance(project)
+                            val enhanced = enhancer.enhance(currentText)
+                            if (enhanced != currentText) {
+                                devInInput?.setText(enhanced)
+                                inputText = enhanced
+                            }
+                        } catch (e: Exception) {
+                            // Silently fail - keep original text
+                        } finally {
+                            isEnhancing = false
+                        }
+                    }
+                }
+            },
+            isEnhancing = isEnhancing,
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,
             currentConfigName = currentConfigName,
