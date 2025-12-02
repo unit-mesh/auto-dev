@@ -81,12 +81,12 @@ mpp-vscode/
   - [x] autodev.cancelDiff - 取消差异
   - [x] autodev.runAgent - 运行 Agent
 - [x] 快捷键绑定 (Cmd+Shift+A)
-- [ ] 状态栏集成
+- [x] 状态栏集成
 
-### Phase 6: 高级功能
-- [ ] DevIns 语言支持
-  - [ ] 语法高亮
-  - [ ] 自动补全
+### Phase 6: 高级功能 ✅
+- [x] DevIns 语言支持
+  - [x] 语法高亮 (TextMate grammar)
+  - [x] 自动补全 (/, @, $ 触发)
 - [ ] 代码索引集成
 - [ ] 领域词典支持
 - [ ] React Webview UI (替换内嵌 HTML)

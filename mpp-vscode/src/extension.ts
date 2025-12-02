@@ -8,11 +8,14 @@ import * as vscode from 'vscode';
 import { IDEServer } from './services/ide-server';
 import { DiffManager, DiffContentProvider } from './services/diff-manager';
 import { ChatViewProvider } from './providers/chat-view';
+import { StatusBarManager } from './services/status-bar';
+import { registerDevInsCompletionProvider } from './providers/devins-completion';
 import { createLogger } from './utils/logger';
 
 export const DIFF_SCHEME = 'autodev-diff';
 
 let ideServer: IDEServer | undefined;
+let statusBar: StatusBarManager | undefined;
 let logger: vscode.OutputChannel;
 let log: (message: string) => void = () => {};
 
@@ -23,6 +26,10 @@ export async function activate(context: vscode.ExtensionContext) {
   logger = vscode.window.createOutputChannel('AutoDev');
   log = createLogger(context, logger);
   log('AutoDev extension activated');
+
+  // Initialize Status Bar
+  statusBar = new StatusBarManager();
+  context.subscriptions.push({ dispose: () => statusBar?.dispose() });
 
   // Initialize Diff Manager
   const diffContentProvider = new DiffContentProvider();
@@ -112,6 +119,10 @@ export async function activate(context: vscode.ExtensionContext) {
       ideServer?.syncEnvVars();
     })
   );
+
+  // Register DevIns language completion provider
+  context.subscriptions.push(registerDevInsCompletionProvider(context));
+  log('DevIns language support registered');
 
   // Show welcome message on first install
   const welcomeShownKey = 'autodev.welcomeShown';
