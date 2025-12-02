@@ -410,6 +410,10 @@ class IdeaAgentViewModel(
      * Terminates the process and sends the current output log to AI.
      */
     fun handleProcessCancel(cancelEvent: cc.unitmesh.devins.idea.components.timeline.CancelEvent) {
+        // Mark the session as cancelled by user BEFORE terminating the process
+        // This allows ToolOrchestrator.startSessionMonitoring() to detect user cancellation
+        cc.unitmesh.agent.tool.shell.ShellSessionManager.markSessionCancelledByUser(cancelEvent.sessionId)
+
         // Terminate the process
         cancelEvent.process.destroyForcibly()
 

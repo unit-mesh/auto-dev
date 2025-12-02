@@ -50,12 +50,14 @@ interface CodingAgentRenderer {
      * @param exitCode The exit code of the command (0 = success)
      * @param executionTimeMs The total execution time in milliseconds
      * @param output The captured output (optional, may be null if output is streamed via PTY)
+     * @param cancelledByUser Whether the command was cancelled by the user (exit code 137)
      */
     fun updateLiveTerminalStatus(
         sessionId: String,
         exitCode: Int,
         executionTimeMs: Long,
-        output: String? = null
+        output: String? = null,
+        cancelledByUser: Boolean = false
     ) {
         // Default: no-op for renderers that don't support live terminals
     }

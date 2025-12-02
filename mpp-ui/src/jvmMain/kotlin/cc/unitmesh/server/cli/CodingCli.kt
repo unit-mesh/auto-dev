@@ -217,12 +217,22 @@ class CodingCliRenderer : CodingAgentRenderer {
         sessionId: String,
         exitCode: Int,
         executionTimeMs: Long,
-        output: String?
+        output: String?,
+        cancelledByUser: Boolean
     ) {
         activeSessions.remove(sessionId)
-        val statusSymbol = if (exitCode == 0) "✓" else "✗"
+        val statusSymbol = when {
+            cancelledByUser -> "⚠"
+            exitCode == 0 -> "✓"
+            else -> "✗"
+        }
+        val statusMessage = when {
+            cancelledByUser -> "Cancelled by user"
+            exitCode == 0 -> "Exit code: $exitCode"
+            else -> "Exit code: $exitCode"
+        }
         val preview = (output ?: "").lines().take(3).joinToString(" ").take(100)
-        println("  $statusSymbol Exit code: $exitCode (${executionTimeMs}ms)")
+        println("  $statusSymbol $statusMessage (${executionTimeMs}ms)")
         if (preview.isNotEmpty()) {
             println("  $preview${if (preview.length < (output ?: "").length) "..." else ""}")
         }
@@ -281,25 +291,54 @@ class CodingCliRenderer : CodingAgentRenderer {
         // Process completed
         val exitCode = process.exitValue()
         val output = session.getOutput()
+        val wasCancelledByUser = session.cancelledByUser
         session.markCompleted(exitCode)
 
-        return if (exitCode == 0) {
-            cc.unitmesh.agent.tool.ToolResult.Success(
-                content = output.ifEmpty { "(no output)" },
-                metadata = mapOf(
-                    "exit_code" to exitCode.toString(),
-                    "session_id" to session.sessionId
+        return when {
+            wasCancelledByUser -> {
+                // User cancelled the command - return a special result with output
+                cc.unitmesh.agent.tool.ToolResult.Error(
+                    message = buildString {
+                        appendLine("⚠️ Command cancelled by user")
+                        appendLine()
+                        appendLine("Command: ${session.command}")
+                        appendLine("Exit code: $exitCode (SIGKILL)")
+                        appendLine()
+                        if (output.isNotEmpty()) {
+                            appendLine("Output before cancellation:")
+                            appendLine(output)
+                        } else {
+                            appendLine("(no output captured before cancellation)")
+                        }
+                    },
+                    errorType = "CANCELLED_BY_USER",
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "session_id" to session.sessionId,
+                        "cancelled" to "true",
+                        "output" to output
+                    )
                 )
-            )
-        } else {
-            cc.unitmesh.agent.tool.ToolResult.Error(
-                message = "Command failed with exit code $exitCode:\n$output",
-                errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
-                metadata = mapOf(
-                    "exit_code" to exitCode.toString(),
-                    "session_id" to session.sessionId
+            }
+            exitCode == 0 -> {
+                cc.unitmesh.agent.tool.ToolResult.Success(
+                    content = output.ifEmpty { "(no output)" },
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "session_id" to session.sessionId
+                    )
                 )
-            )
+            }
+            else -> {
+                cc.unitmesh.agent.tool.ToolResult.Error(
+                    message = "Command failed with exit code $exitCode:\n$output",
+                    errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "session_id" to session.sessionId
+                    )
+                )
+            }
         }
     }
 
@@ -361,28 +400,65 @@ class CodingCliRenderer : CodingAgentRenderer {
         val output = outputBuilder.toString()
         activeSessions.remove(session.sessionId)
 
-        val executionTimeMs = System.currentTimeMillis() - session.startTime
-        println("  ${if (exitCode == 0) "✓" else "✗"} Exit code: $exitCode (${executionTimeMs}ms)")
+        // Check if cancelled by user from ShellSessionManager
+        val managedSession = cc.unitmesh.agent.tool.shell.ShellSessionManager.getSession(session.sessionId)
+        val wasCancelledByUser = managedSession?.cancelledByUser == true
 
-        return if (exitCode == 0) {
-            cc.unitmesh.agent.tool.ToolResult.Success(
-                content = output.ifEmpty { "(no output)" },
-                metadata = mapOf(
-                    "exit_code" to exitCode.toString(),
-                    "session_id" to session.sessionId,
-                    "execution_time_ms" to executionTimeMs.toString()
+        val executionTimeMs = System.currentTimeMillis() - session.startTime
+        val statusSymbol = when {
+            wasCancelledByUser -> "⚠"
+            exitCode == 0 -> "✓"
+            else -> "✗"
+        }
+        println("  $statusSymbol Exit code: $exitCode (${executionTimeMs}ms)${if (wasCancelledByUser) " [Cancelled by user]" else ""}")
+
+        return when {
+            wasCancelledByUser -> {
+                cc.unitmesh.agent.tool.ToolResult.Error(
+                    message = buildString {
+                        appendLine("⚠️ Command cancelled by user")
+                        appendLine()
+                        appendLine("Command: ${session.command}")
+                        appendLine("Exit code: $exitCode (SIGKILL)")
+                        appendLine()
+                        if (output.isNotEmpty()) {
+                            appendLine("Output before cancellation:")
+                            appendLine(output)
+                        } else {
+                            appendLine("(no output captured before cancellation)")
+                        }
+                    },
+                    errorType = "CANCELLED_BY_USER",
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "session_id" to session.sessionId,
+                        "execution_time_ms" to executionTimeMs.toString(),
+                        "cancelled" to "true",
+                        "output" to output
+                    )
                 )
-            )
-        } else {
-            cc.unitmesh.agent.tool.ToolResult.Error(
-                message = "Command failed with exit code $exitCode:\n$output",
-                errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
-                metadata = mapOf(
-                    "exit_code" to exitCode.toString(),
-                    "session_id" to session.sessionId,
-                    "execution_time_ms" to executionTimeMs.toString()
+            }
+            exitCode == 0 -> {
+                cc.unitmesh.agent.tool.ToolResult.Success(
+                    content = output.ifEmpty { "(no output)" },
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "session_id" to session.sessionId,
+                        "execution_time_ms" to executionTimeMs.toString()
+                    )
                 )
-            )
+            }
+            else -> {
+                cc.unitmesh.agent.tool.ToolResult.Error(
+                    message = "Command failed with exit code $exitCode:\n$output",
+                    errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "session_id" to session.sessionId,
+                        "execution_time_ms" to executionTimeMs.toString()
+                    )
+                )
+            }
         }
     }
 
