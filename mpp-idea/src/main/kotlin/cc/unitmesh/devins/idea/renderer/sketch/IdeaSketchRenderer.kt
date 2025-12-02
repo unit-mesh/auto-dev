@@ -126,6 +126,7 @@ object IdeaSketchRenderer {
                             IdeaCodeBlockRenderer(
                                 code = fence.text,
                                 language = fence.languageId,
+                                project = project,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
