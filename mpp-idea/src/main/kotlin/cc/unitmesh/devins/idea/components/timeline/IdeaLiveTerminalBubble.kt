@@ -59,9 +59,9 @@ class ProcessOutputCollector(
     fun start(scope: CoroutineScope) {
         job = scope.launch(Dispatchers.IO) {
             try {
-                // Start readers in separate coroutines
-                val stdoutJob = launch { readStream(process.inputStream, isError = false) }
-                val stderrJob = launch { readStream(process.errorStream, isError = true) }
+                // PTY processes combine stdout and stderr into a single stream (inputStream)
+                // Reading both streams simultaneously would cause issues
+                val outputJob = launch { readStream(process.inputStream) }
 
                 // Periodic check for process completion
                 while (isActive && process.isAlive) {
@@ -70,8 +70,7 @@ class ProcessOutputCollector(
 
                 // Process ended - wait a bit for streams to flush
                 delay(50)
-                stdoutJob.cancel()
-                stderrJob.cancel()
+                outputJob.cancel()
 
                 // Update final state
                 _state.update { it.copy(
@@ -91,7 +90,7 @@ class ProcessOutputCollector(
         }
     }
 
-    private suspend fun readStream(stream: java.io.InputStream, isError: Boolean) {
+    private suspend fun readStream(stream: java.io.InputStream) {
         try {
             val reader = stream.bufferedReader()
             val charBuffer = CharArray(1024)
@@ -101,9 +100,7 @@ class ProcessOutputCollector(
 
                 val chunk = String(charBuffer, 0, bytesRead)
                 synchronized(buffer) {
-                    if (isError) buffer.append("\u001B[31m")
                     buffer.append(chunk)
-                    if (isError) buffer.append("\u001B[0m")
                 }
 
                 _state.update { it.copy(output = buffer.toString()) }
