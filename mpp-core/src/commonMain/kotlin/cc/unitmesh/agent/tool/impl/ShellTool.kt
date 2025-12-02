@@ -2,13 +2,16 @@ package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.objectType
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import cc.unitmesh.agent.tool.shell.LiveShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.shell.ShellExecutor
+import cc.unitmesh.agent.tool.shell.ShellSessionManager
 import cc.unitmesh.agent.tool.shell.ShellUtils
 import kotlinx.serialization.Serializable
 
@@ -33,9 +36,17 @@ data class ShellParams(
     val environment: Map<String, String> = emptyMap(),
 
     /**
-     * Timeout in milliseconds (default: 30 seconds)
+     * Timeout in milliseconds (default: 60 seconds)
+     * If wait=true and command doesn't complete within timeout, returns "still running" message
      */
-    val timeoutMs: Long = 30000L,
+    val timeoutMs: Long = 60000L,
+
+    /**
+     * Whether to wait for the command to complete (default: true)
+     * - wait=true: Wait for completion up to timeoutMs, then return result or "still running"
+     * - wait=false: Start command in background and return sessionId immediately
+     */
+    val wait: Boolean = true,
 
     /**
      * Description of what the command does (for logging/confirmation)
@@ -49,7 +60,14 @@ data class ShellParams(
 )
 
 object ShellSchema : DeclarativeToolSchema(
-    description = "Execute shell commands with various options",
+    description = """Execute shell commands with live output streaming.
+
+If wait=true (default): Waits for command to complete up to timeoutMs.
+  - If completed: Returns stdout, stderr, exit code
+  - If timeout: Returns "still running" message with sessionId for later interaction
+
+If wait=false: Starts command in background and returns sessionId immediately.
+  Use read-process, wait-process, or kill-process to interact with the session.""",
     properties = mapOf(
         "command" to string(
             description = "The shell command to execute",
@@ -58,6 +76,18 @@ object ShellSchema : DeclarativeToolSchema(
         "workingDirectory" to string(
             description = "Working directory for command execution (optional)",
             required = false
+        ),
+        "wait" to boolean(
+            description = "Whether to wait for command completion. true=wait up to timeout, false=run in background",
+            required = false,
+            default = true
+        ),
+        "timeoutMs" to integer(
+            description = "Timeout in milliseconds when wait=true. After timeout, returns 'still running' with sessionId",
+            required = false,
+            default = 60000,
+            minimum = 1000,
+            maximum = 600000
         ),
         "environment" to objectType(
             description = "Environment variables to set (optional)",
@@ -68,13 +98,6 @@ object ShellSchema : DeclarativeToolSchema(
             ),
             required = false,
             additionalProperties = true
-        ),
-        "timeoutMs" to integer(
-            description = "Timeout in milliseconds",
-            required = false,
-            default = 30000,
-            minimum = 1000,
-            maximum = 300000
         ),
         "description" to string(
             description = "Description of what the command does (for logging/confirmation)",
@@ -88,7 +111,10 @@ object ShellSchema : DeclarativeToolSchema(
     )
 ) {
     override fun getExampleUsage(toolName: String): String {
-        return "/$toolName command=\"ls -la\" workingDirectory=\"/tmp\" timeoutMs=10000"
+        return """Examples:
+  /$toolName command="ls -la" (wait for completion)
+  /$toolName command="npm run dev" wait=false (run in background, returns sessionId)
+  /$toolName command="./gradlew build" timeoutMs=120000 (wait up to 2 minutes)"""
     }
 }
 
@@ -142,31 +168,161 @@ class ShellInvocation(
                 shell = params.shell
             )
 
-            val result = shellExecutor.execute(params.command, config)
-            val output = ShellUtils.formatShellResult(result)
+            // Check if we should use live execution (async mode)
+            val liveExecutor = shellExecutor as? LiveShellExecutor
+
+            if (!params.wait && liveExecutor != null && liveExecutor.supportsLiveExecution()) {
+                // Background mode: start and return immediately with sessionId
+                return@safeExecute executeBackground(liveExecutor, config)
+            }
+
+            if (liveExecutor != null && liveExecutor.supportsLiveExecution()) {
+                // Wait mode with live execution: start, wait with timeout
+                return@safeExecute executeWithTimeout(liveExecutor, config)
+            }
+
+            // Fallback: synchronous execution
+            executeSynchronous(config)
+        }
+    }
+
+    /**
+     * Execute in background mode - start and return sessionId immediately
+     */
+    private suspend fun executeBackground(
+        liveExecutor: LiveShellExecutor,
+        config: ShellExecutionConfig
+    ): ToolResult {
+        val session = liveExecutor.startLiveExecution(params.command, config)
+
+        // Register session for later interaction
+        ShellSessionManager.registerSession(
+            sessionId = session.sessionId,
+            command = params.command,
+            workingDirectory = config.workingDirectory,
+            processHandle = session.ptyHandle
+        )
+
+        val metadata = mapOf(
+            "command" to params.command,
+            "session_id" to session.sessionId,
+            "working_directory" to (config.workingDirectory ?: ""),
+            "mode" to "background"
+        )
+
+        return ToolResult.Pending(
+            sessionId = session.sessionId,
+            toolName = "shell",
+            command = params.command,
+            message = "Process started in background. Use read-process, wait-process, or kill-process with sessionId: ${session.sessionId}",
+            metadata = metadata
+        )
+    }
+
+    /**
+     * Execute with timeout - wait for completion or return "still running"
+     */
+    private suspend fun executeWithTimeout(
+        liveExecutor: LiveShellExecutor,
+        config: ShellExecutionConfig
+    ): ToolResult {
+        val session = liveExecutor.startLiveExecution(params.command, config)
+
+        // Register session
+        val managedSession = ShellSessionManager.registerSession(
+            sessionId = session.sessionId,
+            command = params.command,
+            workingDirectory = config.workingDirectory,
+            processHandle = session.ptyHandle
+        )
+
+        return try {
+            val exitCode = liveExecutor.waitForSession(session, config.timeoutMs)
+
+            // Process completed - get output and clean up
+            val output = managedSession.getOutput()
+            managedSession.markCompleted(exitCode)
+            ShellSessionManager.removeSession(session.sessionId)
 
             val metadata = mapOf(
                 "command" to params.command,
-                "exit_code" to result.exitCode.toString(),
-                "execution_time_ms" to result.executionTimeMs.toString(),
-                "working_directory" to (result.workingDirectory ?: ""),
-                "shell" to (shellExecutor.getDefaultShell() ?: "unknown"),
-                "stdout_length" to result.stdout.length.toString(),
-                "stderr_length" to result.stderr.length.toString(),
-                "success" to result.isSuccess().toString(),
-                "stdout" to result.stdout,
-                "stderr" to result.stderr
+                "exit_code" to exitCode.toString(),
+                "working_directory" to (config.workingDirectory ?: ""),
+                "session_id" to session.sessionId,
+                "mode" to "completed"
             )
 
-            if (result.isSuccess()) {
-                ToolResult.Success(output, metadata)
+            if (exitCode == 0) {
+                ToolResult.Success(output.ifEmpty { "(no output)" }, metadata)
             } else {
                 ToolResult.Error(
-                    message = "Command failed with exit code ${result.exitCode}: ${result.stderr.ifEmpty { result.stdout }}",
+                    message = "Command failed with exit code $exitCode:\n$output",
                     errorType = ToolErrorType.COMMAND_FAILED.code,
                     metadata = metadata
                 )
             }
+        } catch (e: ToolException) {
+            if (e.errorType == ToolErrorType.TIMEOUT) {
+                // Timeout - process still running
+                val output = managedSession.getOutput()
+                val metadata = mapOf(
+                    "command" to params.command,
+                    "session_id" to session.sessionId,
+                    "working_directory" to (config.workingDirectory ?: ""),
+                    "mode" to "timeout",
+                    "partial_output" to output.take(1000)
+                )
+
+                ToolResult.Pending(
+                    sessionId = session.sessionId,
+                    toolName = "shell",
+                    command = params.command,
+                    message = """Process still running after ${config.timeoutMs}ms timeout.
+SessionId: ${session.sessionId}
+
+Use these tools to interact:
+- read-process sessionId="${session.sessionId}" - Read current output
+- wait-process sessionId="${session.sessionId}" timeoutMs=60000 - Wait for completion
+- kill-process sessionId="${session.sessionId}" - Terminate the process
+
+Partial output:
+${output.take(500)}${if (output.length > 500) "\n...(truncated)" else ""}""",
+                    metadata = metadata
+                )
+            } else {
+                throw e
+            }
+        }
+    }
+
+    /**
+     * Synchronous execution (fallback)
+     */
+    private suspend fun executeSynchronous(config: ShellExecutionConfig): ToolResult {
+        val result = shellExecutor.execute(params.command, config)
+        val output = ShellUtils.formatShellResult(result)
+
+        val metadata = mapOf(
+            "command" to params.command,
+            "exit_code" to result.exitCode.toString(),
+            "execution_time_ms" to result.executionTimeMs.toString(),
+            "working_directory" to (result.workingDirectory ?: ""),
+            "shell" to (shellExecutor.getDefaultShell() ?: "unknown"),
+            "stdout_length" to result.stdout.length.toString(),
+            "stderr_length" to result.stderr.length.toString(),
+            "success" to result.isSuccess().toString(),
+            "stdout" to result.stdout,
+            "stderr" to result.stderr
+        )
+
+        return if (result.isSuccess()) {
+            ToolResult.Success(output, metadata)
+        } else {
+            ToolResult.Error(
+                message = "Command failed with exit code ${result.exitCode}: ${result.stderr.ifEmpty { result.stdout }}",
+                errorType = ToolErrorType.COMMAND_FAILED.code,
+                metadata = metadata
+            )
         }
     }
 }
