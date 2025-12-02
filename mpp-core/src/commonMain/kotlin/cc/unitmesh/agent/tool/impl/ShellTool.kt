@@ -196,11 +196,16 @@ class ShellInvocation(
         val session = liveExecutor.startLiveExecution(params.command, config)
 
         // Register session for later interaction
-        ShellSessionManager.registerSession(
+        val managedSession = ShellSessionManager.registerSession(
             sessionId = session.sessionId,
             command = params.command,
             workingDirectory = config.workingDirectory,
             processHandle = session.ptyHandle
+        )
+        // Set process handlers from LiveShellSession
+        managedSession.setProcessHandlers(
+            isAlive = { session.isAlive() },
+            kill = { session.kill() }
         )
 
         val metadata = mapOf(
@@ -234,6 +239,11 @@ class ShellInvocation(
             command = params.command,
             workingDirectory = config.workingDirectory,
             processHandle = session.ptyHandle
+        )
+        // Set process handlers from LiveShellSession
+        managedSession.setProcessHandlers(
+            isAlive = { session.isAlive() },
+            kill = { session.kill() }
         )
 
         return try {

@@ -104,29 +104,43 @@ class ManagedSession(
     
     val exitCode: Int? get() = _exitCode
     val endTime: Long? get() = _endTime
-    
+
+    // Callbacks for platform-specific process operations
+    private var isAliveChecker: (() -> Boolean)? = null
+    private var killHandler: (() -> Unit)? = null
+
+    /**
+     * Set platform-specific process handlers
+     */
+    fun setProcessHandlers(isAlive: () -> Boolean, kill: () -> Unit) {
+        isAliveChecker = isAlive
+        killHandler = kill
+    }
+
     /**
      * Check if the process is still running
      */
     fun isRunning(): Boolean {
-        val process = processHandle as? Process ?: return false
-        return process.isAlive
+        // If we have an exit code, the process has completed
+        if (_exitCode != null) return false
+        // Use the platform-specific checker if available
+        return isAliveChecker?.invoke() ?: false
     }
-    
+
     /**
      * Get current output (thread-safe)
      */
     suspend fun getOutput(): String {
         return mutex.withLock { outputBuffer.toString() }
     }
-    
+
     /**
      * Append output (called by output collector)
      */
     suspend fun appendOutput(text: String) {
         mutex.withLock { outputBuffer.append(text) }
     }
-    
+
     /**
      * Mark session as completed
      */
@@ -134,21 +148,20 @@ class ManagedSession(
         _exitCode = exitCode
         _endTime = endTime
     }
-    
+
     /**
      * Kill the process
      */
     fun kill(): Boolean {
-        val process = processHandle as? Process ?: return false
         return try {
-            process.destroyForcibly()
+            killHandler?.invoke()
             markCompleted(-1)
             true
         } catch (e: Exception) {
             false
         }
     }
-    
+
     /**
      * Get execution time in milliseconds
      */

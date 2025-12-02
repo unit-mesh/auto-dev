@@ -238,13 +238,15 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
         }
         
         val ptyProcess = ptyProcessBuilder.start()
-        
+
         LiveShellSession(
             sessionId = sessionId,
             command = command,
             workingDirectory = config.workingDirectory,
             ptyHandle = ptyProcess,
-            isLiveSupported = true
+            isLiveSupported = true,
+            isAliveChecker = { ptyProcess.isAlive },
+            killHandler = { ptyProcess.destroyForcibly() }
         )
     }
     

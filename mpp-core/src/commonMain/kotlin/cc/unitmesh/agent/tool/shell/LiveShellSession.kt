@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * Represents a live shell session that can stream output in real-time.
  * This is used on platforms that support PTY (pseudo-terminal) for rich terminal emulation.
  */
-data class LiveShellSession(
+class LiveShellSession(
     val sessionId: String,
     val command: String,
     val workingDirectory: String?,
@@ -19,46 +19,69 @@ data class LiveShellSession(
      * On other platforms: null (falls back to buffered output)
      */
     val ptyHandle: Any? = null,
-    val isLiveSupported: Boolean = ptyHandle != null
+    val isLiveSupported: Boolean = ptyHandle != null,
+    /**
+     * Platform-specific callback to check if process is alive
+     */
+    private val isAliveChecker: (() -> Boolean)? = null,
+    /**
+     * Platform-specific callback to kill the process
+     */
+    private val killHandler: (() -> Unit)? = null
 ) {
     private val _isCompleted = MutableStateFlow(false)
     val isCompleted: StateFlow<Boolean> = _isCompleted.asStateFlow()
-    
+
     private val _exitCode = MutableStateFlow<Int?>(null)
     val exitCode: StateFlow<Int?> = _exitCode.asStateFlow()
-    
+
     private val _stdout = StringBuilder()
     private val _stderr = StringBuilder()
-    
+
     /**
      * Get the captured stdout output
      */
     fun getStdout(): String = _stdout.toString()
-    
+
     /**
      * Get the captured stderr output
      */
     fun getStderr(): String = _stderr.toString()
-    
+
     /**
      * Append output to stdout (called by executor)
      */
     internal fun appendStdout(text: String) {
         _stdout.append(text)
     }
-    
+
     /**
      * Append output to stderr (called by executor)
      */
     internal fun appendStderr(text: String) {
         _stderr.append(text)
     }
-    
+
     fun markCompleted(exitCode: Int) {
         _exitCode.value = exitCode
         _isCompleted.value = true
     }
-    
+
+    /**
+     * Check if the process is still alive
+     */
+    fun isAlive(): Boolean {
+        if (_isCompleted.value) return false
+        return isAliveChecker?.invoke() ?: false
+    }
+
+    /**
+     * Kill the process
+     */
+    fun kill() {
+        killHandler?.invoke()
+    }
+
     /**
      * Wait for the session to complete (expected to be overridden or handled platform-specifically)
      * Returns the exit code, or throws if timeout/error occurs
