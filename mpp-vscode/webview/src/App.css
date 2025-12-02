@@ -1,0 +1,36 @@
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--background);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.header-icon {
+  font-size: 16px;
+}
+
+.dev-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--selection-background);
+  border-radius: 4px;
+  opacity: 0.7;
+}
+

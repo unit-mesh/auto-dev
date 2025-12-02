@@ -1,0 +1,100 @@
+.chat-input-container {
+  padding: 12px;
+  border-top: 1px solid var(--panel-border);
+  background: var(--background);
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.chat-textarea {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  background: var(--input-background);
+  color: var(--input-foreground);
+  border-radius: 6px;
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  min-height: 40px;
+  max-height: 150px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-textarea:focus {
+  border-color: var(--accent);
+}
+
+.chat-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-textarea::placeholder {
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
+.input-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.send-button {
+  background: var(--button-background);
+  color: var(--button-foreground);
+}
+
+.send-button:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clear-button {
+  background: transparent;
+  color: var(--foreground);
+  opacity: 0.6;
+}
+
+.clear-button:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--selection-background);
+}
+
+.input-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
+.input-hint kbd {
+  background: var(--selection-background);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 10px;
+}
+
