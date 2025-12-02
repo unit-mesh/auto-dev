@@ -13,6 +13,8 @@ import cc.unitmesh.devins.idea.editor.IdeaDevInInput
 import cc.unitmesh.devins.idea.editor.IdeaInputListener
 import cc.unitmesh.devins.idea.editor.IdeaInputTrigger
 import cc.unitmesh.devins.idea.editor.IdeaModelConfigDialogWrapper
+import cc.unitmesh.devins.idea.editor.IdeaTopToolbar
+import cc.unitmesh.devins.idea.editor.SelectedFileItem
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
 import cc.unitmesh.devins.idea.components.header.IdeaAgentTabsHeader
@@ -178,7 +180,6 @@ fun IdeaAgentApp(
                             onAbort = { viewModel.cancelTask() },
                             workspacePath = project.basePath,
                             totalTokens = null,
-                            onSettingsClick = { viewModel.setShowConfigDialog(true) },
                             onAtClick = {},
                             availableConfigs = availableConfigs,
                             currentConfigName = currentConfigName,
@@ -224,7 +225,6 @@ fun IdeaAgentApp(
                                 onAbort = { remoteVm.cancelTask() },
                                 workspacePath = project.basePath,
                                 totalTokens = null,
-                                onSettingsClick = { viewModel.setShowConfigDialog(true) },
                                 onAtClick = {},
                                 availableConfigs = availableConfigs,
                                 currentConfigName = currentConfigName,
@@ -323,7 +323,6 @@ private fun IdeaDevInInputArea(
     onAbort: () -> Unit,
     workspacePath: String? = null,
     totalTokens: Int? = null,
-    onSettingsClick: () -> Unit = {},
     onAtClick: () -> Unit = {},
     availableConfigs: List<NamedModelConfig> = emptyList(),
     currentConfigName: String? = null,
@@ -332,10 +331,31 @@ private fun IdeaDevInInputArea(
 ) {
     var inputText by remember { mutableStateOf("") }
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
+    var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(8.dp)
     ) {
+        // Top toolbar with file selection
+        IdeaTopToolbar(
+            project = project,
+            onAtClick = onAtClick,
+            selectedFiles = selectedFiles,
+            onRemoveFile = { file ->
+                selectedFiles = selectedFiles.filter { it.path != file.path }
+            },
+            onFilesSelected = { files ->
+                val newItems = files.map { vf ->
+                    SelectedFileItem(
+                        name = vf.name,
+                        path = vf.path,
+                        virtualFile = vf
+                    )
+                }
+                selectedFiles = (selectedFiles + newItems).distinctBy { it.path }
+            }
+        )
+
         // DevIn Editor via SwingPanel - uses weight(1f) to fill available space
         SwingPanel(
             modifier = Modifier
@@ -356,9 +376,18 @@ private fun IdeaDevInInputArea(
 
                         override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
                             if (text.isNotBlank() && !isProcessing) {
-                                onSend(text)
+                                // Append file references to the message
+                                val filesText = selectedFiles.joinToString("\n") { "/file:${it.path}" }
+                                val fullText = if (filesText.isNotEmpty()) {
+                                    "$text\n$filesText"
+                                } else {
+                                    text
+                                }
+                                onSend(fullText)
                                 clearInput()
                                 inputText = ""
+                                // Clear selected files after sending
+                                selectedFiles = emptyList()
                             }
                         }
 
@@ -388,20 +417,28 @@ private fun IdeaDevInInputArea(
             }
         )
 
-        // Bottom toolbar with Compose
+        // Bottom toolbar with Compose (MCP config is handled internally)
         IdeaBottomToolbar(
             onSendClick = {
                 val text = devInInput?.text?.trim() ?: inputText.trim()
                 if (text.isNotBlank() && !isProcessing) {
-                    onSend(text)
+                    // Append file references to the message
+                    val filesText = selectedFiles.joinToString("\n") { "/file:${it.path}" }
+                    val fullText = if (filesText.isNotEmpty()) {
+                        "$text\n$filesText"
+                    } else {
+                        text
+                    }
+                    onSend(fullText)
                     devInInput?.clearInput()
                     inputText = ""
+                    // Clear selected files after sending
+                    selectedFiles = emptyList()
                 }
             },
             sendEnabled = inputText.isNotBlank() && !isProcessing,
             isExecuting = isProcessing,
             onStopClick = onAbort,
-            onSettingsClick = onSettingsClick,
             totalTokens = totalTokens,
             availableConfigs = availableConfigs,
             currentConfigName = currentConfigName,

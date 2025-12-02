@@ -12,10 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
@@ -24,21 +25,22 @@ import org.jetbrains.jewel.ui.component.Tooltip
 /**
  * Top toolbar for the input section.
  * Contains @ trigger, file selection, and other context-related actions.
- * 
+ *
  * Layout: @ - / - Clipboard - Save - Cursor | Selected Files... | Add
  */
 @Composable
 fun IdeaTopToolbar(
+    project: Project? = null,
     onAtClick: () -> Unit = {},
     onSlashClick: () -> Unit = {},
-    onClipboardClick: () -> Unit = {},
-    onSaveClick: () -> Unit = {},
-    onCursorClick: () -> Unit = {},
     onAddFileClick: () -> Unit = {},
     selectedFiles: List<SelectedFileItem> = emptyList(),
     onRemoveFile: (SelectedFileItem) -> Unit = {},
+    onFilesSelected: (List<VirtualFile>) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var showFileSearchPopup by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -51,54 +53,28 @@ fun IdeaTopToolbar(
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // @ trigger button
-            ToolbarIconButton(onClick = onAtClick, tooltip = "@ Agent/File Reference") {
+            ToolbarIconButton(
+                onClick = {
+                    if (project != null) {
+                        showFileSearchPopup = true
+                    }
+                    onAddFileClick()
+                },
+                tooltip = "Add File"
+            ) {
                 Icon(
-                    imageVector = IdeaComposeIcons.AlternateEmail,
-                    contentDescription = "@ Agent",
-                    tint = JewelTheme.globalColors.text.normal,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            // / trigger button
-            ToolbarIconButton(onClick = onSlashClick, tooltip = "/ Commands") {
-                Text(text = "/", style = JewelTheme.defaultTextStyle.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold))
-            }
-            // Clipboard button
-            ToolbarIconButton(onClick = onClipboardClick, tooltip = "Paste from Clipboard") {
-                Icon(
-                    imageVector = IdeaComposeIcons.ContentPaste,
-                    contentDescription = "Clipboard",
-                    modifier = Modifier.size(16.dp),
-                    tint = JewelTheme.globalColors.text.normal
-                )
-            }
-            // Save button
-            ToolbarIconButton(onClick = onSaveClick, tooltip = "Save to Workspace") {
-                Icon(
-                    imageVector = IdeaComposeIcons.Save,
-                    contentDescription = "Save",
-                    modifier = Modifier.size(16.dp),
-                    tint = JewelTheme.globalColors.text.normal
-                )
-            }
-            // Cursor button
-            ToolbarIconButton(onClick = onCursorClick, tooltip = "Current Selection") {
-                Icon(
-                    imageVector = IdeaComposeIcons.TextFields,
-                    contentDescription = "Cursor",
+                    imageVector = IdeaComposeIcons.Add,
+                    contentDescription = "Add File",
                     modifier = Modifier.size(16.dp),
                     tint = JewelTheme.globalColors.text.normal
                 )
             }
         }
 
-        // Separator
         if (selectedFiles.isNotEmpty()) {
             Box(Modifier.width(1.dp).height(20.dp).background(JewelTheme.globalColors.borders.normal))
         }
 
-        // Selected files as chips
         Row(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -108,16 +84,18 @@ fun IdeaTopToolbar(
                 FileChip(file = file, onRemove = { onRemoveFile(file) })
             }
         }
+    }
 
-        // Add file button
-        ToolbarIconButton(onClick = onAddFileClick, tooltip = "Add File") {
-            Icon(
-                imageVector = IdeaComposeIcons.Add,
-                contentDescription = "Add File",
-                modifier = Modifier.size(16.dp),
-                tint = JewelTheme.globalColors.text.normal
-            )
-        }
+    // File search popup
+    if (showFileSearchPopup && project != null) {
+        IdeaFileSearchPopup(
+            project = project,
+            onDismiss = { showFileSearchPopup = false },
+            onFilesSelected = { files ->
+                onFilesSelected(files)
+                showFileSearchPopup = false
+            }
+        )
     }
 }
 
