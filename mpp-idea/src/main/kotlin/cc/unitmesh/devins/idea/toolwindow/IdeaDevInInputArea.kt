@@ -1,12 +1,15 @@
 package cc.unitmesh.devins.idea.toolwindow
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.idea.editor.*
 import cc.unitmesh.llm.NamedModelConfig
@@ -14,6 +17,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import org.jetbrains.jewel.foundation.theme.JewelTheme
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JPanel
@@ -30,6 +34,8 @@ import javax.swing.JPanel
  * - Settings access
  * - Stop/Send button based on execution state
  * - Model selector for switching between LLM configurations
+ *
+ * Layout: Unified border around the entire input area for a cohesive look.
  */
 @Composable
 fun IdeaDevInInputArea(
@@ -50,10 +56,21 @@ fun IdeaDevInInputArea(
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
     var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
 
+    val borderShape = RoundedCornerShape(8.dp)
+
+    // Outer container with unified border
     Column(
-        modifier = Modifier.Companion.fillMaxSize().padding(8.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .clip(borderShape)
+            .border(
+                width = 1.dp,
+                color = JewelTheme.globalColors.borders.normal,
+                shape = borderShape
+            )
     ) {
-        // Top toolbar with file selection
+        // Top toolbar with file selection (no individual border)
         IdeaTopToolbar(
             project = project,
             onAtClick = onAtClick,
@@ -76,7 +93,7 @@ fun IdeaDevInInputArea(
 
         // DevIn Editor via SwingPanel - uses weight(1f) to fill available space
         SwingPanel(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             factory = {
@@ -135,7 +152,7 @@ fun IdeaDevInInputArea(
             }
         )
 
-        // Bottom toolbar with Compose (MCP config is handled internally)
+        // Bottom toolbar with Compose (no individual border)
         IdeaBottomToolbar(
             onSendClick = {
                 val text = devInInput?.text?.trim() ?: inputText.trim()

@@ -1,12 +1,15 @@
 package cc.unitmesh.devins.idea.editor
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,11 +30,14 @@ import org.jetbrains.jewel.ui.component.Tooltip
  * Top toolbar for the input section.
  * Contains @ trigger, file selection, and other context-related actions.
  *
- * Layout: Add Button | Selected Files... | Context indicator
+ * Layout:
+ * - Collapsed mode: Add Button | [Horizontal scrollable file chips] | Expand button
+ * - Expanded mode: Add Button | [Vertical list of all files] | Collapse button
  *
  * Features:
  * - Integrates with IdeaContextManager for state management
  * - Shows selected files as chips with remove button on hover
+ * - Horizontal scroll in collapsed mode, vertical list in expanded mode
  * - Shows context indicator when default context or rules are active
  */
 @Composable
@@ -46,6 +52,7 @@ fun IdeaTopToolbar(
     modifier: Modifier = Modifier
 ) {
     var showFileSearchPopup by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
     // Get context manager state if project is available
     val contextManager = remember(project) { project?.let { IdeaContextManager.getInstance(it) } }
@@ -56,76 +63,115 @@ fun IdeaTopToolbar(
     val relatedFiles by contextManager?.relatedFiles?.collectAsState()
         ?: remember { mutableStateOf(emptyList<VirtualFile>()) }
 
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .animateContentSize()
     ) {
-        // Left side: Add button with popup
+        // Main toolbar row
         Row(
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // File search popup with trigger button
-            if (project != null) {
-                IdeaFileSearchPopup(
-                    project = project,
-                    showPopup = showFileSearchPopup,
-                    onShowPopupChange = { showFileSearchPopup = it },
-                    onFilesSelected = { files ->
-                        onFilesSelected(files)
-                        showFileSearchPopup = false
+            // Left side: Add button with popup
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // File search popup with trigger button
+                if (project != null) {
+                    IdeaFileSearchPopup(
+                        project = project,
+                        showPopup = showFileSearchPopup,
+                        onShowPopupChange = { showFileSearchPopup = it },
+                        onFilesSelected = { files ->
+                            onFilesSelected(files)
+                            showFileSearchPopup = false
+                        }
+                    )
+                } else {
+                    ToolbarIconButton(
+                        onClick = { onAddFileClick() },
+                        tooltip = "Add File to Context"
+                    ) {
+                        Icon(
+                            imageVector = IdeaComposeIcons.Add,
+                            contentDescription = "Add File",
+                            modifier = Modifier.size(16.dp),
+                            tint = JewelTheme.globalColors.text.normal
+                        )
                     }
+                }
+
+                // Context indicator: show if default context or rules are active
+                if (hasDefaultContext.isNotEmpty() || rules.isNotEmpty()) {
+                    ContextIndicator(
+                        hasDefaultContext = hasDefaultContext.isNotEmpty(),
+                        rulesCount = rules.size
+                    )
+                }
+            }
+
+            // Separator
+            if (selectedFiles.isNotEmpty() || relatedFiles.isNotEmpty()) {
+                Box(
+                    Modifier
+                        .width(1.dp)
+                        .height(20.dp)
+                        .background(JewelTheme.globalColors.borders.normal.copy(alpha = 0.5f))
                 )
+            }
+
+            // Selected files - horizontal scrollable in collapsed mode
+            if (!isExpanded && selectedFiles.isNotEmpty()) {
+                val scrollState = rememberScrollState()
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .horizontalScroll(scrollState),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    selectedFiles.forEach { file ->
+                        FileChip(file = file, onRemove = { onRemoveFile(file) })
+                    }
+                }
+            } else if (!isExpanded) {
+                Spacer(Modifier.weight(1f))
             } else {
+                Spacer(Modifier.weight(1f))
+            }
+
+            // Expand/Collapse button - only show if there are files
+            if (selectedFiles.size > 1) {
                 ToolbarIconButton(
-                    onClick = { onAddFileClick() },
-                    tooltip = "Add File to Context"
+                    onClick = { isExpanded = !isExpanded },
+                    tooltip = if (isExpanded) "Collapse file list" else "Expand file list"
                 ) {
                     Icon(
-                        imageVector = IdeaComposeIcons.Add,
-                        contentDescription = "Add File",
+                        imageVector = if (isExpanded) IdeaComposeIcons.ExpandLess else IdeaComposeIcons.ExpandMore,
+                        contentDescription = if (isExpanded) "Collapse" else "Expand",
                         modifier = Modifier.size(16.dp),
                         tint = JewelTheme.globalColors.text.normal
                     )
                 }
             }
-
-            // Context indicator: show if default context or rules are active
-            if (hasDefaultContext.isNotEmpty() || rules.isNotEmpty()) {
-                ContextIndicator(
-                    hasDefaultContext = hasDefaultContext.isNotEmpty(),
-                    rulesCount = rules.size
-                )
-            }
         }
 
-        if (selectedFiles.isNotEmpty() || relatedFiles.isNotEmpty()) {
-            Box(Modifier.width(1.dp).height(20.dp).background(JewelTheme.globalColors.borders.normal))
-        }
-
-        // Selected files as chips
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Show selected files
-            selectedFiles.take(5).forEach { file ->
-                FileChip(file = file, onRemove = { onRemoveFile(file) })
-            }
-
-            // Show overflow indicator if more than 5 files
-            if (selectedFiles.size > 5) {
-                Text(
-                    text = "+${selectedFiles.size - 5}",
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontSize = 11.sp,
-                        color = JewelTheme.globalColors.text.normal.copy(alpha = 0.6f)
-                    )
-                )
+        // Expanded view - vertical list of all files
+        if (isExpanded && selectedFiles.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp, end = 8.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                selectedFiles.forEach { file ->
+                    FileChipExpanded(file = file, onRemove = { onRemoveFile(file) })
+                }
             }
         }
     }
@@ -230,7 +276,7 @@ private fun FileChip(file: SelectedFileItem, onRemove: () -> Unit, modifier: Mod
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
-            imageVector = file.icon ?: IdeaComposeIcons.InsertDriveFile,
+            imageVector = if (file.isDirectory) IdeaComposeIcons.Folder else (file.icon ?: IdeaComposeIcons.InsertDriveFile),
             contentDescription = null,
             modifier = Modifier.size(14.dp),
             tint = JewelTheme.globalColors.text.normal
@@ -244,6 +290,61 @@ private fun FileChip(file: SelectedFileItem, onRemove: () -> Unit, modifier: Mod
                 tint = JewelTheme.globalColors.text.normal.copy(alpha = 0.6f)
             )
         }
+    }
+}
+
+/**
+ * Expanded file chip showing full path - used in vertical expanded mode
+ */
+@Composable
+private fun FileChipExpanded(file: SelectedFileItem, onRemove: () -> Unit, modifier: Modifier = Modifier) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .hoverable(interactionSource = interactionSource)
+            .background(
+                if (isHovered) JewelTheme.globalColors.panelBackground
+                else JewelTheme.globalColors.panelBackground.copy(alpha = 0.6f)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = if (file.isDirectory) IdeaComposeIcons.Folder else (file.icon ?: IdeaComposeIcons.InsertDriveFile),
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = JewelTheme.globalColors.text.normal
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = file.name,
+                style = JewelTheme.defaultTextStyle.copy(fontSize = 12.sp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = file.path,
+                style = JewelTheme.defaultTextStyle.copy(
+                    fontSize = 10.sp,
+                    color = JewelTheme.globalColors.text.normal.copy(alpha = 0.6f)
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Icon(
+            imageVector = IdeaComposeIcons.Close,
+            contentDescription = "Remove",
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(onClick = onRemove),
+            tint = if (isHovered) JewelTheme.globalColors.text.normal else JewelTheme.globalColors.text.normal.copy(alpha = 0.4f)
+        )
     }
 }
 
