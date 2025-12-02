@@ -98,6 +98,18 @@ object IdeaSketchRenderer {
                         }
                     }
 
+                    "bash", "shell", "sh", "zsh" -> {
+                        if (fence.text.isNotBlank()) {
+                            IdeaTerminalRenderer(
+                                command = fence.text,
+                                project = project,
+                                isComplete = blockIsComplete,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
                     "walkthrough" -> {
                         if (fence.text.isNotBlank()) {
                             IdeaWalkthroughBlockRenderer(
