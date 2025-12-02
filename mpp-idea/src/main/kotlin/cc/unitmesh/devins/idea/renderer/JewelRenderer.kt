@@ -468,16 +468,8 @@ class JewelRenderer : BaseRenderer() {
 
         // Also notify any waiting coroutines via the session result channel
         sessionResultChannels[sessionId]?.let { channel ->
+            // Check cancelledByUser first to handle cancelled commands with exit code 0
             val result = when {
-                exitCode == 0 -> {
-                    cc.unitmesh.agent.tool.ToolResult.Success(
-                        content = output ?: "",
-                        metadata = mapOf(
-                            "exit_code" to exitCode.toString(),
-                            "execution_time_ms" to executionTimeMs.toString()
-                        )
-                    )
-                }
                 cancelledByUser -> {
                     // User cancelled - include output in the message
                     val errorMessage = buildString {
@@ -503,9 +495,19 @@ class JewelRenderer : BaseRenderer() {
                         )
                     )
                 }
+                exitCode == 0 -> {
+                    cc.unitmesh.agent.tool.ToolResult.Success(
+                        content = output ?: "",
+                        metadata = mapOf(
+                            "exit_code" to exitCode.toString(),
+                            "execution_time_ms" to executionTimeMs.toString()
+                        )
+                    )
+                }
                 else -> {
                     cc.unitmesh.agent.tool.ToolResult.Error(
                         message = "Command failed with exit code: $exitCode\n${output ?: ""}",
+                        errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
                         metadata = mapOf(
                             "exit_code" to exitCode.toString(),
                             "execution_time_ms" to executionTimeMs.toString(),

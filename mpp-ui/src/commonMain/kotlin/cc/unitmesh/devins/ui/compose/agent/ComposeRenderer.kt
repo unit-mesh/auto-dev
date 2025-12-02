@@ -485,8 +485,14 @@ class ComposeRenderer : BaseRenderer() {
                 } else {
                     "Command failed with exit code: $exitCode"
                 }
+                val errorType = if (cancelledByUser) {
+                    "CANCELLED_BY_USER"
+                } else {
+                    cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code
+                }
                 cc.unitmesh.agent.tool.ToolResult.Error(
                     message = errorMessage,
+                    errorType = errorType,
                     metadata = mapOf(
                         "exit_code" to exitCode.toString(),
                         "execution_time_ms" to executionTimeMs.toString(),
