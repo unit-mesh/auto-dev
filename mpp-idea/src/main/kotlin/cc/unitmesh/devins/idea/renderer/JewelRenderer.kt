@@ -413,6 +413,7 @@ class JewelRenderer : BaseRenderer() {
     /**
      * Adds a live terminal session to the timeline.
      * This is called when a Shell tool is executed with PTY support.
+     * Replaces the previous ToolCallItem (Shell Command) with a LiveTerminalItem.
      */
     override fun addLiveTerminal(
         sessionId: String,
@@ -420,14 +421,21 @@ class JewelRenderer : BaseRenderer() {
         workingDirectory: String?,
         ptyHandle: Any?
     ) {
-        addTimelineItem(
-            TimelineItem.LiveTerminalItem(
+        // Replace the last ToolCallItem (Shell) with LiveTerminalItem
+        _timeline.update { items ->
+            val lastItem = items.lastOrNull()
+            val newItems = if (lastItem is TimelineItem.ToolCallItem && lastItem.toolType == ToolType.Shell) {
+                items.dropLast(1)
+            } else {
+                items
+            }
+            newItems + TimelineItem.LiveTerminalItem(
                 sessionId = sessionId,
                 command = command,
                 workingDirectory = workingDirectory,
                 ptyHandle = ptyHandle
             )
-        )
+        }
     }
 
     /**

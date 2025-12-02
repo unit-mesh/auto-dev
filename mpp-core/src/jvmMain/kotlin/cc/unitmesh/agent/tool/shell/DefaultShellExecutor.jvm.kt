@@ -8,9 +8,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.io.IOException
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-actual class DefaultShellExecutor : ShellExecutor {
+actual class DefaultShellExecutor : ShellExecutor, LiveShellExecutor {
     private val ptyExecutor: PtyShellExecutor? by lazy {
         try {
             val executor = PtyShellExecutor()
@@ -342,5 +343,84 @@ actual class DefaultShellExecutor : ShellExecutor {
         return jvmDangerousCommands.none { dangerous ->
             commandLower.contains(dangerous)
         }
+    }
+
+    // ==================== LiveShellExecutor Implementation ====================
+
+    /**
+     * Check if live shell execution is supported.
+     * Returns true if PTY is available, or falls back to ProcessBuilder-based live execution.
+     */
+    override fun supportsLiveExecution(): Boolean {
+        // Always support live execution - use PTY if available, otherwise ProcessBuilder
+        return true
+    }
+
+    /**
+     * Start a shell command with live output streaming.
+     * Uses PTY if available, otherwise falls back to ProcessBuilder.
+     */
+    override suspend fun startLiveExecution(
+        command: String,
+        config: ShellExecutionConfig
+    ): LiveShellSession = withContext(Dispatchers.IO) {
+        // Try PTY first if available
+        if (ptyExecutor != null) {
+            return@withContext ptyExecutor!!.startLiveExecution(command, config)
+        }
+
+        // Fallback to ProcessBuilder-based live execution
+        if (!validateCommand(command)) {
+            throw ToolException("Command not allowed: $command", ToolErrorType.PERMISSION_DENIED)
+        }
+
+        val sessionId = UUID.randomUUID().toString()
+        val processCommand = prepareCommand(command, config.shell)
+
+        val processBuilder = ProcessBuilder(processCommand).apply {
+            config.workingDirectory?.let { workDir ->
+                directory(File(workDir))
+            }
+            if (config.environment.isNotEmpty()) {
+                environment().putAll(config.environment)
+            }
+            augmentEnvironmentPath(environment(), config.environment)
+            redirectErrorStream(false)
+        }
+
+        val process = processBuilder.start()
+
+        LiveShellSession(
+            sessionId = sessionId,
+            command = command,
+            workingDirectory = config.workingDirectory,
+            ptyHandle = process,  // Pass the Process object as ptyHandle
+            isLiveSupported = true
+        )
+    }
+
+    /**
+     * Wait for a live session to complete and return the exit code.
+     */
+    override suspend fun waitForSession(
+        session: LiveShellSession,
+        timeoutMs: Long
+    ): Int = withContext(Dispatchers.IO) {
+        // Try PTY executor first if available
+        if (ptyExecutor != null && session.ptyHandle is com.pty4j.PtyProcess) {
+            return@withContext ptyExecutor!!.waitForSession(session, timeoutMs)
+        }
+
+        // Handle ProcessBuilder-based session
+        val process = session.ptyHandle as? Process
+            ?: throw ToolException("Invalid session handle", ToolErrorType.INTERNAL_ERROR)
+
+        val completed = process.waitFor(timeoutMs, TimeUnit.MILLISECONDS)
+        if (!completed) {
+            process.destroyForcibly()
+            throw ToolException("Command timed out after ${timeoutMs}ms", ToolErrorType.TIMEOUT)
+        }
+
+        process.exitValue()
     }
 }
