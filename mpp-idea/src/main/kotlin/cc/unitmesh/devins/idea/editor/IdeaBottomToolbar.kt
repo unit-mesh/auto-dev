@@ -19,11 +19,11 @@ import org.jetbrains.jewel.ui.component.Icon
 
 /**
  * Bottom toolbar for the input section.
- * Provides send/stop buttons, model selector, settings, and token info.
+ * Provides send/stop buttons, model selector, MCP config, and token info.
  *
- * Layout: ModelSelector - Token Info | MCP Settings - Prompt Optimization - Send Button
+ * Layout: ModelSelector - Token Info | MCP Config - Prompt Optimization - Send Button
  * - Left side: Model configuration (blends with background)
- * - Right side: MCP, prompt optimization, and send
+ * - Right side: MCP config, prompt optimization, and send
  *
  * Note: @ and / triggers are now in the top toolbar (IdeaTopToolbar).
  */
@@ -33,7 +33,7 @@ fun IdeaBottomToolbar(
     sendEnabled: Boolean,
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {},
+    onMcpConfigClick: () -> Unit = {},
     onPromptOptimizationClick: () -> Unit = {},
     totalTokens: Int? = null,
     // Model selector props
@@ -43,6 +43,7 @@ fun IdeaBottomToolbar(
     onConfigureClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var showMcpConfigDialog by remember { mutableStateOf(false) }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -81,14 +82,14 @@ fun IdeaBottomToolbar(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // MCP Settings button
+            // MCP Config button - opens MCP configuration dialog
             IconButton(
-                onClick = onSettingsClick,
+                onClick = { showMcpConfigDialog = true },
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
                     imageVector = IdeaComposeIcons.Settings,
-                    contentDescription = "MCP Settings",
+                    contentDescription = "MCP Configuration",
                     tint = JewelTheme.globalColors.text.normal,
                     modifier = Modifier.size(16.dp)
                 )
@@ -155,6 +156,13 @@ fun IdeaBottomToolbar(
                 }
             }
         }
+    }
+
+    // MCP Configuration Dialog
+    if (showMcpConfigDialog) {
+        IdeaMcpConfigDialog(
+            onDismiss = { showMcpConfigDialog = false }
+        )
     }
 }
 
