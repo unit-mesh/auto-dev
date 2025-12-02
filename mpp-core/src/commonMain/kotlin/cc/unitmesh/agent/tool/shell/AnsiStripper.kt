@@ -41,7 +41,7 @@ object AnsiStripper {
                             // OSC sequence: ESC]...BEL or ESC]...ST
                             i = skipOscSequence(text, i + 2)
                         }
-                        '(' , ')' -> {
+                        '(', ')' -> {
                             // Character set selection: ESC(X or ESC)X
                             i = if (i + 2 < text.length) i + 3 else text.length
                         }

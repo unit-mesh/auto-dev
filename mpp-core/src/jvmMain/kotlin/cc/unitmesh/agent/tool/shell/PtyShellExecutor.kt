@@ -266,28 +266,10 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
             // Get managed session to sync output
             val managedSession = ShellSessionManager.getSession(session.sessionId)
 
-            // Start output reading job to sync to ManagedSession
-            // This ensures output is available for ToolOrchestrator.startSessionMonitoring()
-            // Note: For IDEA, ProcessOutputCollector in IdeaLiveTerminalBubble also reads output,
-            // but that's OK because they read from different streams or the same stream is already consumed.
-            val outputJob = launch {
-                try {
-                    ptyHandle.inputStream.bufferedReader().use { reader ->
-                        var line = reader.readLine()
-                        while (line != null && isActive) {
-                            val lineWithNewline = line + "\n"
-                            // Sync to LiveShellSession (for backward compatibility)
-                            session.appendStdout(lineWithNewline)
-                            // Sync to ManagedSession (for ToolOrchestrator)
-                            managedSession?.appendOutput(lineWithNewline)
-                            line = reader.readLine()
-                        }
-                    }
-                } catch (e: Exception) {
-                    // Stream closed or other error - this is expected when process terminates
-                    logger().debug { "Output reading stopped: ${e.message}" }
-                }
-            }
+            // Note: In IDEA environment, ProcessOutputCollector in IdeaLiveTerminalBubble
+            // already reads from inputStream and syncs to ShellSessionManager.
+            // We don't start another reader here to avoid data race on the same stream.
+            // The output will be available via managedSession.getOutput() after process completes.
 
             val exitCode = withTimeoutOrNull(timeoutMs) {
                 while (ptyHandle.isAlive) {
@@ -298,15 +280,9 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
             }
 
             if (exitCode == null) {
-                outputJob.cancel()
                 ptyHandle.destroyForcibly()
                 ptyHandle.waitFor(3000, TimeUnit.MILLISECONDS)
                 throw ToolException("Command timed out after ${timeoutMs}ms", ToolErrorType.TIMEOUT)
-            }
-
-            // Wait for output reading to complete (with a short timeout)
-            withTimeoutOrNull(1000) {
-                outputJob.join()
             }
 
             session.markCompleted(exitCode)

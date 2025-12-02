@@ -57,11 +57,12 @@ object ShellSessionManager {
     /**
      * Mark a session as cancelled by user.
      * This is a non-suspend function for use in UI callbacks where coroutine context may not be available.
-     * Note: This accesses the sessions map without locking, which is safe for this specific use case
-     * because we're only setting a boolean flag on an existing session.
+     * Uses synchronized block for thread-safe map access.
      */
     fun markSessionCancelledByUser(sessionId: String) {
-        sessions[sessionId]?.cancelledByUser = true
+        synchronized(sessions) {
+            sessions[sessionId]?.cancelledByUser = true
+        }
     }
 
     /**

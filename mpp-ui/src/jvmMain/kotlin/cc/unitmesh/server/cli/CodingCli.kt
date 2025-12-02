@@ -226,11 +226,7 @@ class CodingCliRenderer : CodingAgentRenderer {
             exitCode == 0 -> "✓"
             else -> "✗"
         }
-        val statusMessage = when {
-            cancelledByUser -> "Cancelled by user"
-            exitCode == 0 -> "Exit code: $exitCode"
-            else -> "Exit code: $exitCode"
-        }
+        val statusMessage = if (cancelledByUser) "Cancelled by user" else "Exit code: $exitCode"
         val preview = (output ?: "").lines().take(3).joinToString(" ").take(100)
         println("  $statusSymbol $statusMessage (${executionTimeMs}ms)")
         if (preview.isNotEmpty()) {
@@ -292,28 +288,18 @@ class CodingCliRenderer : CodingAgentRenderer {
         val exitCode = process.exitValue()
         val output = session.getOutput()
         val wasCancelledByUser = session.cancelledByUser
+        val executionTimeMs = System.currentTimeMillis() - startWait
         session.markCompleted(exitCode)
 
         return when {
             wasCancelledByUser -> {
                 // User cancelled the command - return a special result with output
                 cc.unitmesh.agent.tool.ToolResult.Error(
-                    message = buildString {
-                        appendLine("⚠️ Command cancelled by user")
-                        appendLine()
-                        appendLine("Command: ${session.command}")
-                        appendLine("Exit code: $exitCode (SIGKILL)")
-                        appendLine()
-                        if (output.isNotEmpty()) {
-                            appendLine("Output before cancellation:")
-                            appendLine(output)
-                        } else {
-                            appendLine("(no output captured before cancellation)")
-                        }
-                    },
+                    message = buildCancelledMessage(session.command, exitCode, output),
                     errorType = "CANCELLED_BY_USER",
                     metadata = mapOf(
                         "exit_code" to exitCode.toString(),
+                        "execution_time_ms" to executionTimeMs.toString(),
                         "session_id" to session.sessionId,
                         "cancelled" to "true",
                         "output" to output
@@ -325,6 +311,7 @@ class CodingCliRenderer : CodingAgentRenderer {
                     content = output.ifEmpty { "(no output)" },
                     metadata = mapOf(
                         "exit_code" to exitCode.toString(),
+                        "execution_time_ms" to executionTimeMs.toString(),
                         "session_id" to session.sessionId
                     )
                 )
@@ -335,10 +322,28 @@ class CodingCliRenderer : CodingAgentRenderer {
                     errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
                     metadata = mapOf(
                         "exit_code" to exitCode.toString(),
+                        "execution_time_ms" to executionTimeMs.toString(),
                         "session_id" to session.sessionId
                     )
                 )
             }
+        }
+    }
+
+    /**
+     * Build a consistent cancelled message for user-cancelled commands.
+     */
+    private fun buildCancelledMessage(command: String, exitCode: Int, output: String): String = buildString {
+        appendLine("⚠️ Command cancelled by user")
+        appendLine()
+        appendLine("Command: $command")
+        appendLine("Exit code: $exitCode (SIGKILL)")
+        appendLine()
+        if (output.isNotEmpty()) {
+            appendLine("Output before cancellation:")
+            appendLine(output)
+        } else {
+            appendLine("(no output captured before cancellation)")
         }
     }
 
@@ -415,19 +420,7 @@ class CodingCliRenderer : CodingAgentRenderer {
         return when {
             wasCancelledByUser -> {
                 cc.unitmesh.agent.tool.ToolResult.Error(
-                    message = buildString {
-                        appendLine("⚠️ Command cancelled by user")
-                        appendLine()
-                        appendLine("Command: ${session.command}")
-                        appendLine("Exit code: $exitCode (SIGKILL)")
-                        appendLine()
-                        if (output.isNotEmpty()) {
-                            appendLine("Output before cancellation:")
-                            appendLine(output)
-                        } else {
-                            appendLine("(no output captured before cancellation)")
-                        }
-                    },
+                    message = buildCancelledMessage(session.command, exitCode, output),
                     errorType = "CANCELLED_BY_USER",
                     metadata = mapOf(
                         "exit_code" to exitCode.toString(),
