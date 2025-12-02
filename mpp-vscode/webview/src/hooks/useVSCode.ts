@@ -11,15 +11,35 @@ interface VSCodeAPI {
 declare function acquireVsCodeApi(): VSCodeAPI;
 
 // Message types from extension
+// Mirrors mpp-ui's ComposeRenderer events
 export interface ExtensionMessage {
-  type: 'userMessage' | 'startResponse' | 'responseChunk' | 'endResponse' | 'error' | 'historyCleared';
+  type:
+    // Message events
+    | 'userMessage'
+    | 'startResponse'
+    | 'responseChunk'
+    | 'endResponse'
+    // Tool events
+    | 'toolCall'
+    | 'toolResult'
+    // Terminal events
+    | 'terminalOutput'
+    // Task events
+    | 'taskComplete'
+    | 'iterationUpdate'
+    // Error and control
+    | 'error'
+    | 'historyCleared';
   content?: string;
+  data?: Record<string, unknown>;
 }
 
 // Message types to extension
 export interface WebviewMessage {
-  type: 'sendMessage' | 'clearHistory';
+  type: 'sendMessage' | 'clearHistory' | 'action';
   content?: string;
+  action?: string;
+  data?: Record<string, unknown>;
 }
 
 // Singleton VSCode API instance

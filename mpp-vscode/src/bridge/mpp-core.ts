@@ -314,30 +314,189 @@ export interface ToolResult {
 }
 
 /**
+ * VSCode Renderer - Forwards agent events to webview
+ * Implements the JsCodingAgentRenderer interface
+ */
+export class VSCodeRenderer {
+  constructor(private chatProvider: { postMessage: (msg: any) => void }) {}
+
+  renderIterationHeader(current: number, max: number): void {
+    this.chatProvider.postMessage({
+      type: 'iterationUpdate',
+      data: { current, max }
+    });
+  }
+
+  renderLLMResponseStart(): void {
+    this.chatProvider.postMessage({ type: 'startResponse' });
+  }
+
+  renderLLMResponseChunk(chunk: string): void {
+    this.chatProvider.postMessage({ type: 'responseChunk', content: chunk });
+  }
+
+  renderLLMResponseEnd(): void {
+    this.chatProvider.postMessage({ type: 'endResponse' });
+  }
+
+  renderToolCall(toolName: string, paramsStr: string): void {
+    this.chatProvider.postMessage({
+      type: 'toolCall',
+      data: {
+        toolName,
+        params: paramsStr,
+        description: `Calling ${toolName}`,
+        success: null
+      }
+    });
+  }
+
+  renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput: string | null): void {
+    this.chatProvider.postMessage({
+      type: 'toolResult',
+      data: {
+        toolName,
+        success,
+        output,
+        fullOutput,
+        summary: success ? 'Completed' : 'Failed'
+      }
+    });
+  }
+
+  renderTaskComplete(): void {
+    this.chatProvider.postMessage({
+      type: 'taskComplete',
+      data: { success: true, message: 'Task completed' }
+    });
+  }
+
+  renderFinalResult(success: boolean, message: string, iterations: number): void {
+    this.chatProvider.postMessage({
+      type: 'taskComplete',
+      data: { success, message: `${message} (${iterations} iterations)` }
+    });
+  }
+
+  renderError(message: string): void {
+    this.chatProvider.postMessage({ type: 'error', content: message });
+  }
+
+  renderRepeatWarning(toolName: string, count: number): void {
+    this.chatProvider.postMessage({
+      type: 'error',
+      content: `Warning: ${toolName} called ${count} times - consider different approach`
+    });
+  }
+
+  renderRecoveryAdvice(advice: string): void {
+    this.chatProvider.postMessage({
+      type: 'responseChunk',
+      content: `\n\n💡 **Suggestion**: ${advice}\n`
+    });
+  }
+
+  renderUserConfirmationRequest(toolName: string, params: Record<string, any>): void {
+    // Auto-approve for now
+    this.chatProvider.postMessage({
+      type: 'toolCall',
+      data: {
+        toolName,
+        params: JSON.stringify(params),
+        description: `Tool '${toolName}' needs approval (auto-approved)`,
+        success: null
+      }
+    });
+  }
+
+  forceStop(): void {
+    this.chatProvider.postMessage({
+      type: 'taskComplete',
+      data: { success: false, message: 'Stopped by user' }
+    });
+  }
+}
+
+/**
  * Coding Agent - AI-powered coding assistant
+ * Wraps mpp-core's JsCodingAgent
  */
 export class CodingAgent {
   private agent: any;
+  private renderer: VSCodeRenderer;
 
   constructor(
+    config: ModelConfig,
+    toolRegistry: ToolRegistry,
+    renderer: VSCodeRenderer,
     projectPath: string,
-    llmService: LLMService,
     options?: {
       maxIterations?: number;
       mcpServers?: Record<string, any>;
     }
   ) {
-    // Access internal koogService
-    const internalService = (llmService as any).koogService;
+    this.renderer = renderer;
 
+    // Create model config
+    const providerName = ProviderTypes[config.provider.toLowerCase()] || config.provider.toUpperCase();
+    const modelConfig = new JsModelConfig(
+      providerName,
+      config.model,
+      config.apiKey,
+      config.temperature ?? 0.7,
+      config.maxTokens ?? 8192,
+      config.baseUrl ?? ''
+    );
+
+    // Create LLM service
+    const llmService = new JsKoogLLMService(modelConfig);
+
+    // Create agent with renderer
     this.agent = new JsCodingAgent(
       projectPath,
-      internalService,
+      llmService,
       options?.maxIterations ?? 100,
-      null, // renderer
+      this.createKotlinRenderer(),
       options?.mcpServers ?? null,
       null  // toolConfig
     );
+  }
+
+  /**
+   * Create a Kotlin-compatible renderer object
+   */
+  private createKotlinRenderer(): any {
+    const renderer = this.renderer;
+    return {
+      renderIterationHeader: (c: number, m: number) => renderer.renderIterationHeader(c, m),
+      renderLLMResponseStart: () => renderer.renderLLMResponseStart(),
+      renderLLMResponseChunk: (chunk: string) => renderer.renderLLMResponseChunk(chunk),
+      renderLLMResponseEnd: () => renderer.renderLLMResponseEnd(),
+      renderToolCall: (name: string, params: string) => renderer.renderToolCall(name, params),
+      renderToolResult: (name: string, success: boolean, output: string | null, full: string | null) =>
+        renderer.renderToolResult(name, success, output, full),
+      renderTaskComplete: () => renderer.renderTaskComplete(),
+      renderFinalResult: (success: boolean, msg: string, iters: number) =>
+        renderer.renderFinalResult(success, msg, iters),
+      renderError: (msg: string) => renderer.renderError(msg),
+      renderRepeatWarning: (name: string, count: number) => renderer.renderRepeatWarning(name, count),
+      renderRecoveryAdvice: (advice: string) => renderer.renderRecoveryAdvice(advice),
+      renderUserConfirmationRequest: (name: string, params: any) =>
+        renderer.renderUserConfirmationRequest(name, params),
+      forceStop: () => renderer.forceStop()
+    };
+  }
+
+  /**
+   * Execute a DevIns command or natural language task
+   */
+  async execute(input: string): Promise<void> {
+    try {
+      await this.agent.execute(input);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.renderer.renderError(message);
+    }
   }
 
   /**
@@ -367,17 +526,17 @@ export class CodingAgent {
   }
 
   /**
-   * Initialize workspace
+   * Clear conversation history
    */
-  async initializeWorkspace(): Promise<void> {
-    await this.agent.initializeWorkspace();
+  clearHistory(): void {
+    this.agent.clearHistory?.();
   }
 
   /**
    * Get conversation history
    */
   getConversationHistory(): ChatMessage[] {
-    const history = this.agent.getConversationHistory();
+    const history = this.agent.getConversationHistory?.() || [];
     return Array.from(history).map((msg: any) => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content

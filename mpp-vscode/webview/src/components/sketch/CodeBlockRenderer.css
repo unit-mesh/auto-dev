@@ -1,0 +1,100 @@
+.code-block {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--vscode-editor-background);
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: var(--vscode-editorWidget-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.code-block-language {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+}
+
+.code-block-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.code-action-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  transition: background-color 0.2s;
+}
+
+.code-action-btn:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.code-action-btn.primary {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.code-action-btn.primary:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+.code-block-content {
+  position: relative;
+  max-height: 400px;
+  overflow: auto;
+}
+
+.code-block-content pre {
+  margin: 0;
+  padding: 12px;
+  font-family: var(--vscode-editor-font-family, 'Consolas', 'Monaco', monospace);
+  font-size: var(--vscode-editor-font-size, 13px);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.code-block-content code {
+  color: var(--vscode-editor-foreground);
+}
+
+.code-streaming-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 3px;
+}
+
+.code-streaming-indicator .dot {
+  width: 4px;
+  height: 4px;
+  background-color: var(--vscode-foreground);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.code-streaming-indicator .dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.code-streaming-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.code-streaming-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+

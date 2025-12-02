@@ -1,59 +1,187 @@
+/**
+ * AutoDev VSCode Webview App
+ *
+ * Main application component using Timeline-based architecture
+ * Mirrors mpp-ui's ComposeRenderer and AgentChatInterface
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageList, Message } from './components/MessageList';
+import { Timeline } from './components/Timeline';
 import { ChatInput } from './components/ChatInput';
 import { useVSCode, ExtensionMessage } from './hooks/useVSCode';
+import type { AgentState, ToolCallInfo, TerminalOutput, ToolCallTimelineItem } from './types/timeline';
 import './App.css';
 
 const App: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
+  // Agent state - mirrors ComposeRenderer's state
+  const [agentState, setAgentState] = useState<AgentState>({
+    timeline: [],
+    currentStreamingContent: '',
+    isProcessing: false,
+    currentIteration: 0,
+    maxIterations: 10,
+    tasks: [],
+  });
+
   const { postMessage, onMessage, isVSCode } = useVSCode();
 
   // Handle messages from extension
   const handleExtensionMessage = useCallback((msg: ExtensionMessage) => {
     switch (msg.type) {
+      // User message
       case 'userMessage':
-        setMessages(prev => [...prev, { role: 'user', content: msg.content || '' }]);
+        setAgentState(prev => ({
+          ...prev,
+          timeline: [...prev.timeline, {
+            type: 'message',
+            timestamp: Date.now(),
+            message: { role: 'user', content: msg.content || '' }
+          }]
+        }));
         break;
 
+      // LLM response start
       case 'startResponse':
-        setIsStreaming(true);
-        setMessages(prev => [...prev, { role: 'assistant', content: '', isStreaming: true }]);
+        setAgentState(prev => ({
+          ...prev,
+          isProcessing: true,
+          currentStreamingContent: ''
+        }));
         break;
 
+      // LLM response chunk (streaming)
       case 'responseChunk':
-        setMessages(prev => {
-          const updated = [...prev];
-          const lastIdx = updated.length - 1;
-          if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-            updated[lastIdx] = {
-              ...updated[lastIdx],
-              content: updated[lastIdx].content + (msg.content || '')
-            };
-          }
-          return updated;
-        });
+        setAgentState(prev => ({
+          ...prev,
+          currentStreamingContent: prev.currentStreamingContent + (msg.content || '')
+        }));
         break;
 
+      // LLM response end
       case 'endResponse':
-        setIsStreaming(false);
-        setMessages(prev => {
-          const updated = [...prev];
-          const lastIdx = updated.length - 1;
-          if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-            updated[lastIdx] = { ...updated[lastIdx], isStreaming: false };
-          }
-          return updated;
+        setAgentState(prev => ({
+          ...prev,
+          isProcessing: false,
+          timeline: [...prev.timeline, {
+            type: 'message',
+            timestamp: Date.now(),
+            message: { role: 'assistant', content: prev.currentStreamingContent }
+          }],
+          currentStreamingContent: ''
+        }));
+        break;
+
+      // Tool call
+      case 'toolCall':
+        if (msg.data) {
+          const toolCall: ToolCallInfo = {
+            toolName: (msg.data.toolName as string) || 'unknown',
+            description: (msg.data.description as string) || '',
+            params: (msg.data.params as string) || '',
+            success: msg.data.success as boolean | null | undefined
+          };
+          setAgentState(prev => ({
+            ...prev,
+            timeline: [...prev.timeline, {
+              type: 'tool_call' as const,
+              timestamp: Date.now(),
+              toolCall
+            }]
+          }));
+        }
+        break;
+
+      // Tool result - update the last tool call
+      case 'toolResult':
+        if (msg.data) {
+          setAgentState(prev => {
+            const timeline = [...prev.timeline];
+            // Find the last tool call and update it
+            for (let i = timeline.length - 1; i >= 0; i--) {
+              if (timeline[i].type === 'tool_call') {
+                const item = timeline[i] as ToolCallTimelineItem;
+                item.toolCall = {
+                  ...item.toolCall,
+                  success: msg.data?.success as boolean | undefined,
+                  output: msg.data?.output as string | undefined,
+                  summary: msg.data?.summary as string | undefined
+                };
+                break;
+              }
+            }
+            return { ...prev, timeline };
+          });
+        }
+        break;
+
+      // Terminal output
+      case 'terminalOutput':
+        if (msg.data) {
+          const terminal: TerminalOutput = {
+            command: (msg.data.command as string) || '',
+            output: (msg.data.output as string) || '',
+            exitCode: (msg.data.exitCode as number) || 0,
+            executionTimeMs: (msg.data.executionTimeMs as number) || 0
+          };
+          setAgentState(prev => ({
+            ...prev,
+            timeline: [...prev.timeline, {
+              type: 'terminal_output' as const,
+              timestamp: Date.now(),
+              terminal
+            }]
+          }));
+        }
+        break;
+
+      // Task complete
+      case 'taskComplete':
+        setAgentState(prev => ({
+          ...prev,
+          isProcessing: false,
+          timeline: [...prev.timeline, {
+            type: 'task_complete' as const,
+            timestamp: Date.now(),
+            success: Boolean(msg.data?.success ?? true),
+            message: String(msg.data?.message || 'Task completed')
+          }]
+        }));
+        break;
+
+      // Error
+      case 'error':
+        setAgentState(prev => ({
+          ...prev,
+          isProcessing: false,
+          currentStreamingContent: '',
+          timeline: [...prev.timeline, {
+            type: 'error',
+            timestamp: Date.now(),
+            message: msg.content || 'An error occurred'
+          }],
+          errorMessage: msg.content
+        }));
+        break;
+
+      // Clear history
+      case 'historyCleared':
+        setAgentState({
+          timeline: [],
+          currentStreamingContent: '',
+          isProcessing: false,
+          currentIteration: 0,
+          maxIterations: 10,
+          tasks: [],
         });
         break;
 
-      case 'error':
-        setIsStreaming(false);
-        setMessages(prev => [...prev, { role: 'error', content: msg.content || 'An error occurred' }]);
-        break;
-
-      case 'historyCleared':
-        setMessages([]);
+      // Iteration update
+      case 'iterationUpdate':
+        setAgentState(prev => ({
+          ...prev,
+          currentIteration: Number(msg.data?.current) || prev.currentIteration,
+          maxIterations: Number(msg.data?.max) || prev.maxIterations
+        }));
         break;
     }
   }, []);
@@ -73,25 +201,47 @@ const App: React.FC = () => {
     postMessage({ type: 'clearHistory' });
   }, [postMessage]);
 
+  // Handle actions from sketch renderers
+  const handleAction = useCallback((action: string, data: any) => {
+    postMessage({ type: 'action', action, data });
+  }, [postMessage]);
+
   return (
     <div className="app">
       <header className="app-header">
         <div className="header-title">
           <span className="header-icon">✨</span>
-          <span>AutoDev Chat</span>
+          <span>AutoDev</span>
         </div>
+        {agentState.isProcessing && (
+          <div className="header-status">
+            <span className="status-dot"></span>
+            <span>Processing...</span>
+            {agentState.currentIteration > 0 && (
+              <span className="iteration-badge">
+                {agentState.currentIteration}/{agentState.maxIterations}
+              </span>
+            )}
+          </div>
+        )}
         {!isVSCode && (
           <span className="dev-badge">Dev Mode</span>
         )}
       </header>
-      
-      <MessageList messages={messages} />
-      
+
+      <div className="app-content">
+        <Timeline
+          items={agentState.timeline}
+          currentStreamingContent={agentState.isProcessing ? agentState.currentStreamingContent : undefined}
+          onAction={handleAction}
+        />
+      </div>
+
       <ChatInput
         onSend={handleSend}
         onClear={handleClear}
-        disabled={isStreaming}
-        placeholder="Ask AutoDev anything..."
+        disabled={agentState.isProcessing}
+        placeholder="Ask AutoDev anything... (use / for commands, @ for agents)"
       />
     </div>
   );

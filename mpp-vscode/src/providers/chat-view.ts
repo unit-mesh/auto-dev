@@ -1,17 +1,21 @@
 /**
  * Chat View Provider - Webview for chat interface
+ *
+ * Uses mpp-core's CodingAgent for agent-based interactions
+ * Mirrors mpp-ui's AgentChatInterface architecture
  */
 
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { LLMService, ModelConfig } from '../bridge/mpp-core';
+import { CodingAgent, ToolRegistry, ModelConfig, VSCodeRenderer } from '../bridge/mpp-core';
 
 /**
  * Chat View Provider for the sidebar webview
  */
 export class ChatViewProvider implements vscode.WebviewViewProvider {
   private webviewView: vscode.WebviewView | undefined;
-  private llmService: LLMService | undefined;
+  private codingAgent: CodingAgent | undefined;
+  private toolRegistry: ToolRegistry | undefined;
+  private renderer: VSCodeRenderer | undefined;
   private messages: Array<{ role: string; content: string }> = [];
 
   constructor(
@@ -44,11 +48,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         case 'clearHistory':
           this.clearHistory();
           break;
+        case 'action':
+          await this.handleAction(message.action, message.data);
+          break;
       }
     });
 
-    // Initialize LLM service
-    this.initializeLLMService();
+    // Initialize agent
+    this.initializeAgent();
   }
 
   /**
@@ -56,7 +63,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
    */
   async sendMessage(content: string): Promise<void> {
     if (this.webviewView) {
-      // Show the chat view
       this.webviewView.show(true);
     }
     await this.handleUserMessage(content);
@@ -69,9 +75,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     this.webviewView?.webview.postMessage(message);
   }
 
-  private initializeLLMService(): void {
+  private initializeAgent(): void {
     const config = vscode.workspace.getConfiguration('autodev');
-    
+    const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+
     const modelConfig: ModelConfig = {
       provider: config.get<string>('provider', 'openai'),
       model: config.get<string>('model', 'gpt-4'),
@@ -79,50 +86,57 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       baseUrl: config.get<string>('baseUrl', '')
     };
 
-    if (!modelConfig.apiKey) {
-      this.postMessage({
-        type: 'error',
-        content: 'Please configure your API key in settings (autodev.apiKey)'
-      });
-      return;
-    }
+    // Create renderer that forwards events to webview
+    this.renderer = new VSCodeRenderer(this);
 
     try {
-      this.llmService = new LLMService(modelConfig);
-      this.log(`LLM Service initialized: ${modelConfig.provider}/${modelConfig.model}`);
+      // Initialize tool registry with VSCode tools
+      this.toolRegistry = new ToolRegistry(workspacePath);
+
+      // Initialize coding agent (will use config from mpp-core)
+      this.codingAgent = new CodingAgent(
+        modelConfig,
+        this.toolRegistry,
+        this.renderer,
+        workspacePath
+      );
+
+      this.log(`CodingAgent initialized for workspace: ${workspacePath}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.log(`Failed to initialize LLM service: ${message}`);
-      this.postMessage({ type: 'error', content: message });
+      this.log(`Failed to initialize CodingAgent: ${message}`);
+      // Don't show error - agent will be initialized on first message if needed
     }
   }
 
   private async handleUserMessage(content: string): Promise<void> {
-    if (!this.llmService) {
-      this.initializeLLMService();
-      if (!this.llmService) {
-        return;
-      }
+    // Initialize agent if not ready
+    if (!this.codingAgent) {
+      this.initializeAgent();
     }
 
-    // Add user message
+    // Add user message to timeline
     this.messages.push({ role: 'user', content });
     this.postMessage({ type: 'userMessage', content });
 
-    // Start streaming response
-    this.postMessage({ type: 'startResponse' });
+    // Check if this is a DevIns command
+    const isDevInsCommand = content.startsWith('/') || content.startsWith('@');
 
     try {
-      let fullResponse = '';
-      
-      await this.llmService.streamMessage(content, (chunk) => {
-        fullResponse += chunk;
-        this.postMessage({ type: 'responseChunk', content: chunk });
-      });
+      if (this.codingAgent && isDevInsCommand) {
+        // Use CodingAgent for DevIns commands
+        await this.codingAgent.execute(content);
+      } else {
+        // Simple chat mode - stream response directly
+        this.postMessage({ type: 'startResponse' });
 
-      this.messages.push({ role: 'assistant', content: fullResponse });
-      this.postMessage({ type: 'endResponse' });
-      
+        // For now, echo back a helpful message
+        const response = this.getHelpfulResponse(content);
+        this.postMessage({ type: 'responseChunk', content: response });
+        this.postMessage({ type: 'endResponse' });
+
+        this.messages.push({ role: 'assistant', content: response });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.log(`Error in chat: ${message}`);
@@ -130,9 +144,85 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  private getHelpfulResponse(content: string): string {
+    // Provide helpful guidance for users
+    return `I'm AutoDev, your AI coding assistant. Here's how to use me:
+
+**Commands (start with /):**
+- \`/file:path\` - Read a file
+- \`/write:path\` - Write to a file
+- \`/run:command\` - Run a shell command
+- \`/commit\` - Generate commit message
+
+**Agents (start with @):**
+- \`@code\` - Code generation
+- \`@test\` - Test generation
+- \`@doc\` - Documentation
+- \`@review\` - Code review
+
+**Variables (use $):**
+- \`$selection\` - Current selection
+- \`$file\` - Current file
+- \`$language\` - Current language
+
+Try: \`@code write a function to sort an array\`
+
+Your message: "${content}"`;
+  }
+
+  private async handleAction(action: string, data: any): Promise<void> {
+    this.log(`Action: ${action}, data: ${JSON.stringify(data)}`);
+
+    switch (action) {
+      case 'insert':
+        // Insert code at cursor
+        const editor = vscode.window.activeTextEditor;
+        if (editor && data.code) {
+          await editor.edit(editBuilder => {
+            editBuilder.insert(editor.selection.active, data.code);
+          });
+        }
+        break;
+
+      case 'apply':
+        // Apply code changes (show diff)
+        if (data.code) {
+          // TODO: Show diff view
+          vscode.window.showInformationMessage('Apply code: ' + data.code.substring(0, 50) + '...');
+        }
+        break;
+
+      case 'accept-diff':
+        // Accept diff changes
+        // TODO: Apply diff
+        break;
+
+      case 'reject-diff':
+        // Reject diff changes
+        break;
+
+      case 'run-command':
+        // Run terminal command
+        if (data.command) {
+          const terminal = vscode.window.createTerminal('AutoDev');
+          terminal.show();
+          terminal.sendText(data.command);
+        }
+        break;
+
+      case 'view-diff':
+        // Open diff view
+        break;
+
+      case 'rerun-tool':
+        // Rerun a tool
+        break;
+    }
+  }
+
   private clearHistory(): void {
     this.messages = [];
-    this.llmService?.clearHistory();
+    this.codingAgent?.clearHistory();
     this.postMessage({ type: 'historyCleared' });
   }
 

@@ -2,7 +2,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--background);
+  background: var(--vscode-editor-background);
 }
 
 .app-header {
@@ -10,8 +10,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--panel-border);
-  background: var(--background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-editorWidget-background);
+  flex-shrink: 0;
 }
 
 .header-title {
@@ -20,17 +21,54 @@
   gap: 8px;
   font-weight: 600;
   font-size: 14px;
+  color: var(--vscode-foreground);
 }
 
 .header-icon {
   font-size: 16px;
 }
 
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--vscode-charts-yellow, #dcdcaa);
+  border-radius: 50%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 80%, 100% { opacity: 0.4; transform: scale(1); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+.iteration-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border-radius: 10px;
+}
+
 .dev-badge {
   font-size: 10px;
   padding: 2px 6px;
-  background: var(--selection-background);
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
   border-radius: 4px;
   opacity: 0.7;
+}
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
