@@ -279,8 +279,9 @@ class CodingAgentExecutor(
             }
 
             // 错误恢复处理
-            if (!executionResult.isSuccess && !executionResult.isPending) {
-                val command = if (toolName == "shell") params["command"] as? String else null
+            // 跳过用户取消的场景 - 用户取消是明确的意图，不需要显示额外的错误消息
+            val wasCancelledByUser = executionResult.metadata["cancelled"] == "true"
+            if (!executionResult.isSuccess && !executionResult.isPending && !wasCancelledByUser) {
                 val errorMessage = executionResult.content ?: "Unknown error"
 
                 renderer.renderError("Tool execution failed: $errorMessage")
@@ -465,6 +466,13 @@ class CodingAgentExecutor(
         // Live Terminal 已经在 Timeline 中显示实时输出了
         val isLiveSession = executionResult.metadata["isLiveSession"] == "true"
         if (isLiveSession) {
+            return null
+        }
+
+        // 对于用户取消的命令，不需要分析输出
+        // 用户取消是明确的意图，不需要对取消前的输出做分析
+        val wasCancelledByUser = executionResult.metadata["cancelled"] == "true"
+        if (wasCancelledByUser) {
             return null
         }
 

@@ -300,6 +300,7 @@ class DocumentAgentExecutor(
      * P1: Check for long content and delegate to AnalysisAgent for summarization
      * NOTE: Code content (from $.code.* queries) is NOT summarized to preserve actual code
      * NOTE: Live Session output is NOT summarized to preserve real-time terminal output
+     * NOTE: User cancelled commands are NOT summarized - cancellation is explicit user intent
      */
     private suspend fun checkForLongContent(
         toolName: String,
@@ -315,6 +316,13 @@ class DocumentAgentExecutor(
         // Live Terminal 已经在 Timeline 中显示实时输出了
         val isLiveSession = executionResult.metadata["isLiveSession"] == "true"
         if (isLiveSession) {
+            return null
+        }
+
+        // 对于用户取消的命令，不需要分析输出
+        // 用户取消是明确的意图，不需要对取消前的输出做分析
+        val wasCancelledByUser = executionResult.metadata["cancelled"] == "true"
+        if (wasCancelledByUser) {
             return null
         }
 
