@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.tool.schema
 
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
+import cc.unitmesh.agent.tool.ToolResult
 
 /**
  * 工具执行结果格式化器
@@ -26,15 +27,32 @@ object ToolResultFormatter {
             }
         }
 
-        // 格式化结果
-        sb.append("Result: ${if (result.isSuccess) "SUCCESS" else "FAILED"}\n")
-        sb.append("Output:\n")
-        sb.append(result.content)
+        // 格式化结果状态
+        val statusText = when {
+            result.isPending -> "PENDING"
+            result.isSuccess -> "SUCCESS"
+            else -> "FAILED"
+        }
+        sb.append("Result: $statusText\n")
 
-        if (!result.isSuccess) {
-            val errorMsg = result.errorMessage
-            if (!errorMsg.isNullOrEmpty()) {
-                sb.append("\nError: $errorMsg")
+        // 处理 Pending 状态的特殊格式化
+        if (result.isPending) {
+            val pending = result.result as? ToolResult.Pending
+            if (pending != null) {
+                sb.append("Status: Process is executing asynchronously\n")
+                sb.append("Session ID: ${pending.sessionId}\n")
+                sb.append("Command: ${pending.command}\n")
+                sb.append("Message: ${pending.message}\n")
+            }
+        } else {
+            sb.append("Output:\n")
+            sb.append(result.content)
+
+            if (!result.isSuccess) {
+                val errorMsg = result.errorMessage
+                if (!errorMsg.isNullOrEmpty()) {
+                    sb.append("\nError: $errorMsg")
+                }
             }
         }
 

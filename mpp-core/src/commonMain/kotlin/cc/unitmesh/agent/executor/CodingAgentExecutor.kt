@@ -18,6 +18,18 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.Clock
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
+/**
+ * Configuration for async shell execution timeout behavior
+ */
+data class AsyncShellConfig(
+    /** Initial wait timeout in milliseconds before notifying AI that process is still running */
+    val initialWaitTimeoutMs: Long = 60_000L, // 1 minute
+    /** Maximum total wait time in milliseconds */
+    val maxWaitTimeoutMs: Long = 300_000L, // 5 minutes
+    /** Interval for checking process status after initial timeout */
+    val checkIntervalMs: Long = 30_000L // 30 seconds
+)
+
 class CodingAgentExecutor(
     projectPath: String,
     llmService: KoogLLMService,
@@ -25,7 +37,8 @@ class CodingAgentExecutor(
     renderer: CodingAgentRenderer,
     maxIterations: Int = 100,
     private val subAgentManager: SubAgentManager? = null,
-    enableLLMStreaming: Boolean = true
+    enableLLMStreaming: Boolean = true,
+    private val asyncShellConfig: AsyncShellConfig = AsyncShellConfig()
 ) : BaseAgentExecutor(
     projectPath = projectPath,
     llmService = llmService,
@@ -202,11 +215,16 @@ class CodingAgentExecutor(
                 environment = emptyMap()
             )
 
-            val executionResult = toolOrchestrator.executeToolCall(
+            var executionResult = toolOrchestrator.executeToolCall(
                 toolName,
                 params,
                 executionContext
             )
+
+            // Handle Pending result (async shell execution)
+            if (executionResult.isPending) {
+                executionResult = handlePendingResult(executionResult, toolName, params)
+            }
 
             results.add(Triple(toolName, params, executionResult))
 
@@ -240,7 +258,8 @@ class CodingAgentExecutor(
                     }
                 }
                 is ToolResult.AgentResult -> if (!result.success) result.content else stepResult.result
-                else -> stepResult.result
+                is ToolResult.Pending -> stepResult.result // Should not happen after handlePendingResult
+                is ToolResult.Success -> stepResult.result
             }
 
             val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
@@ -260,7 +279,7 @@ class CodingAgentExecutor(
             }
 
             // 错误恢复处理
-            if (!executionResult.isSuccess) {
+            if (!executionResult.isSuccess && !executionResult.isPending) {
                 val command = if (toolName == "shell") params["command"] as? String else null
                 val errorMessage = executionResult.content ?: "Unknown error"
 
@@ -269,6 +288,112 @@ class CodingAgentExecutor(
         }
 
         results
+    }
+
+    /**
+     * Handle a Pending result from async shell execution.
+     * Waits for the session to complete with timeout handling.
+     * If the process takes longer than initialWaitTimeoutMs, returns a special result
+     * indicating the process is still running (similar to Augment's behavior).
+     */
+    private suspend fun handlePendingResult(
+        pendingResult: ToolExecutionResult,
+        toolName: String,
+        params: Map<String, Any>
+    ): ToolExecutionResult {
+        val pending = pendingResult.result as? ToolResult.Pending
+            ?: return pendingResult
+
+        val sessionId = pending.sessionId
+        val command = pending.command
+        val startTime = pendingResult.startTime
+
+        // First, try to wait for the initial timeout
+        val initialResult = renderer.awaitSessionResult(sessionId, asyncShellConfig.initialWaitTimeoutMs)
+
+        return when (initialResult) {
+            is ToolResult.Success -> {
+                // Process completed within initial timeout
+                val endTime = Clock.System.now().toEpochMilliseconds()
+                ToolExecutionResult.success(
+                    executionId = pendingResult.executionId,
+                    toolName = toolName,
+                    content = initialResult.content,
+                    startTime = startTime,
+                    endTime = endTime,
+                    metadata = initialResult.metadata + mapOf("sessionId" to sessionId)
+                )
+            }
+            is ToolResult.Error -> {
+                // Process failed
+                val endTime = Clock.System.now().toEpochMilliseconds()
+                ToolExecutionResult.failure(
+                    executionId = pendingResult.executionId,
+                    toolName = toolName,
+                    error = initialResult.message,
+                    startTime = startTime,
+                    endTime = endTime,
+                    metadata = initialResult.metadata + mapOf("sessionId" to sessionId)
+                )
+            }
+            is ToolResult.Pending -> {
+                // Process is still running after initial timeout
+                // Return a special result to inform the AI
+                val elapsedSeconds = (Clock.System.now().toEpochMilliseconds() - startTime) / 1000
+                val stillRunningMessage = buildString {
+                    appendLine("⏳ Process is still running after ${elapsedSeconds}s")
+                    appendLine("Command: $command")
+                    appendLine("Session ID: $sessionId")
+                    appendLine()
+                    appendLine("The process is executing in the background. You can:")
+                    appendLine("1. Continue with other tasks while waiting")
+                    appendLine("2. Check the terminal output in the UI for real-time progress")
+                    appendLine("3. The result will be available when the process completes")
+                }
+
+                // Return as a "success" with the still-running message
+                // This allows the agent to continue and make decisions
+                val endTime = Clock.System.now().toEpochMilliseconds()
+                ToolExecutionResult(
+                    executionId = pendingResult.executionId,
+                    toolName = toolName,
+                    result = ToolResult.Success(
+                        content = stillRunningMessage,
+                        metadata = mapOf(
+                            "status" to "still_running",
+                            "sessionId" to sessionId,
+                            "command" to command,
+                            "elapsedSeconds" to elapsedSeconds.toString()
+                        )
+                    ),
+                    startTime = startTime,
+                    endTime = endTime,
+                    state = ToolExecutionState.Executing(pendingResult.executionId, startTime),
+                    metadata = mapOf(
+                        "sessionId" to sessionId,
+                        "isAsync" to "true",
+                        "stillRunning" to "true"
+                    )
+                )
+            }
+            is ToolResult.AgentResult -> {
+                // Unexpected, but handle it
+                val endTime = Clock.System.now().toEpochMilliseconds()
+                ToolExecutionResult(
+                    executionId = pendingResult.executionId,
+                    toolName = toolName,
+                    result = initialResult,
+                    startTime = startTime,
+                    endTime = endTime,
+                    state = if (initialResult.success) {
+                        ToolExecutionState.Success(pendingResult.executionId, initialResult, endTime - startTime)
+                    } else {
+                        ToolExecutionState.Failed(pendingResult.executionId, initialResult.content, endTime - startTime)
+                    },
+                    metadata = mapOf("sessionId" to sessionId)
+                )
+            }
+        }
     }
 
     private fun recordFileEdit(params: Map<String, Any>) {

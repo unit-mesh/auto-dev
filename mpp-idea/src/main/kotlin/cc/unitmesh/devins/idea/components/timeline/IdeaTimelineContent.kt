@@ -74,14 +74,9 @@ fun IdeaTimelineItemView(item: TimelineItem, project: Project? = null) {
             IdeaTerminalOutputBubble(item, project = project)
         }
         is TimelineItem.LiveTerminalItem -> {
-            // Live terminal not supported in IDEA yet, show placeholder
-            IdeaTerminalOutputBubble(
-                item = TimelineItem.TerminalOutputItem(
-                    command = item.command,
-                    output = "[Live terminal session: ${item.sessionId}]",
-                    exitCode = 0,
-                    executionTimeMs = 0
-                ),
+            // Live terminal with real-time output streaming
+            IdeaLiveTerminalBubble(
+                item = item,
                 project = project
             )
         }
