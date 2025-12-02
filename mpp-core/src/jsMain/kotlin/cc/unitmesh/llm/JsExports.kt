@@ -797,6 +797,12 @@ private fun cc.unitmesh.agent.tool.ToolResult.toJsToolResult(): JsToolResult {
             errorMessage = if (!this.success) "Agent execution failed" else null,
             metadata = this.metadata
         )
+        is cc.unitmesh.agent.tool.ToolResult.Pending -> JsToolResult(
+            success = false, // Not yet completed
+            output = this.message,
+            errorMessage = null,
+            metadata = this.metadata + mapOf("sessionId" to this.sessionId, "isPending" to "true")
+        )
     }
 }
 

@@ -77,25 +77,48 @@ sealed class ToolResult {
         val metadata: Map<String, String> = emptyMap()
     ) : ToolResult()
 
+    /**
+     * Pending 结果 - 表示异步执行中的工具调用
+     * 用于 Shell 等需要实时输出的工具，UI 可以通过 sessionId 跟踪执行状态
+     *
+     * @param sessionId 会话 ID，用于跟踪和更新执行状态
+     * @param toolName 工具名称
+     * @param command 执行的命令（用于显示）
+     * @param message 状态消息
+     * @param metadata 额外的元数据
+     */
+    @Serializable
+    data class Pending(
+        val sessionId: String,
+        val toolName: String,
+        val command: String = "",
+        val message: String = "Executing...",
+        val metadata: Map<String, String> = emptyMap()
+    ) : ToolResult()
+
     fun isSuccess(): Boolean = this is Success || (this is AgentResult && this.success)
     fun isError(): Boolean = this is Error || (this is AgentResult && !this.success)
+    fun isPending(): Boolean = this is Pending
 
     fun getOutput(): String = when (this) {
         is Success -> content
         is AgentResult -> content
         is Error -> ""
+        is Pending -> message
     }
 
     fun getError(): String = when (this) {
         is Success -> ""
         is AgentResult -> if (!success) content else ""
         is Error -> message
+        is Pending -> ""
     }
 
     fun extractMetadata(): Map<String, String> = when (this) {
         is Success -> metadata
         is AgentResult -> metadata
         is Error -> metadata
+        is Pending -> metadata
     }
 }
 

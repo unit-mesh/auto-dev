@@ -24,14 +24,14 @@ import org.jetbrains.jewel.ui.component.CircularProgressIndicator
  * - Walkthrough -> IdeaWalkthroughBlockRenderer
  * - Mermaid -> MermaidDiagramView
  * - DevIn -> IdeaDevInBlockRenderer
- * 
+ *
  * Related GitHub Issue: https://github.com/phodal/auto-dev/issues/25
  */
 object IdeaSketchRenderer {
 
     /**
      * Render LLM response content with full sketch support.
-     * 
+     *
      * @param content The content to render
      * @param isComplete Whether the content is complete (not streaming)
      * @param parentDisposable Parent disposable for resource cleanup
@@ -147,15 +147,11 @@ object IdeaSketchRenderer {
                     }
 
                     else -> {
-                        if (fence.text.isNotBlank()) {
-                            IdeaCodeBlockRenderer(
-                                code = fence.text,
-                                language = fence.languageId,
-                                project = project,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
+                        JewelMarkdownRenderer(
+                            fence.text,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
