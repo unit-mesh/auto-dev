@@ -160,6 +160,16 @@ object CodingCli {
  * Console renderer for CodingCli output
  */
 class CodingCliRenderer : CodingAgentRenderer {
+    // Track active sessions for awaitSessionResult
+    private val activeSessions = mutableMapOf<String, SessionInfo>()
+
+    data class SessionInfo(
+        val sessionId: String,
+        val command: String,
+        val process: Process?,
+        val startTime: Long
+    )
+
     override fun renderIterationHeader(current: Int, max: Int) {
         println("\n━━━ Iteration $current/$max ━━━")
     }
@@ -184,6 +194,195 @@ class CodingCliRenderer : CodingAgentRenderer {
             formatted.lines().forEach { line ->
                 println("  ⎿ $line")
             }
+        }
+    }
+
+    override fun addLiveTerminal(
+        sessionId: String,
+        command: String,
+        workingDirectory: String?,
+        ptyHandle: Any?
+    ) {
+        val process = ptyHandle as? Process
+        activeSessions[sessionId] = SessionInfo(
+            sessionId = sessionId,
+            command = command,
+            process = process,
+            startTime = System.currentTimeMillis()
+        )
+        println("  ⏳ Running: $command")
+    }
+
+    override fun updateLiveTerminalStatus(
+        sessionId: String,
+        exitCode: Int,
+        executionTimeMs: Long,
+        output: String?
+    ) {
+        activeSessions.remove(sessionId)
+        val statusSymbol = if (exitCode == 0) "✓" else "✗"
+        val preview = (output ?: "").lines().take(3).joinToString(" ").take(100)
+        println("  $statusSymbol Exit code: $exitCode (${executionTimeMs}ms)")
+        if (preview.isNotEmpty()) {
+            println("  $preview${if (preview.length < (output ?: "").length) "..." else ""}")
+        }
+    }
+
+    override suspend fun awaitSessionResult(sessionId: String, timeoutMs: Long): cc.unitmesh.agent.tool.ToolResult {
+        val session = activeSessions[sessionId]
+        if (session == null) {
+            // Session not found - check ShellSessionManager
+            val managedSession = cc.unitmesh.agent.tool.shell.ShellSessionManager.getSession(sessionId)
+            if (managedSession != null) {
+                return awaitManagedSession(managedSession, timeoutMs)
+            }
+            return cc.unitmesh.agent.tool.ToolResult.Error("Session not found: $sessionId")
+        }
+
+        val process = session.process
+        if (process == null) {
+            return cc.unitmesh.agent.tool.ToolResult.Error("No process handle for session: $sessionId")
+        }
+
+        return awaitProcess(process, session, timeoutMs)
+    }
+
+    private suspend fun awaitManagedSession(
+        session: cc.unitmesh.agent.tool.shell.ManagedSession,
+        timeoutMs: Long
+    ): cc.unitmesh.agent.tool.ToolResult {
+        val process = session.processHandle as? Process
+        if (process == null) {
+            return cc.unitmesh.agent.tool.ToolResult.Error("No process handle for session: ${session.sessionId}")
+        }
+
+        val startWait = System.currentTimeMillis()
+        val checkIntervalMs = 100L
+
+        while (process.isAlive) {
+            val elapsed = System.currentTimeMillis() - startWait
+            if (elapsed >= timeoutMs) {
+                // Timeout - process still running
+                val output = session.getOutput()
+                return cc.unitmesh.agent.tool.ToolResult.Pending(
+                    sessionId = session.sessionId,
+                    toolName = "shell",
+                    command = session.command,
+                    message = "Process still running after ${elapsed}ms",
+                    metadata = mapOf(
+                        "partial_output" to output.take(1000),
+                        "elapsed_ms" to elapsed.toString()
+                    )
+                )
+            }
+            kotlinx.coroutines.delay(checkIntervalMs)
+        }
+
+        // Process completed
+        val exitCode = process.exitValue()
+        val output = session.getOutput()
+        session.markCompleted(exitCode)
+
+        return if (exitCode == 0) {
+            cc.unitmesh.agent.tool.ToolResult.Success(
+                content = output.ifEmpty { "(no output)" },
+                metadata = mapOf(
+                    "exit_code" to exitCode.toString(),
+                    "session_id" to session.sessionId
+                )
+            )
+        } else {
+            cc.unitmesh.agent.tool.ToolResult.Error(
+                message = "Command failed with exit code $exitCode:\n$output",
+                errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
+                metadata = mapOf(
+                    "exit_code" to exitCode.toString(),
+                    "session_id" to session.sessionId
+                )
+            )
+        }
+    }
+
+    private suspend fun awaitProcess(
+        process: Process,
+        session: SessionInfo,
+        timeoutMs: Long
+    ): cc.unitmesh.agent.tool.ToolResult {
+        val startWait = System.currentTimeMillis()
+        val checkIntervalMs = 100L
+        val outputBuilder = StringBuilder()
+
+        // Read output in background
+        val stdoutReader = process.inputStream.bufferedReader()
+        val stderrReader = process.errorStream.bufferedReader()
+
+        while (process.isAlive) {
+            // Read available output
+            while (stdoutReader.ready()) {
+                val line = stdoutReader.readLine() ?: break
+                outputBuilder.appendLine(line)
+                println("  │ $line")
+            }
+            while (stderrReader.ready()) {
+                val line = stderrReader.readLine() ?: break
+                outputBuilder.appendLine("[stderr] $line")
+                println("  │ [stderr] $line")
+            }
+
+            val elapsed = System.currentTimeMillis() - startWait
+            if (elapsed >= timeoutMs) {
+                // Timeout - process still running
+                return cc.unitmesh.agent.tool.ToolResult.Pending(
+                    sessionId = session.sessionId,
+                    toolName = "shell",
+                    command = session.command,
+                    message = "Process still running after ${elapsed}ms",
+                    metadata = mapOf(
+                        "partial_output" to outputBuilder.toString().take(1000),
+                        "elapsed_ms" to elapsed.toString()
+                    )
+                )
+            }
+            kotlinx.coroutines.delay(checkIntervalMs)
+        }
+
+        // Read remaining output
+        stdoutReader.forEachLine { line ->
+            outputBuilder.appendLine(line)
+            println("  │ $line")
+        }
+        stderrReader.forEachLine { line ->
+            outputBuilder.appendLine("[stderr] $line")
+            println("  │ [stderr] $line")
+        }
+
+        // Process completed
+        val exitCode = process.exitValue()
+        val output = outputBuilder.toString()
+        activeSessions.remove(session.sessionId)
+
+        val executionTimeMs = System.currentTimeMillis() - session.startTime
+        println("  ${if (exitCode == 0) "✓" else "✗"} Exit code: $exitCode (${executionTimeMs}ms)")
+
+        return if (exitCode == 0) {
+            cc.unitmesh.agent.tool.ToolResult.Success(
+                content = output.ifEmpty { "(no output)" },
+                metadata = mapOf(
+                    "exit_code" to exitCode.toString(),
+                    "session_id" to session.sessionId,
+                    "execution_time_ms" to executionTimeMs.toString()
+                )
+            )
+        } else {
+            cc.unitmesh.agent.tool.ToolResult.Error(
+                message = "Command failed with exit code $exitCode:\n$output",
+                errorType = cc.unitmesh.agent.tool.ToolErrorType.COMMAND_FAILED.code,
+                metadata = mapOf(
+                    "exit_code" to exitCode.toString(),
+                    "session_id" to session.sessionId,
+                    "execution_time_ms" to executionTimeMs.toString()
+                )
+            )
         }
     }
 

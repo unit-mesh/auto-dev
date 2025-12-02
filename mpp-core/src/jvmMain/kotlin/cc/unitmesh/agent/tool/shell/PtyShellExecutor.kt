@@ -256,24 +256,13 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
         if (ptyHandle !is Process) {
             throw ToolException("Invalid PTY handle", ToolErrorType.INTERNAL_ERROR)
         }
-        
+
         try {
-            // 启动输出读取任务
-            val outputJob = launch {
-                try {
-                    ptyHandle.inputStream.bufferedReader().use { reader ->
-                        var line = reader.readLine()
-                        while (line != null && isActive) {
-                            session.appendStdout(line)
-                            session.appendStdout("\n")
-                            line = reader.readLine()
-                        }
-                    }
-                } catch (e: Exception) {
-                    logger().error(e) { "Failed to read output from PTY process: ${e.message}" }
-                }
-            }
-            
+            // Note: We do NOT read output here to avoid conflicts with UI-layer output collectors
+            // (e.g., ProcessOutputCollector in IdeaLiveTerminalBubble).
+            // The UI layer is responsible for reading and displaying output in real-time.
+            // For CLI usage, the renderer's awaitSessionResult should handle output reading.
+
             val exitCode = withTimeoutOrNull(timeoutMs) {
                 while (ptyHandle.isAlive) {
                     yield()
@@ -281,17 +270,13 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
                 }
                 ptyHandle.exitValue()
             }
-            
+
             if (exitCode == null) {
-                outputJob.cancel()
                 ptyHandle.destroyForcibly()
                 ptyHandle.waitFor(3000, TimeUnit.MILLISECONDS)
                 throw ToolException("Command timed out after ${timeoutMs}ms", ToolErrorType.TIMEOUT)
             }
-            
-            // 等待输出读取完成
-            outputJob.join()
-            
+
             session.markCompleted(exitCode)
             exitCode
         } catch (e: Exception) {

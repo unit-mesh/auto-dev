@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.agent.tool.shell.ShellSessionManager
 import cc.unitmesh.devins.idea.renderer.terminal.IdeaAnsiTerminalRenderer
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.project.Project
@@ -37,9 +38,12 @@ data class ProcessOutputState(
 /**
  * Collector that monitors a Process and emits output updates via Flow.
  * Uses a listener-like pattern with periodic checks.
+ *
+ * Also syncs output to ShellSessionManager for cancel event handling.
  */
 class ProcessOutputCollector(
     private val process: Process,
+    private val sessionId: String? = null,
     private val checkIntervalMs: Long = 100L
 ) {
     private val _state = MutableStateFlow(ProcessOutputState())
@@ -95,13 +99,19 @@ class ProcessOutputCollector(
                 val bytesRead = reader.read(charBuffer)
                 if (bytesRead == -1) break
 
+                val chunk = String(charBuffer, 0, bytesRead)
                 synchronized(buffer) {
                     if (isError) buffer.append("\u001B[31m")
-                    buffer.append(charBuffer, 0, bytesRead)
+                    buffer.append(chunk)
                     if (isError) buffer.append("\u001B[0m")
                 }
 
                 _state.update { it.copy(output = buffer.toString()) }
+
+                // Sync to ShellSessionManager for cancel event handling
+                sessionId?.let { sid ->
+                    ShellSessionManager.getSession(sid)?.appendOutput(chunk)
+                }
             }
         } catch (e: Exception) {
             // Stream closed
@@ -111,6 +121,11 @@ class ProcessOutputCollector(
     fun stop() {
         job?.cancel()
     }
+
+    /**
+     * Get current output buffer content
+     */
+    fun getCurrentOutput(): String = synchronized(buffer) { buffer.toString() }
 }
 
 /**
@@ -146,9 +161,9 @@ fun IdeaLiveTerminalBubble(
 
     val process = remember(item.ptyHandle) { item.ptyHandle as? Process }
 
-    // Create collector and collect state
-    val collector = remember(process) {
-        process?.let { ProcessOutputCollector(it) }
+    // Create collector and collect state - pass sessionId for sync to ShellSessionManager
+    val collector = remember(process, item.sessionId) {
+        process?.let { ProcessOutputCollector(it, sessionId = item.sessionId) }
     }
 
     val outputState by collector?.state?.collectAsState()
@@ -176,7 +191,8 @@ fun IdeaLiveTerminalBubble(
     // Cancel handler - sends current output log to AI before terminating
     val handleCancel: () -> Unit = {
         process?.let { p ->
-            val currentOutput = outputState.output
+            // Get current output directly from collector's buffer (more reliable than state)
+            val currentOutput = collector?.getCurrentOutput() ?: outputState.output
 
             // Create cancel event with session info and output
             val cancelEvent = CancelEvent(
