@@ -1,0 +1,133 @@
+{
+  "name": "autodev-vscode",
+  "displayName": "AutoDev",
+  "description": "AI-powered coding assistant based on Kotlin Multiplatform",
+  "version": "0.1.0",
+  "publisher": "phodal",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phodal/auto-dev"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "coding assistant",
+    "llm",
+    "autodev"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "autodev.chat",
+        "title": "AutoDev: Open Chat"
+      },
+      {
+        "command": "autodev.acceptDiff",
+        "title": "AutoDev: Accept Diff"
+      },
+      {
+        "command": "autodev.cancelDiff",
+        "title": "AutoDev: Cancel Diff"
+      },
+      {
+        "command": "autodev.runAgent",
+        "title": "AutoDev: Run Coding Agent"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "autodev-sidebar",
+          "title": "AutoDev",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "autodev-sidebar": [
+        {
+          "type": "webview",
+          "id": "autodev.chatView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AutoDev",
+      "properties": {
+        "autodev.provider": {
+          "type": "string",
+          "default": "openai",
+          "enum": ["openai", "anthropic", "google", "deepseek", "ollama", "openrouter"],
+          "description": "LLM provider"
+        },
+        "autodev.model": {
+          "type": "string",
+          "default": "gpt-4",
+          "description": "Model name"
+        },
+        "autodev.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for the LLM provider"
+        },
+        "autodev.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Custom base URL for the LLM provider"
+        },
+        "autodev.ideServer.port": {
+          "type": "number",
+          "default": 23120,
+          "description": "Port for the IDE server (MCP protocol)"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "autodev.chat",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "watch": "npm run build -- --watch",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "esbuild": "^0.19.8",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {
+    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "zod": "^3.22.4"
+  }
+}
+
