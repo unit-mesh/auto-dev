@@ -23,6 +23,7 @@ import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentContent
 import cc.unitmesh.devins.idea.toolwindow.remote.IdeaRemoteAgentViewModel
 import cc.unitmesh.devins.idea.toolwindow.remote.getEffectiveProjectId
 import cc.unitmesh.devins.idea.components.status.IdeaToolLoadingStatusBar
+import cc.unitmesh.devins.idea.components.timeline.CancelEvent
 import cc.unitmesh.devins.idea.components.timeline.IdeaEmptyStateMessage
 import cc.unitmesh.devins.idea.components.timeline.IdeaTimelineContent
 import cc.unitmesh.devins.ui.config.ConfigManager
@@ -162,7 +163,10 @@ fun IdeaAgentApp(
                             timeline = timeline,
                             streamingOutput = streamingOutput,
                             listState = listState,
-                            project = project
+                            project = project,
+                            onProcessCancel = { cancelEvent ->
+                                viewModel.handleProcessCancel(cancelEvent)
+                            }
                         )
                     },
                     bottom = {

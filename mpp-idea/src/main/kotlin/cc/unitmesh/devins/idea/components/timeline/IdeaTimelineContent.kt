@@ -24,7 +24,8 @@ fun IdeaTimelineContent(
     streamingOutput: String,
     listState: LazyListState,
     modifier: Modifier = Modifier,
-    project: Project? = null
+    project: Project? = null,
+    onProcessCancel: ((CancelEvent) -> Unit)? = null
 ) {
     if (timeline.isEmpty() && streamingOutput.isEmpty()) {
         IdeaEmptyStateMessage("Start a conversation with your AI Assistant!")
@@ -36,7 +37,7 @@ fun IdeaTimelineContent(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(timeline, key = { it.id }) { item ->
-                IdeaTimelineItemView(item, project)
+                IdeaTimelineItemView(item, project, onProcessCancel)
             }
 
             // Show streaming output
@@ -53,7 +54,11 @@ fun IdeaTimelineContent(
  * Dispatch timeline item to appropriate bubble component.
  */
 @Composable
-fun IdeaTimelineItemView(item: TimelineItem, project: Project? = null) {
+fun IdeaTimelineItemView(
+    item: TimelineItem,
+    project: Project? = null,
+    onProcessCancel: ((CancelEvent) -> Unit)? = null
+) {
     when (item) {
         is TimelineItem.MessageItem -> {
             IdeaMessageBubble(
@@ -77,7 +82,8 @@ fun IdeaTimelineItemView(item: TimelineItem, project: Project? = null) {
             // Live terminal with real-time output streaming
             IdeaLiveTerminalBubble(
                 item = item,
-                project = project
+                project = project,
+                onCancel = onProcessCancel
             )
         }
     }

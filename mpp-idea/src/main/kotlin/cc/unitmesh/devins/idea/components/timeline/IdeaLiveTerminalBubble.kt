@@ -114,6 +114,16 @@ class ProcessOutputCollector(
 }
 
 /**
+ * Data class for cancel event with session info and output log.
+ */
+data class CancelEvent(
+    val sessionId: String,
+    val command: String,
+    val output: String,
+    val process: Process
+)
+
+/**
  * Live terminal bubble for displaying real-time shell command output.
  * Uses ProcessOutputCollector for listener-like output monitoring.
  *
@@ -123,13 +133,14 @@ class ProcessOutputCollector(
  * - Collapsible output with header
  * - Status indicator (running/completed)
  * - Cancel button to terminate running process
+ * - On cancel, sends current output log to AI
  */
 @Composable
 fun IdeaLiveTerminalBubble(
     item: TimelineItem.LiveTerminalItem,
     modifier: Modifier = Modifier,
     project: Project? = null,
-    onCancel: ((Process) -> Unit)? = null
+    onCancel: ((CancelEvent) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(true) }
 
@@ -162,13 +173,23 @@ fun IdeaLiveTerminalBubble(
     val isRunning = if (item.exitCode != null) false else outputState.isRunning
     val output = outputState.output.ifEmpty { "Waiting for output..." }
 
-    // Cancel handler
+    // Cancel handler - sends current output log to AI before terminating
     val handleCancel: () -> Unit = {
         process?.let { p ->
+            val currentOutput = outputState.output
+
+            // Create cancel event with session info and output
+            val cancelEvent = CancelEvent(
+                sessionId = item.sessionId,
+                command = item.command,
+                output = currentOutput,
+                process = p
+            )
+
             if (onCancel != null) {
-                onCancel(p)
+                onCancel(cancelEvent)
             } else {
-                // Default: destroy the process
+                // Default: just destroy the process
                 p.destroyForcibly()
             }
             collector?.stop()

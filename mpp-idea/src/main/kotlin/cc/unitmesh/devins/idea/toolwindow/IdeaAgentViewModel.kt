@@ -406,6 +406,43 @@ class IdeaAgentViewModel(
     }
 
     /**
+     * Handle process cancel event from LiveTerminal.
+     * Terminates the process and sends the current output log to AI.
+     */
+    fun handleProcessCancel(cancelEvent: cc.unitmesh.devins.idea.components.timeline.CancelEvent) {
+        // Terminate the process
+        cancelEvent.process.destroyForcibly()
+
+        // Update the timeline with cancellation info
+        val cancelMessage = buildString {
+            appendLine("Process cancelled by user.")
+            appendLine()
+            appendLine("Command: ${cancelEvent.command}")
+            appendLine("Session ID: ${cancelEvent.sessionId}")
+            appendLine()
+            appendLine("Output before cancellation:")
+            appendLine("```")
+            append(cancelEvent.output.ifEmpty { "(no output)" })
+            appendLine()
+            appendLine("```")
+        }
+
+        // Render the cancellation result as a tool result with metadata
+        renderer.renderToolResult(
+            toolName = "shell",
+            success = false,
+            output = cancelMessage,
+            fullOutput = cancelEvent.output,
+            metadata = mapOf(
+                "isLiveSession" to "true",
+                "sessionId" to cancelEvent.sessionId,
+                "exit_code" to "-1",
+                "cancelled" to "true"
+            )
+        )
+    }
+
+    /**
      * Abort the current request (alias for cancelTask for backward compatibility).
      */
     fun abortRequest() {
