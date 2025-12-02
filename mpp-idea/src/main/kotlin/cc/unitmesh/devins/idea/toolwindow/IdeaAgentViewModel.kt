@@ -9,6 +9,8 @@ import cc.unitmesh.agent.config.PreloadingStatus
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.schema.ToolCategory
+import cc.unitmesh.devins.compiler.service.DevInsCompilerService
+import cc.unitmesh.devins.idea.compiler.IdeaDevInsCompilerService
 import cc.unitmesh.devins.idea.renderer.JewelRenderer
 import cc.unitmesh.devins.ui.config.AutoDevConfigWrapper
 import cc.unitmesh.devins.ui.config.ConfigManager
@@ -64,6 +66,11 @@ class IdeaAgentViewModel(
 
     // LLM Service (created from config)
     private var llmService: KoogLLMService? = null
+
+    // IDEA DevIns Compiler Service (uses PSI-based compiler with full IDE features)
+    private val ideaCompilerService: DevInsCompilerService by lazy {
+        IdeaDevInsCompilerService.create(project)
+    }
 
     // CodingAgent instance
     private var codingAgent: CodingAgent? = null
@@ -121,8 +128,12 @@ class IdeaAgentViewModel(
                 _currentModelConfig.value = modelConfig
 
                 // Create LLM service if config is valid
+                // Inject IDEA compiler service for full IDE feature support
                 if (modelConfig != null && modelConfig.isValid()) {
-                    llmService = KoogLLMService.create(modelConfig)
+                    llmService = KoogLLMService(
+                        config = modelConfig,
+                        compilerService = ideaCompilerService
+                    )
                     // Start MCP preloading after LLM service is created
                     startMcpPreloading()
                 }

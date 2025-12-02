@@ -86,7 +86,7 @@ class CodingAgent(
     private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer, mcpConfigService = mcpToolConfigService)
 
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
-    private val analysisAgent = AnalysisAgent(llmService, contentThreshold = 5000)
+    private val analysisAgent = AnalysisAgent(llmService, contentThreshold = 15000)
     private val mcpToolsInitializer = McpToolsInitializer()
 
     // 执行器
