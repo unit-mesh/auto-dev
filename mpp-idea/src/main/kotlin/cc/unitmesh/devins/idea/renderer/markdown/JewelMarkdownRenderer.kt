@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.idea.renderer.markdown.MarkdownInlineRenderer.appendMarkdownChildren
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.markdown.MarkdownTextParser
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
