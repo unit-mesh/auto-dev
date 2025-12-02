@@ -243,6 +243,17 @@ class IdeaDevInInput(
     }
 
     /**
+     * Replace the text content of the input.
+     * Clears existing content and sets new text.
+     */
+    fun replaceText(newText: String) {
+        WriteCommandAction.runWriteCommandAction(project, "Replace text", "intentions.write.action", {
+            val document = this.editor?.document ?: return@runWriteCommandAction
+            document.setText(newText)
+        })
+    }
+
+    /**
      * Clear the input and recreate document.
      */
     fun clearInput() {

@@ -14,10 +14,14 @@ import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.idea.editor.*
 import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -38,6 +42,8 @@ import javax.swing.JPanel
  *
  * Layout: Unified border around the entire input area for a cohesive look.
  */
+private val inputAreaLogger = Logger.getInstance("IdeaDevInInputArea")
+
 @Composable
 fun IdeaDevInInputArea(
     project: Project,
@@ -180,20 +186,35 @@ fun IdeaDevInInputArea(
             onStopClick = onAbort,
             onPromptOptimizationClick = {
                 val currentText = devInInput?.text?.trim() ?: inputText.trim()
+                inputAreaLogger.info("Prompt optimization clicked, text length: ${currentText.length}")
+
                 if (currentText.isNotBlank() && !isEnhancing && !isProcessing) {
                     isEnhancing = true
-                    scope.launch {
+                    scope.launch(Dispatchers.IO) {
                         try {
+                            inputAreaLogger.info("Starting prompt enhancement...")
                             val enhancer = IdeaPromptEnhancer.getInstance(project)
                             val enhanced = enhancer.enhance(currentText)
-                            if (enhanced != currentText) {
-                                devInInput?.setText(enhanced)
-                                inputText = enhanced
+                            inputAreaLogger.info("Enhancement completed, result length: ${enhanced.length}")
+
+                            if (enhanced != currentText && enhanced.isNotBlank()) {
+                                // Update UI on EDT
+                                withContext(Dispatchers.Main) {
+                                    ApplicationManager.getApplication().invokeLater {
+                                        devInInput?.replaceText(enhanced)
+                                        inputText = enhanced
+                                        inputAreaLogger.info("Text updated in input field")
+                                    }
+                                }
+                            } else {
+                                inputAreaLogger.info("No enhancement made (same text or empty result)")
                             }
                         } catch (e: Exception) {
-                            // Silently fail - keep original text
+                            inputAreaLogger.error("Prompt enhancement failed: ${e.message}", e)
                         } finally {
-                            isEnhancing = false
+                            withContext(Dispatchers.Main) {
+                                isEnhancing = false
+                            }
                         }
                     }
                 }
