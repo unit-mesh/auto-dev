@@ -33,7 +33,6 @@ fun IdeaBottomToolbar(
     sendEnabled: Boolean,
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
-    onMcpConfigClick: () -> Unit = {},
     onPromptOptimizationClick: () -> Unit = {},
     totalTokens: Int? = null,
     // Model selector props
