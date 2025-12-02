@@ -28,8 +28,15 @@ data class ToolExecutionResult(
             is ToolResult.Success -> true
             is ToolResult.AgentResult -> result.success
             is ToolResult.Error -> false
+            is ToolResult.Pending -> false // Pending is not yet successful
         }
-    
+
+    /**
+     * Check if the execution is pending (async)
+     */
+    val isPending: Boolean
+        get() = result is ToolResult.Pending
+
     /**
      * Get the result content
      */
@@ -38,6 +45,7 @@ data class ToolExecutionResult(
             is ToolResult.Success -> result.content
             is ToolResult.AgentResult -> result.content
             is ToolResult.Error -> result.message
+            is ToolResult.Pending -> result.message
         }
     
     /**
@@ -96,6 +104,34 @@ data class ToolExecutionResult(
                 retryCount = retryCount,
                 state = ToolExecutionState.Failed(executionId, error, endTime - startTime),
                 metadata = metadata
+            )
+        }
+
+        /**
+         * Create a pending result for async tool execution (e.g., Shell with PTY)
+         */
+        fun pending(
+            executionId: String,
+            toolName: String,
+            sessionId: String,
+            command: String,
+            startTime: Long,
+            metadata: Map<String, String> = emptyMap()
+        ): ToolExecutionResult {
+            return ToolExecutionResult(
+                executionId = executionId,
+                toolName = toolName,
+                result = ToolResult.Pending(
+                    sessionId = sessionId,
+                    toolName = toolName,
+                    command = command,
+                    message = "Executing: $command"
+                ),
+                startTime = startTime,
+                endTime = startTime, // Not yet completed
+                retryCount = 0,
+                state = ToolExecutionState.Executing(executionId, startTime),
+                metadata = metadata + mapOf("sessionId" to sessionId, "isAsync" to "true")
             )
         }
     }

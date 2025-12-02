@@ -404,5 +404,121 @@ class JewelRenderer : BaseRenderer() {
 
     private fun parseParamsString(paramsStr: String) =
         RendererUtils.parseParamsString(paramsStr)
+
+    // ========== Live Terminal Support ==========
+
+    // Channel map for awaiting session results
+    private val sessionResultChannels = mutableMapOf<String, kotlinx.coroutines.channels.Channel<cc.unitmesh.agent.tool.ToolResult>>()
+
+    /**
+     * Adds a live terminal session to the timeline.
+     * This is called when a Shell tool is executed with PTY support.
+     */
+    override fun addLiveTerminal(
+        sessionId: String,
+        command: String,
+        workingDirectory: String?,
+        ptyHandle: Any?
+    ) {
+        addTimelineItem(
+            TimelineItem.LiveTerminalItem(
+                sessionId = sessionId,
+                command = command,
+                workingDirectory = workingDirectory,
+                ptyHandle = ptyHandle
+            )
+        )
+    }
+
+    /**
+     * Update the status of a live terminal session when it completes.
+     * This is called from the background monitoring coroutine in ToolOrchestrator.
+     */
+    override fun updateLiveTerminalStatus(
+        sessionId: String,
+        exitCode: Int,
+        executionTimeMs: Long,
+        output: String?
+    ) {
+        // Find and update the LiveTerminalItem in the timeline
+        _timeline.update { currentTimeline ->
+            currentTimeline.map { item ->
+                if (item is TimelineItem.LiveTerminalItem && item.sessionId == sessionId) {
+                    item.copy(exitCode = exitCode, executionTimeMs = executionTimeMs)
+                } else {
+                    item
+                }
+            }
+        }
+
+        // Also notify any waiting coroutines via the session result channel
+        sessionResultChannels[sessionId]?.let { channel ->
+            val result = if (exitCode == 0) {
+                cc.unitmesh.agent.tool.ToolResult.Success(
+                    content = output ?: "",
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "execution_time_ms" to executionTimeMs.toString()
+                    )
+                )
+            } else {
+                cc.unitmesh.agent.tool.ToolResult.Error(
+                    message = "Command failed with exit code: $exitCode",
+                    metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "execution_time_ms" to executionTimeMs.toString(),
+                        "output" to (output ?: "")
+                    )
+                )
+            }
+            channel.trySend(result)
+            sessionResultChannels.remove(sessionId)
+        }
+    }
+
+    /**
+     * Await the result of an async shell session.
+     * Used when the Agent needs to wait for a shell command to complete before proceeding.
+     */
+    override suspend fun awaitSessionResult(sessionId: String, timeoutMs: Long): cc.unitmesh.agent.tool.ToolResult {
+        // Check if the session is already completed
+        val existingItem = _timeline.value.find {
+            it is TimelineItem.LiveTerminalItem && it.sessionId == sessionId
+        } as? TimelineItem.LiveTerminalItem
+
+        if (existingItem?.exitCode != null) {
+            // Session already completed
+            return if (existingItem.exitCode == 0) {
+                cc.unitmesh.agent.tool.ToolResult.Success(
+                    content = "",
+                    metadata = mapOf(
+                        "exit_code" to existingItem.exitCode.toString(),
+                        "execution_time_ms" to (existingItem.executionTimeMs ?: 0L).toString()
+                    )
+                )
+            } else {
+                cc.unitmesh.agent.tool.ToolResult.Error(
+                    message = "Command failed with exit code: ${existingItem.exitCode}",
+                    metadata = mapOf(
+                        "exit_code" to existingItem.exitCode.toString(),
+                        "execution_time_ms" to (existingItem.executionTimeMs ?: 0L).toString()
+                    )
+                )
+            }
+        }
+
+        // Create a channel to wait for the result
+        val channel = kotlinx.coroutines.channels.Channel<cc.unitmesh.agent.tool.ToolResult>(1)
+        sessionResultChannels[sessionId] = channel
+
+        return try {
+            kotlinx.coroutines.withTimeout(timeoutMs) {
+                channel.receive()
+            }
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            sessionResultChannels.remove(sessionId)
+            cc.unitmesh.agent.tool.ToolResult.Error("Session timed out after ${timeoutMs}ms")
+        }
+    }
 }
 

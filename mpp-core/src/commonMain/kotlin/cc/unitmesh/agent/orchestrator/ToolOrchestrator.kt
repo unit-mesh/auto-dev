@@ -15,20 +15,32 @@ import cc.unitmesh.agent.tool.shell.LiveShellExecutor
 import cc.unitmesh.agent.tool.shell.LiveShellSession
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.shell.ShellExecutor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 
 /**
  * Tool orchestrator responsible for managing tool execution workflow
  * Handles permission checking, state management, and execution coordination
+ *
+ * @param asyncShellExecution If true, shell commands will execute asynchronously and return
+ *                            a Pending result immediately. The UI can display live terminal output
+ *                            and the result will be updated when the command completes.
+ *                            If false (default), shell commands will block until completion.
  */
 class ToolOrchestrator(
     private val registry: ToolRegistry,
     private val policyEngine: PolicyEngine,
     private val renderer: CodingAgentRenderer,
-    private val mcpConfigService: McpToolConfigService? = null
+    private val mcpConfigService: McpToolConfigService? = null,
+    private val asyncShellExecution: Boolean = true
 ) {
     private val logger = getLogger("ToolOrchestrator")
+
+    // Coroutine scope for background tasks (async shell monitoring)
+    private val backgroundScope = CoroutineScope(Dispatchers.Default)
     
     /**
      * Execute a single tool call with full orchestration
@@ -116,53 +128,91 @@ class ToolOrchestrator(
                 }
             }
             
-            // Execute the tool (如果已经启动了 PTY，这里需要等待完成)
+            // Execute the tool
             val result = if (liveSession != null) {
-                // 对于 Live PTY，等待完成并从 session 获取输出
                 val shellExecutor = getShellExecutor(registry.getTool(toolName) as cc.unitmesh.agent.tool.impl.ShellTool)
-                
-                // 等待 PTY 进程完成
-                val exitCode = try {
-                    if (shellExecutor is LiveShellExecutor) {
-                        shellExecutor.waitForSession(liveSession, context.timeout)
-                    } else {
-                        throw ToolException("Executor does not support live sessions", ToolErrorType.NOT_SUPPORTED)
-                    }
-                } catch (e: ToolException) {
-                    return ToolExecutionResult.failure(
-                        context.executionId, toolName, "Command execution error: ${e.message}",
-                        startTime, Clock.System.now().toEpochMilliseconds()
+
+                if (asyncShellExecution) {
+                    // Async mode: Return Pending immediately and monitor in background
+                    val command = liveSession.command
+                    val sessionId = liveSession.sessionId
+
+                    // Start background monitoring for session completion
+                    startSessionMonitoring(
+                        session = liveSession,
+                        shellExecutor = shellExecutor as LiveShellExecutor,
+                        startTime = startTime,
+                        timeoutMs = context.timeout
                     )
-                } catch (e: Exception) {
-                    return ToolExecutionResult.failure(
-                        context.executionId, toolName, "Command execution error: ${e.message}",
-                        startTime, Clock.System.now().toEpochMilliseconds()
+
+                    // Return Pending result immediately
+                    logger.debug { "Returning Pending result for async shell execution: $sessionId" }
+                    ToolResult.Pending(
+                        sessionId = sessionId,
+                        toolName = toolName,
+                        command = command,
+                        message = "Executing: $command",
+                        metadata = mapOf(
+                            "workingDirectory" to (liveSession.workingDirectory ?: ""),
+                            "isAsync" to "true"
+                        )
                     )
-                }
-                
-                // 从 session 获取输出
-                val stdout = liveSession.getStdout()
-                val metadata = mapOf(
-                    "exit_code" to exitCode.toString(),
-                    "execution_time_ms" to (Clock.System.now().toEpochMilliseconds() - startTime).toString(),
-                    "shell" to (shellExecutor.getDefaultShell() ?: "unknown"),
-                    "stdout" to stdout,
-                    "stderr" to ""
-                )
-                
-                if (exitCode == 0) {
-                    ToolResult.Success(stdout, metadata)
                 } else {
-                    ToolResult.Error("Command failed with exit code: $exitCode", metadata = metadata)
+                    // Sync mode: Wait for completion (original behavior)
+                    val exitCode = try {
+                        if (shellExecutor is LiveShellExecutor) {
+                            shellExecutor.waitForSession(liveSession, context.timeout)
+                        } else {
+                            throw ToolException("Executor does not support live sessions", ToolErrorType.NOT_SUPPORTED)
+                        }
+                    } catch (e: ToolException) {
+                        return ToolExecutionResult.failure(
+                            context.executionId, toolName, "Command execution error: ${e.message}",
+                            startTime, Clock.System.now().toEpochMilliseconds()
+                        )
+                    } catch (e: Exception) {
+                        return ToolExecutionResult.failure(
+                            context.executionId, toolName, "Command execution error: ${e.message}",
+                            startTime, Clock.System.now().toEpochMilliseconds()
+                        )
+                    }
+
+                    // Get output from session
+                    val stdout = liveSession.getStdout()
+                    val metadata = mapOf(
+                        "exit_code" to exitCode.toString(),
+                        "execution_time_ms" to (Clock.System.now().toEpochMilliseconds() - startTime).toString(),
+                        "shell" to (shellExecutor.getDefaultShell() ?: "unknown"),
+                        "stdout" to stdout,
+                        "stderr" to ""
+                    )
+
+                    if (exitCode == 0) {
+                        ToolResult.Success(stdout, metadata)
+                    } else {
+                        ToolResult.Error("Command failed with exit code: $exitCode", metadata = metadata)
+                    }
                 }
             } else {
-                // 普通执行
+                // Normal execution for non-shell tools
                 executeToolInternal(toolName, params, context)
             }
             
             val endTime = Clock.System.now().toEpochMilliseconds()
-            
-            // Update final state
+
+            // Handle Pending result specially (async shell execution)
+            if (result is ToolResult.Pending) {
+                return ToolExecutionResult.pending(
+                    executionId = context.executionId,
+                    toolName = toolName,
+                    sessionId = result.sessionId,
+                    command = result.command,
+                    startTime = startTime,
+                    metadata = result.metadata
+                )
+            }
+
+            // Update final state for completed results
             val finalState = if (isSuccessResult(result)) {
                 ToolExecutionState.Success(toolCall.id, result, endTime - startTime)
             } else {
@@ -176,7 +226,7 @@ class ToolOrchestrator(
             } else {
                 metadata
             }
-            
+
             return ToolExecutionResult(
                 executionId = context.executionId,
                 toolName = toolName,
@@ -203,6 +253,53 @@ class ToolOrchestrator(
      */
     private fun getShellExecutor(tool: cc.unitmesh.agent.tool.impl.ShellTool): ShellExecutor {
         return tool.getExecutor()
+    }
+
+    /**
+     * Start background monitoring for an async shell session.
+     * When the session completes, updates the renderer with the final status.
+     */
+    private fun startSessionMonitoring(
+        session: LiveShellSession,
+        shellExecutor: LiveShellExecutor,
+        startTime: Long,
+        timeoutMs: Long
+    ) {
+        backgroundScope.launch {
+            try {
+                logger.debug { "Starting background monitoring for session: ${session.sessionId}" }
+
+                // Wait for the session to complete
+                val exitCode = shellExecutor.waitForSession(session, timeoutMs)
+                val endTime = Clock.System.now().toEpochMilliseconds()
+                val executionTimeMs = endTime - startTime
+
+                logger.debug { "Session ${session.sessionId} completed with exit code: $exitCode" }
+
+                // Get output from session
+                val output = session.getStdout()
+
+                // Update renderer with final status
+                renderer.updateLiveTerminalStatus(
+                    sessionId = session.sessionId,
+                    exitCode = exitCode,
+                    executionTimeMs = executionTimeMs,
+                    output = output
+                )
+
+                logger.debug { "Updated renderer with session completion: ${session.sessionId}" }
+            } catch (e: Exception) {
+                logger.error(e) { "Error monitoring session ${session.sessionId}: ${e.message}" }
+
+                // Update renderer with error status
+                renderer.updateLiveTerminalStatus(
+                    sessionId = session.sessionId,
+                    exitCode = -1,
+                    executionTimeMs = Clock.System.now().toEpochMilliseconds() - startTime,
+                    output = "Error: ${e.message}"
+                )
+            }
+        }
     }
 
     private suspend fun executeToolInternal(
@@ -571,6 +668,7 @@ class ToolOrchestrator(
             is ToolResult.Success -> true
             is ToolResult.AgentResult -> result.success
             is ToolResult.Error -> false
+            is ToolResult.Pending -> false // Pending is not yet successful
         }
     }
 
@@ -578,7 +676,8 @@ class ToolOrchestrator(
         return when (result) {
             is ToolResult.Error -> result.message
             is ToolResult.AgentResult -> if (!result.success) result.content else ""
-            else -> "Unknown error"
+            is ToolResult.Pending -> "" // Pending has no error yet
+            is ToolResult.Success -> ""
         }
     }
 
