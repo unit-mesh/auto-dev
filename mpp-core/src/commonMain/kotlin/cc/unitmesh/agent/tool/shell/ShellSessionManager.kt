@@ -57,12 +57,12 @@ object ShellSessionManager {
     /**
      * Mark a session as cancelled by user.
      * This is a non-suspend function for use in UI callbacks where coroutine context may not be available.
-     * Uses synchronized block for thread-safe map access.
+     * Note: Direct access is safe because:
+     * - JS/WASM are single-threaded
+     * - On JVM, boolean assignment is atomic and cancelledByUser is only written once
      */
     fun markSessionCancelledByUser(sessionId: String) {
-        synchronized(sessions) {
-            sessions[sessionId]?.cancelledByUser = true
-        }
+        sessions[sessionId]?.cancelledByUser = true
     }
 
     /**
