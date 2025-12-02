@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -44,6 +43,26 @@ import javax.swing.JPanel
  */
 private val inputAreaLogger = Logger.getInstance("IdeaDevInInputArea")
 
+/**
+ * Helper function to build and send message with file references.
+ * Extracts common logic from onSubmit and onSendClick.
+ */
+private fun buildAndSendMessage(
+    text: String,
+    selectedFiles: List<SelectedFileItem>,
+    onSend: (String) -> Unit,
+    clearInput: () -> Unit,
+    clearFiles: () -> Unit
+) {
+    if (text.isBlank()) return
+
+    val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
+    val fullText = if (filesText.isNotEmpty()) "$text\n$filesText" else text
+    onSend(fullText)
+    clearInput()
+    clearFiles()
+}
+
 @Composable
 fun IdeaDevInInputArea(
     project: Project,
@@ -63,6 +82,10 @@ fun IdeaDevInInputArea(
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
     var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
     var isEnhancing by remember { mutableStateOf(false) }
+
+    // Use a ref to track current processing state for the SwingPanel listener
+    val isProcessingRef = remember { mutableStateOf(isProcessing) }
+    LaunchedEffect(isProcessing) { isProcessingRef.value = isProcessing }
 
     val scope = rememberCoroutineScope()
     val borderShape = RoundedCornerShape(8.dp)
@@ -119,19 +142,18 @@ fun IdeaDevInInputArea(
                         }
 
                         override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
-                            if (text.isNotBlank() && !isProcessing) {
-                                // Append file references to the message (use /dir: for directories, /file: for files)
-                                val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
-                                val fullText = if (filesText.isNotEmpty()) {
-                                    "$text\n$filesText"
-                                } else {
-                                    text
-                                }
-                                onSend(fullText)
-                                clearInput()
-                                inputText = ""
-                                // Clear selected files after sending
-                                selectedFiles = emptyList()
+                            // Use ref to get current processing state
+                            if (text.isNotBlank() && !isProcessingRef.value) {
+                                buildAndSendMessage(
+                                    text = text,
+                                    selectedFiles = selectedFiles,
+                                    onSend = onSend,
+                                    clearInput = {
+                                        clearInput()
+                                        inputText = ""
+                                    },
+                                    clearFiles = { selectedFiles = emptyList() }
+                                )
                             }
                         }
 
@@ -167,18 +189,16 @@ fun IdeaDevInInputArea(
             onSendClick = {
                 val text = devInInput?.text?.trim() ?: inputText.trim()
                 if (text.isNotBlank() && !isProcessing) {
-                    // Append file references to the message (use /dir: for directories, /file: for files)
-                    val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
-                    val fullText = if (filesText.isNotEmpty()) {
-                        "$text\n$filesText"
-                    } else {
-                        text
-                    }
-                    onSend(fullText)
-                    devInInput?.clearInput()
-                    inputText = ""
-                    // Clear selected files after sending
-                    selectedFiles = emptyList()
+                    buildAndSendMessage(
+                        text = text,
+                        selectedFiles = selectedFiles,
+                        onSend = onSend,
+                        clearInput = {
+                            devInInput?.clearInput()
+                            inputText = ""
+                        },
+                        clearFiles = { selectedFiles = emptyList() }
+                    )
                 }
             },
             sendEnabled = inputText.isNotBlank() && !isProcessing,
@@ -198,13 +218,11 @@ fun IdeaDevInInputArea(
                             inputAreaLogger.info("Enhancement completed, result length: ${enhanced.length}")
 
                             if (enhanced != currentText && enhanced.isNotBlank()) {
-                                // Update UI on EDT
-                                withContext(Dispatchers.Main) {
-                                    ApplicationManager.getApplication().invokeLater {
-                                        devInInput?.replaceText(enhanced)
-                                        inputText = enhanced
-                                        inputAreaLogger.info("Text updated in input field")
-                                    }
+                                // Update UI on EDT using invokeLater
+                                ApplicationManager.getApplication().invokeLater {
+                                    devInInput?.replaceText(enhanced)
+                                    inputText = enhanced
+                                    inputAreaLogger.info("Text updated in input field")
                                 }
                             } else {
                                 inputAreaLogger.info("No enhancement made (same text or empty result)")
@@ -212,7 +230,7 @@ fun IdeaDevInInputArea(
                         } catch (e: Exception) {
                             inputAreaLogger.error("Prompt enhancement failed: ${e.message}", e)
                         } finally {
-                            withContext(Dispatchers.Main) {
+                            ApplicationManager.getApplication().invokeLater {
                                 isEnhancing = false
                             }
                         }

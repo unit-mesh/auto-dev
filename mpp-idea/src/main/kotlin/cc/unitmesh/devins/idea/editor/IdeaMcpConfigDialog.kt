@@ -116,9 +116,12 @@ class IdeaMcpConfigDialogWrapper(
  * - Incremental MCP server loading
  *
  * Styled to match IdeaModelConfigDialog for consistency.
- *
- * @deprecated Use IdeaMcpConfigDialogWrapper.show() instead for proper z-index handling with SwingPanel.
  */
+@Deprecated(
+    message = "Use IdeaMcpConfigDialogWrapper.show() instead for proper z-index handling with SwingPanel.",
+    replaceWith = ReplaceWith("IdeaMcpConfigDialogWrapper.show(project)"),
+    level = DeprecationLevel.WARNING
+)
 @Composable
 fun IdeaMcpConfigDialog(
     onDismiss: () -> Unit
