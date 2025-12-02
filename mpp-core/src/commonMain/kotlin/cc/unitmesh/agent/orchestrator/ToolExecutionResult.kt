@@ -95,10 +95,11 @@ data class ToolExecutionResult(
             retryCount: Int = 0,
             metadata: Map<String, String> = emptyMap()
         ): ToolExecutionResult {
+            // Preserve metadata in ToolResult.Error to enable downstream checks (e.g., cancelled flag)
             return ToolExecutionResult(
                 executionId = executionId,
                 toolName = toolName,
-                result = ToolResult.Error(error),
+                result = ToolResult.Error(error, metadata = metadata),
                 startTime = startTime,
                 endTime = endTime,
                 retryCount = retryCount,
