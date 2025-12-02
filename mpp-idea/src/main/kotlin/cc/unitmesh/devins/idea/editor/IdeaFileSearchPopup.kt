@@ -125,13 +125,34 @@ private fun FileSearchPopupContent(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.widthIn(min = 300.dp, max = 480.dp)
     ) {
-        // Search field at top
+        // Search field at top with improved styling
         passiveItem {
-            TextField(
-                state = searchQueryState,
-                placeholder = { Text("Search files...") },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = IdeaComposeIcons.Search,
+                    contentDescription = null,
+                    tint = JewelTheme.globalColors.text.normal.copy(alpha = 0.5f),
+                    modifier = Modifier.size(16.dp)
+                )
+                TextField(
+                    state = searchQueryState,
+                    placeholder = {
+                        Text(
+                            "Search files and folders...",
+                            style = JewelTheme.defaultTextStyle.copy(
+                                color = JewelTheme.globalColors.text.normal.copy(alpha = 0.5f)
+                            )
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         separator()

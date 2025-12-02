@@ -251,6 +251,15 @@ data class SelectedFileItem(
     val name: String,
     val path: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
-    val virtualFile: com.intellij.openapi.vfs.VirtualFile? = null
-)
+    val virtualFile: com.intellij.openapi.vfs.VirtualFile? = null,
+    val isDirectory: Boolean = false
+) {
+    /**
+     * Generate the DevIns command for this file/folder.
+     * Uses /dir: for directories and /file: for files.
+     */
+    fun toDevInsCommand(): String {
+        return if (isDirectory) "/dir:$path" else "/file:$path"
+    }
+}
 

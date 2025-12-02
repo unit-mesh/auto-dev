@@ -349,7 +349,8 @@ private fun IdeaDevInInputArea(
                     SelectedFileItem(
                         name = vf.name,
                         path = vf.path,
-                        virtualFile = vf
+                        virtualFile = vf,
+                        isDirectory = vf.isDirectory
                     )
                 }
                 selectedFiles = (selectedFiles + newItems).distinctBy { it.path }
@@ -376,8 +377,8 @@ private fun IdeaDevInInputArea(
 
                         override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
                             if (text.isNotBlank() && !isProcessing) {
-                                // Append file references to the message
-                                val filesText = selectedFiles.joinToString("\n") { "/file:${it.path}" }
+                                // Append file references to the message (use /dir: for directories, /file: for files)
+                                val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
                                 val fullText = if (filesText.isNotEmpty()) {
                                     "$text\n$filesText"
                                 } else {
@@ -422,8 +423,8 @@ private fun IdeaDevInInputArea(
             onSendClick = {
                 val text = devInInput?.text?.trim() ?: inputText.trim()
                 if (text.isNotBlank() && !isProcessing) {
-                    // Append file references to the message
-                    val filesText = selectedFiles.joinToString("\n") { "/file:${it.path}" }
+                    // Append file references to the message (use /dir: for directories, /file: for files)
+                    val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
                     val fullText = if (filesText.isNotEmpty()) {
                         "$text\n$filesText"
                     } else {
