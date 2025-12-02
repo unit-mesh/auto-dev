@@ -13,8 +13,8 @@ import cc.unitmesh.devti.util.relativePath
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiCompiledFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.PsiShortNamesCache
@@ -65,21 +65,17 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             val language = psiFile?.language?.displayName ?: ""
 
             val fileContent = when (psiFile) {
-                is ClsFileImpl -> {
-                    psiFile.text
+                is PsiCompiledFile -> {
+                    // For compiled files (like .class files), get the decompiled text
+                    psiFile.decompiledPsiFile?.text ?: virtualFile.readText()
                 }
 
                 else -> {
-                    runReadAction { virtualFile.readText() }
+                    virtualFile.readText()
                 }
             }
 
             Pair(fileContent, language)
-        }
-
-        if (content == null) {
-            AutoDevNotifications.warn(myProject, "Cannot read file: $prop")
-            return "Cannot read file: $prop"
         }
 
         val fileContent = splitLines(range, content)
