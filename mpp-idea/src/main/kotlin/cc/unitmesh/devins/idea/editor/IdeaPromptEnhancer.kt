@@ -4,6 +4,7 @@ import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,7 @@ import kotlinx.coroutines.withContext
  */
 @Service(Service.Level.PROJECT)
 class IdeaPromptEnhancer(private val project: Project) {
+    private val logger = Logger.getInstance(IdeaPromptEnhancer::class.java)
 
     /**
      * Enhance the user's prompt using LLM.
@@ -30,13 +32,23 @@ class IdeaPromptEnhancer(private val project: Project) {
      */
     suspend fun enhance(input: String): String = withContext(Dispatchers.IO) {
         try {
+            logger.info("Starting enhancement for input: ${input.take(50)}...")
+
             val dict = loadDomainDict()
             val readme = loadReadme()
+            logger.info("Loaded domain dict (${dict.length} chars), readme (${readme.length} chars)")
+
             val prompt = buildEnhancePrompt(input, dict, readme)
+            logger.info("Built enhancement prompt (${prompt.length} chars)")
 
             val config = ConfigManager.load()
             val modelConfig = config.getActiveModelConfig()
-                ?: return@withContext input
+            if (modelConfig == null) {
+                logger.warn("No active model config found, returning original input")
+                return@withContext input
+            }
+
+            logger.info("Using model: ${modelConfig.modelName}")
 
             val llmService = KoogLLMService(modelConfig)
             val result = StringBuilder()
@@ -46,8 +58,17 @@ class IdeaPromptEnhancer(private val project: Project) {
                 result.append(chunk)
             }
 
-            extractEnhancedPrompt(result.toString()) ?: input
+            logger.info("LLM response received (${result.length} chars)")
+            val enhanced = extractEnhancedPrompt(result.toString())
+            if (enhanced != null) {
+                logger.info("Extracted enhanced prompt (${enhanced.length} chars)")
+            } else {
+                logger.warn("Failed to extract enhanced prompt from response")
+            }
+
+            enhanced ?: input
         } catch (e: Exception) {
+            logger.error("Enhancement failed: ${e.message}", e)
             // Return original input if enhancement fails
             input
         }
