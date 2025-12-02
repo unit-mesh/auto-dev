@@ -117,6 +117,13 @@ jobs:
     continue-on-error: true
     steps:
       # Check out the current repository
+      # Free GitHub Actions Environment Disk Space
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
+
       - name: Fetch Sources
         uses: actions/checkout@v4
 
