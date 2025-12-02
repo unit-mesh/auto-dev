@@ -451,7 +451,8 @@ class ComposeRenderer : BaseRenderer() {
         sessionId: String,
         exitCode: Int,
         executionTimeMs: Long,
-        output: String?
+        output: String?,
+        cancelledByUser: Boolean
     ) {
         // Find and update the LiveTerminalItem in the timeline
         val index = _timeline.indexOfFirst {
@@ -478,12 +479,19 @@ class ComposeRenderer : BaseRenderer() {
                     )
                 )
             } else {
+                // Distinguish between user cancellation and other failures
+                val errorMessage = if (cancelledByUser) {
+                    "Command cancelled by user"
+                } else {
+                    "Command failed with exit code: $exitCode"
+                }
                 cc.unitmesh.agent.tool.ToolResult.Error(
-                    message = "Command failed with exit code: $exitCode",
+                    message = errorMessage,
                     metadata = mapOf(
                         "exit_code" to exitCode.toString(),
                         "execution_time_ms" to executionTimeMs.toString(),
-                        "output" to (output ?: "")
+                        "output" to (output ?: ""),
+                        "cancelled" to cancelledByUser.toString()
                     )
                 )
             }

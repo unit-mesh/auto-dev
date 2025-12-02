@@ -452,7 +452,8 @@ class JewelRenderer : BaseRenderer() {
         sessionId: String,
         exitCode: Int,
         executionTimeMs: Long,
-        output: String?
+        output: String?,
+        cancelledByUser: Boolean
     ) {
         // Find and update the LiveTerminalItem in the timeline
         _timeline.update { currentTimeline ->
@@ -467,23 +468,51 @@ class JewelRenderer : BaseRenderer() {
 
         // Also notify any waiting coroutines via the session result channel
         sessionResultChannels[sessionId]?.let { channel ->
-            val result = if (exitCode == 0) {
-                cc.unitmesh.agent.tool.ToolResult.Success(
-                    content = output ?: "",
-                    metadata = mapOf(
-                        "exit_code" to exitCode.toString(),
-                        "execution_time_ms" to executionTimeMs.toString()
+            val result = when {
+                exitCode == 0 -> {
+                    cc.unitmesh.agent.tool.ToolResult.Success(
+                        content = output ?: "",
+                        metadata = mapOf(
+                            "exit_code" to exitCode.toString(),
+                            "execution_time_ms" to executionTimeMs.toString()
+                        )
                     )
-                )
-            } else {
-                cc.unitmesh.agent.tool.ToolResult.Error(
-                    message = "Command failed with exit code: $exitCode",
-                    metadata = mapOf(
-                        "exit_code" to exitCode.toString(),
-                        "execution_time_ms" to executionTimeMs.toString(),
-                        "output" to (output ?: "")
+                }
+                cancelledByUser -> {
+                    // User cancelled - include output in the message
+                    val errorMessage = buildString {
+                        appendLine("⚠️ Command cancelled by user")
+                        appendLine()
+                        appendLine("Exit code: $exitCode (SIGKILL)")
+                        appendLine()
+                        if (!output.isNullOrEmpty()) {
+                            appendLine("Output before cancellation:")
+                            appendLine(output)
+                        } else {
+                            appendLine("(no output captured before cancellation)")
+                        }
+                    }
+                    cc.unitmesh.agent.tool.ToolResult.Error(
+                        message = errorMessage,
+                        errorType = "CANCELLED_BY_USER",
+                        metadata = mapOf(
+                            "exit_code" to exitCode.toString(),
+                            "execution_time_ms" to executionTimeMs.toString(),
+                            "output" to (output ?: ""),
+                            "cancelled" to "true"
+                        )
                     )
-                )
+                }
+                else -> {
+                    cc.unitmesh.agent.tool.ToolResult.Error(
+                        message = "Command failed with exit code: $exitCode\n${output ?: ""}",
+                        metadata = mapOf(
+                            "exit_code" to exitCode.toString(),
+                            "execution_time_ms" to executionTimeMs.toString(),
+                            "output" to (output ?: "")
+                        )
+                    )
+                }
             }
             channel.trySend(result)
             sessionResultChannels.remove(sessionId)

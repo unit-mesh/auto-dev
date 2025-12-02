@@ -37,7 +37,7 @@ class ToolOrchestrator(
     private val mcpConfigService: McpToolConfigService? = null,
     private val asyncShellExecution: Boolean = true
 ) {
-    private val logger = getLogger("ToolOrchestrator")
+    private val logger = getLogger("cc.unitmesh.agent.orchestrator.ToolOrchestrator")
 
     // Coroutine scope for background tasks (async shell monitoring)
     private val backgroundScope = CoroutineScope(Dispatchers.Default)
@@ -113,7 +113,21 @@ class ToolOrchestrator(
                             // 启动 PTY 会话
                             liveSession = shellExecutor.startLiveExecution(command, shellConfig)
                             logger.debug { "Live session started: ${liveSession.sessionId}" }
-                            
+
+                            // Register session to ShellSessionManager for cancel event handling
+                            val managedSession = cc.unitmesh.agent.tool.shell.ShellSessionManager.registerSession(
+                                sessionId = liveSession.sessionId,
+                                command = liveSession.command,
+                                workingDirectory = liveSession.workingDirectory,
+                                processHandle = liveSession.ptyHandle
+                            )
+                            // Set process handlers from LiveShellSession
+                            managedSession.setProcessHandlers(
+                                isAlive = { liveSession.isAlive() },
+                                kill = { liveSession.kill() }
+                            )
+                            logger.debug { "Session registered to ShellSessionManager: ${liveSession.sessionId}" }
+
                             // 立即通知 renderer 添加 LiveTerminal（在执行之前！）
                             logger.debug { "Adding LiveTerminal to renderer" }
                             renderer.addLiveTerminal(
@@ -279,26 +293,65 @@ class ToolOrchestrator(
                 // Get output from ShellSessionManager (synced by UI's ProcessOutputCollector)
                 // or fall back to LiveShellSession's stdout buffer
                 val managedSession = cc.unitmesh.agent.tool.shell.ShellSessionManager.getSession(session.sessionId)
-                val output = managedSession?.getOutput()?.ifEmpty { null } ?: session.getStdout()
+                val rawOutput = managedSession?.getOutput()?.ifEmpty { null } ?: session.getStdout()
 
-                // Update renderer with final status
+                // Strip ANSI escape sequences for clean output to AI
+                val output = cc.unitmesh.agent.tool.shell.AnsiStripper.stripAndNormalize(rawOutput)
+
+                // Check if this was a user cancellation
+                val wasCancelledByUser = managedSession?.cancelledByUser == true
+
+                // Update renderer with final status (including cancellation info)
                 renderer.updateLiveTerminalStatus(
                     sessionId = session.sessionId,
                     exitCode = exitCode,
                     executionTimeMs = executionTimeMs,
-                    output = output
+                    output = output,
+                    cancelledByUser = wasCancelledByUser
                 )
 
                 logger.debug { "Updated renderer with session completion: ${session.sessionId}" }
             } catch (e: Exception) {
                 logger.error(e) { "Error monitoring session ${session.sessionId}: ${e.message}" }
 
+                // Check if this was a user cancellation and get output from managedSession
+                val managedSession = cc.unitmesh.agent.tool.shell.ShellSessionManager.getSession(session.sessionId)
+                val wasCancelledByUser = managedSession?.cancelledByUser == true
+
+                logger.debug { "managedSession for ${session.sessionId}: ${managedSession != null}, cancelledByUser: $wasCancelledByUser" }
+
+                // Get output from managedSession (which was synced during waitForSession)
+                // or fall back to LiveShellSession's stdout buffer
+                val managedOutput = managedSession?.getOutput()
+                val sessionOutput = session.getStdout()
+                val rawOutput = managedOutput?.ifEmpty { null } ?: sessionOutput
+
+                // Strip ANSI escape sequences for clean output to AI
+                val capturedOutput = rawOutput?.let {
+                    cc.unitmesh.agent.tool.shell.AnsiStripper.stripAndNormalize(it)
+                }
+
+                logger.debug { "Output sources - managedOutput length: ${managedOutput?.length ?: 0}, sessionOutput length: ${sessionOutput.length}, capturedOutput length: ${capturedOutput?.length ?: 0}" }
+
+                // Build error message with captured output
+                val errorOutput = buildString {
+                    appendLine("Error: ${e.message}")
+                    if (!capturedOutput.isNullOrEmpty()) {
+                        appendLine()
+                        appendLine("Output before error:")
+                        appendLine(capturedOutput)
+                    }
+                }
+
+                logger.debug { "Final errorOutput length: ${errorOutput.length}" }
+
                 // Update renderer with error status
                 renderer.updateLiveTerminalStatus(
                     sessionId = session.sessionId,
                     exitCode = -1,
                     executionTimeMs = Clock.System.now().toEpochMilliseconds() - startTime,
-                    output = "Error: ${e.message}"
+                    output = errorOutput,
+                    cancelledByUser = wasCancelledByUser
                 )
             }
         }
@@ -317,7 +370,7 @@ class ToolOrchestrator(
             
             // Use new ExecutableTool architecture for most tools
             // Only special-case tools that need custom handling (shell with PTY, etc.)
-            return when (val toolType = toolName.toToolType()) {
+            return when (toolName.toToolType()) {
                 ToolType.Shell -> executeShellTool(tool, params, basicContext)
                 ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
                 ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)

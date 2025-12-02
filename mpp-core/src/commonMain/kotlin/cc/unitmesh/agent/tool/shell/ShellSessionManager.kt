@@ -53,7 +53,17 @@ object ShellSessionManager {
     suspend fun getSession(sessionId: String): ManagedSession? {
         return mutex.withLock { sessions[sessionId] }
     }
-    
+
+    /**
+     * Mark a session as cancelled by user.
+     * This is a non-suspend function for use in UI callbacks where coroutine context may not be available.
+     * Note: This accesses the sessions map without locking, which is safe for this specific use case
+     * because we're only setting a boolean flag on an existing session.
+     */
+    fun markSessionCancelledByUser(sessionId: String) {
+        sessions[sessionId]?.cancelledByUser = true
+    }
+
     /**
      * Get all active (running) sessions
      */
@@ -98,12 +108,18 @@ class ManagedSession(
 ) {
     private val outputBuffer = StringBuilder()
     private val mutex = Mutex()
-    
+
     private var _exitCode: Int? = null
     private var _endTime: Long? = null
-    
+
     val exitCode: Int? get() = _exitCode
     val endTime: Long? get() = _endTime
+
+    /**
+     * Flag to indicate if the session was cancelled by user.
+     * This helps distinguish between user cancellation (exit code 137) and other failures.
+     */
+    var cancelledByUser: Boolean = false
 
     // Callbacks for platform-specific process operations
     private var isAliveChecker: (() -> Boolean)? = null
