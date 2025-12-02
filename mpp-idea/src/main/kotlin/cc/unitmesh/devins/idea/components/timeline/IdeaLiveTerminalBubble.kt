@@ -122,12 +122,14 @@ class ProcessOutputCollector(
  * - ANSI color and formatting support
  * - Collapsible output with header
  * - Status indicator (running/completed)
+ * - Cancel button to terminate running process
  */
 @Composable
 fun IdeaLiveTerminalBubble(
     item: TimelineItem.LiveTerminalItem,
     modifier: Modifier = Modifier,
-    project: Project? = null
+    project: Project? = null,
+    onCancel: ((Process) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(true) }
 
@@ -159,6 +161,19 @@ fun IdeaLiveTerminalBubble(
     val actualExitCode = item.exitCode ?: outputState.exitCode
     val isRunning = if (item.exitCode != null) false else outputState.isRunning
     val output = outputState.output.ifEmpty { "Waiting for output..." }
+
+    // Cancel handler
+    val handleCancel: () -> Unit = {
+        process?.let { p ->
+            if (onCancel != null) {
+                onCancel(p)
+            } else {
+                // Default: destroy the process
+                p.destroyForcibly()
+            }
+            collector?.stop()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -240,31 +255,58 @@ fun IdeaLiveTerminalBubble(
             )
         }
 
-        // Collapsible output
+        // Collapsible output with cancel button
         AnimatedVisibility(
             visible = expanded,
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            if (output.isNotEmpty()) {
-                IdeaAnsiTerminalRenderer(
-                    ansiText = output,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .heightIn(min = 60.dp, max = 300.dp),
-                    maxHeight = 300,
-                    backgroundColor = AutoDevColors.Neutral.c900
-                )
-            } else if (isRunning) {
-                Text(
-                    text = "Waiting for output...",
-                    style = JewelTheme.defaultTextStyle.copy(
-                        fontSize = 11.sp,
-                        color = AutoDevColors.Neutral.c400
-                    ),
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                // Output content
+                if (output.isNotEmpty()) {
+                    IdeaAnsiTerminalRenderer(
+                        ansiText = output,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .heightIn(min = 60.dp, max = 300.dp),
+                        maxHeight = 300,
+                        backgroundColor = AutoDevColors.Neutral.c900
+                    )
+                } else if (isRunning) {
+                    Text(
+                        text = "Waiting for output...",
+                        style = JewelTheme.defaultTextStyle.copy(
+                            fontSize = 11.sp,
+                            color = AutoDevColors.Neutral.c400
+                        ),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
+                // Cancel button - only show when running
+                if (isRunning && process != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(4.dp)
+                            .background(
+                                AutoDevColors.Red.c600.copy(alpha = 0.9f),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .clickable { handleCancel() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            style = JewelTheme.defaultTextStyle.copy(
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = AutoDevColors.Neutral.c50
+                            )
+                        )
+                    }
+                }
             }
         }
     }

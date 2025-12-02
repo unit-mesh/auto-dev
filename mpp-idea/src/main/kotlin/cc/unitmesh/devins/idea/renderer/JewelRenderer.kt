@@ -138,6 +138,17 @@ class JewelRenderer : BaseRenderer() {
             updateTaskFromToolCall(params)
         }
 
+        // Skip adding ToolCallItem for Shell - will be replaced by LiveTerminalItem
+        // This prevents the "two bubbles" problem
+        if (toolType == ToolType.Shell) {
+            _currentToolCall.value = ToolCallInfo(
+                toolName = toolInfo.toolName,
+                description = toolInfo.description,
+                details = toolInfo.details
+            )
+            return // Don't add ToolCallItem, wait for addLiveTerminal
+        }
+
         // Extract file path for read/write operations
         val filePath = when (toolType) {
             ToolType.ReadFile, ToolType.WriteFile -> params["path"]
@@ -412,8 +423,10 @@ class JewelRenderer : BaseRenderer() {
 
     /**
      * Adds a live terminal session to the timeline.
-     * This is called when a Shell tool is executed with PTY support.
-     * Replaces the previous ToolCallItem (Shell Command) with a LiveTerminalItem.
+     * This is called when a Shell tool is executed with live output support.
+     *
+     * Note: renderToolCall() skips adding ToolCallItem for Shell tools,
+     * so we just add the LiveTerminalItem directly without replacement logic.
      */
     override fun addLiveTerminal(
         sessionId: String,
@@ -421,21 +434,14 @@ class JewelRenderer : BaseRenderer() {
         workingDirectory: String?,
         ptyHandle: Any?
     ) {
-        // Replace the last ToolCallItem (Shell) with LiveTerminalItem
-        _timeline.update { items ->
-            val lastItem = items.lastOrNull()
-            val newItems = if (lastItem is TimelineItem.ToolCallItem && lastItem.toolType == ToolType.Shell) {
-                items.dropLast(1)
-            } else {
-                items
-            }
-            newItems + TimelineItem.LiveTerminalItem(
+        addTimelineItem(
+            TimelineItem.LiveTerminalItem(
                 sessionId = sessionId,
                 command = command,
                 workingDirectory = workingDirectory,
                 ptyHandle = ptyHandle
             )
-        }
+        )
     }
 
     /**
