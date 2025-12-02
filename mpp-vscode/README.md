@@ -87,9 +87,13 @@ mpp-vscode/
 - [x] DevIns 语言支持
   - [x] 语法高亮 (TextMate grammar)
   - [x] 自动补全 (/, @, $ 触发)
+- [x] React Webview UI
+  - [x] React + Vite 构建
+  - [x] Markdown 渲染 (react-markdown + remark-gfm)
+  - [x] VSCode 主题集成
+  - [x] 流式响应动画
 - [ ] 代码索引集成
 - [ ] 领域词典支持
-- [ ] React Webview UI (替换内嵌 HTML)
 
 ## 参考项目
 
