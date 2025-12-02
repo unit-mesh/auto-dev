@@ -12,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.services.IdeaToolConfigService
 import cc.unitmesh.devins.idea.toolwindow.IdeaAgentViewModel
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import com.intellij.openapi.project.Project
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Text
 
@@ -23,12 +25,18 @@ import org.jetbrains.jewel.ui.component.Text
 @Composable
 fun IdeaToolLoadingStatusBar(
     viewModel: IdeaAgentViewModel,
+    project: Project,
     modifier: Modifier = Modifier
 ) {
     val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
     val mcpPreloadingStatus by viewModel.mcpPreloadingStatus.collectAsState()
-    // Recompute when preloading status changes to make it reactive
-    val toolStatus = remember(mcpPreloadingStatus) { viewModel.getToolLoadingStatus() }
+
+    // Observe tool config service for configuration changes
+    val toolConfigService = remember { IdeaToolConfigService.getInstance(project) }
+    val configVersion by toolConfigService.configVersion.collectAsState()
+
+    // Recompute when preloading status OR config version changes
+    val toolStatus = remember(mcpPreloadingStatus, configVersion) { viewModel.getToolLoadingStatus() }
 
     Row(
         modifier = modifier

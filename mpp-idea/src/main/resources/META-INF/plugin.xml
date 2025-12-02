@@ -58,6 +58,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Project-level service for coroutine scope management -->
         <projectService serviceImplementation="cc.unitmesh.devins.idea.services.CoroutineScopeHolder"/>
+        <!-- Project-level service for tool configuration state management -->
+        <projectService serviceImplementation="cc.unitmesh.devins.idea.services.IdeaToolConfigService"/>
         <!-- ToolWindow for Agent UI with tab-based navigation (Advanced version) -->
         <toolWindow factoryClass="cc.unitmesh.devins.idea.toolwindow.IdeaAgentToolWindowFactory"
                     id="AutoDev Agent"

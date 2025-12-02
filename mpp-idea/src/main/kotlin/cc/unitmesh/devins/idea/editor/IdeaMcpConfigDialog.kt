@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.config.*
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.devins.idea.services.IdeaToolConfigService
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
 import com.intellij.openapi.project.Project
@@ -108,7 +109,10 @@ class IdeaMcpConfigDialogWrapper(
 
     override fun createCenterPanel(): JComponent {
         val dialogPanel = compose {
-            IdeaMcpConfigDialogContent(onDismiss = { close(CANCEL_EXIT_CODE) })
+            IdeaMcpConfigDialogContent(
+                project = project,
+                onDismiss = { close(CANCEL_EXIT_CODE) }
+            )
         }
         dialogPanel.preferredSize = Dimension(850, 650)
         return dialogPanel
@@ -132,6 +136,7 @@ class IdeaMcpConfigDialogWrapper(
  */
 @Composable
 fun IdeaMcpConfigDialogContent(
+    project: Project?,
     onDismiss: () -> Unit
 ) {
     var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
@@ -147,6 +152,11 @@ fun IdeaMcpConfigDialogContent(
     var autoSaveJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
     val scope = rememberCoroutineScope()
+
+    // Get tool config service for notifying state changes
+    val toolConfigService = remember(project) {
+        project?.let { IdeaToolConfigService.getInstance(it) }
+    }
 
     // Auto-save function
     fun scheduleAutoSave() {
@@ -168,7 +178,12 @@ fun IdeaMcpConfigDialogContent(
                         mcpServers = newMcpServers
                     )
 
-                    ConfigManager.saveToolConfig(updatedConfig)
+                    // Use service to save and notify listeners
+                    if (toolConfigService != null) {
+                        toolConfigService.saveAndUpdateConfig(updatedConfig)
+                    } else {
+                        ConfigManager.saveToolConfig(updatedConfig)
+                    }
                     toolConfig = updatedConfig
                     hasUnsavedChanges = false
                 }

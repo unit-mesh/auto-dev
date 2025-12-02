@@ -245,6 +245,7 @@ fun IdeaAgentApp(
         // Tool loading status bar
         IdeaToolLoadingStatusBar(
             viewModel = viewModel,
+            project = project,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
