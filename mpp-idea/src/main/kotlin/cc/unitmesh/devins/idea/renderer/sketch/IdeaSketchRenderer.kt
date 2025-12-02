@@ -75,6 +75,18 @@ object IdeaSketchRenderer {
                         }
                     }
 
+                    "plan" -> {
+                        if (fence.text.isNotBlank()) {
+                            IdeaPlanRenderer(
+                                planContent = fence.text,
+                                project = project,
+                                isComplete = blockIsComplete,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
                     "thinking" -> {
                         if (fence.text.isNotBlank()) {
                             IdeaThinkingBlockRenderer(
