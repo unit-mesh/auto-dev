@@ -10,6 +10,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.markdown.MarkdownTextParser
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
