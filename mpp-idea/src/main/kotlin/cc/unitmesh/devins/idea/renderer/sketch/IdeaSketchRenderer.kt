@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.idea.renderer.MermaidDiagramView
+
 import cc.unitmesh.devins.idea.renderer.markdown.JewelMarkdownRenderer
 import cc.unitmesh.devins.parser.CodeFence
 import com.intellij.openapi.Disposable
@@ -124,8 +124,9 @@ object IdeaSketchRenderer {
 
                     "mermaid", "mmd" -> {
                         if (fence.text.isNotBlank() && blockIsComplete) {
-                            MermaidDiagramView(
+                            IdeaMermaidRenderer(
                                 mermaidCode = fence.text,
+                                project = project,
                                 isDarkTheme = true, // TODO: detect theme
                                 parentDisposable = parentDisposable,
                                 modifier = Modifier.fillMaxWidth()
