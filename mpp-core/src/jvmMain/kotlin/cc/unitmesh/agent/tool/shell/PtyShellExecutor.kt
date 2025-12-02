@@ -232,11 +232,14 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
             .setEnvironment(environment)
             .setConsole(false)
             .setCygwin(false)
-        
+            .setInitialColumns(240)
+            .setInitialRows(80)
+            .setUnixOpenTtyToPreserveOutputAfterTermination(true)
+
         config.workingDirectory?.let { workDir ->
             ptyProcessBuilder.setDirectory(workDir)
         }
-        
+
         val ptyProcess = ptyProcessBuilder.start()
 
         LiveShellSession(
