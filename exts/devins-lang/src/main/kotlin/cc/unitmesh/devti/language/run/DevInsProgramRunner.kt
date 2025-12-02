@@ -13,17 +13,18 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.runners.showRunContent
 import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.util.Disposer
+import com.intellij.util.messages.MessageBusConnection
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 
-class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
+class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>() {
     private val RUNNER_ID: String = "DevInsProgramRunner"
 
-    private val connection = ApplicationManager.getApplication().messageBus.connect(this)
-
+    // Use lazy initialization to avoid memory leak - connection is created per execution
+    // and tied to the project's lifecycle, not the runner's lifecycle
+    private var connection: MessageBusConnection? = null
     private var isSubscribed = false
 
     override fun getRunnerId(): String = RUNNER_ID
@@ -40,7 +41,15 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
 
         ApplicationManager.getApplication().invokeAndWait {
             if (!isSubscribed) {
-                connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
+                // Connect to project's message bus instead of application's
+                // This ensures proper disposal when the project is closed
+                val projectConnection = environment.project.messageBus.connect()
+                connection = projectConnection
+
+                // Register for disposal with the project
+                Disposer.register(environment.project, projectConnection)
+
+                projectConnection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
                     override fun runFinish(
                         allOutput: String,
                         llmOutput: String,
@@ -66,9 +75,5 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
         }
 
         return result.get()
-    }
-
-    override fun dispose() {
-        connection.disconnect()
     }
 }
