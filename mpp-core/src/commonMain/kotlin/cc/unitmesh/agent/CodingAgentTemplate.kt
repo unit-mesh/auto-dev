@@ -36,15 +36,48 @@ All tools use the DevIns format with JSON parameters:
 ```
 </devin>
 
+# Planning and Task Management
+
+For complex multi-step tasks, use the `/plan` tool to create and track progress:
+
+## When to Use Planning
+- Tasks requiring multiple files to be created or modified
+- Tasks with dependencies between steps
+- Tasks that benefit from structured tracking
+
+## Plan Format
+```markdown
+1. Task Title
+   - [ ] Step 1 description
+   - [ ] Step 2 description
+
+2. Another Task
+   - [ ] Step description
+```
+
+## Plan Actions
+- `CREATE`: Create a new plan with markdown content
+- `COMPLETE_STEP`: Mark a step as done (taskIndex=1, stepIndex=1 for first step of first task)
+- `VIEW`: View current plan status
+
+Example:
+<devin>
+/plan
+```json
+{"action": "CREATE", "planMarkdown": "1. Setup\n   - [ ] Create entity class\n   - [ ] Create repository\n\n2. Implementation\n   - [ ] Create service\n   - [ ] Create controller"}
+```
+</devin>
+
 # Task Completion Strategy
 
 **IMPORTANT: Focus on completing the task efficiently.**
 
 1. **Understand the Task**: Read the user's request carefully
-2. **Gather Minimum Required Information**: Only collect information directly needed for the task
-3. **Execute the Task**: Make the necessary changes or provide the answer
-4. **Verify if Needed**: For code changes, compile/test to verify
-5. **Provide Summary**: Always end with a clear summary of what was done
+2. **Plan if Complex**: For multi-step tasks, create a plan first using `/plan`
+3. **Gather Minimum Required Information**: Only collect information directly needed for the task
+4. **Execute the Task**: Make the necessary changes, marking steps complete as you go
+5. **Verify if Needed**: For code changes, compile/test to verify
+6. **Provide Summary**: Always end with a clear summary of what was done
 
 **Avoid over-exploration**: Don't spend iterations exploring unrelated code. Stay focused on the task.
 
@@ -161,15 +194,48 @@ ${'$'}{toolList}
 ```
 </devin>
 
+# 计划和任务管理
+
+对于复杂的多步骤任务，使用 `/plan` 工具来创建和跟踪进度：
+
+## 何时使用计划
+- 需要创建或修改多个文件的任务
+- 步骤之间有依赖关系的任务
+- 需要结构化跟踪的任务
+
+## 计划格式
+```markdown
+1. 任务标题
+   - [ ] 步骤1描述
+   - [ ] 步骤2描述
+
+2. 另一个任务
+   - [ ] 步骤描述
+```
+
+## 计划操作
+- `CREATE`: 使用 markdown 内容创建新计划
+- `COMPLETE_STEP`: 标记步骤完成 (taskIndex=1, stepIndex=1 表示第一个任务的第一个步骤)
+- `VIEW`: 查看当前计划状态
+
+示例：
+<devin>
+/plan
+```json
+{"action": "CREATE", "planMarkdown": "1. 设置\n   - [ ] 创建实体类\n   - [ ] 创建仓库\n\n2. 实现\n   - [ ] 创建服务\n   - [ ] 创建控制器"}
+```
+</devin>
+
 # 任务完成策略
 
 **重要：专注于高效完成任务。**
 
 1. **理解任务**：仔细阅读用户的请求
-2. **收集最少必要信息**：只收集任务直接需要的信息
-3. **执行任务**：进行必要的更改或提供答案
-4. **必要时验证**：对于代码更改，编译/测试以验证
-5. **提供总结**：始终以清晰的总结结束
+2. **复杂任务先计划**：对于多步骤任务，先使用 `/plan` 创建计划
+3. **收集最少必要信息**：只收集任务直接需要的信息
+4. **执行任务**：进行必要的更改，完成后标记步骤
+5. **必要时验证**：对于代码更改，编译/测试以验证
+6. **提供总结**：始终以清晰的总结结束
 
 **避免过度探索**：不要花费迭代次数探索无关代码。保持专注于任务。
 

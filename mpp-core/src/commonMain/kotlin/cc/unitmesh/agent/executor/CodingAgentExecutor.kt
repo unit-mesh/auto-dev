@@ -24,8 +24,8 @@ import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContex
 data class AsyncShellConfig(
     /** Initial wait timeout in milliseconds before notifying AI that process is still running */
     val initialWaitTimeoutMs: Long = 60_000L, // 1 minute
-    /** Maximum total wait time in milliseconds */
-    val maxWaitTimeoutMs: Long = 300_000L, // 5 minutes
+    /** Maximum total wait time in milliseconds (2 minutes, similar to Cursor/Claude Code) */
+    val maxWaitTimeoutMs: Long = 120_000L, // 2 minutes
     /** Interval for checking process status after initial timeout */
     val checkIntervalMs: Long = 30_000L // 30 seconds
 )
@@ -212,7 +212,8 @@ class CodingAgentExecutor(
 
             val executionContext = OrchestratorContext(
                 workingDirectory = projectPath,
-                environment = emptyMap()
+                environment = emptyMap(),
+                timeout = asyncShellConfig.maxWaitTimeoutMs  // Use max timeout for shell commands
             )
 
             var executionResult = toolOrchestrator.executeToolCall(

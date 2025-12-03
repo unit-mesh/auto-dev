@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.*
+import cc.unitmesh.agent.plan.AgentPlan
+import cc.unitmesh.agent.plan.MarkdownPlanParser
 import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.agent.render.RendererUtils
 import cc.unitmesh.agent.render.TaskInfo
@@ -74,6 +76,10 @@ class ComposeRenderer : BaseRenderer() {
     // Task tracking from task-boundary tool
     private val _tasks = mutableStateListOf<TaskInfo>()
     val tasks: List<TaskInfo> = _tasks
+
+    // Plan tracking from plan management tool
+    private var _currentPlan by mutableStateOf<AgentPlan?>(null)
+    val currentPlan: AgentPlan? get() = _currentPlan
 
     // BaseRenderer implementation
 
@@ -150,6 +156,11 @@ class ComposeRenderer : BaseRenderer() {
             updateTaskFromToolCall(params)
         }
 
+        // Handle plan management tool - update plan state
+        if (toolName == "plan") {
+            updatePlanFromToolCall(params)
+        }
+
         // Extract file path for read/write operations
         val filePath =
             when (toolType) {
@@ -217,6 +228,54 @@ class ComposeRenderer : BaseRenderer() {
         if (status == TaskStatus.COMPLETED || status == TaskStatus.CANCELLED) {
             // Keep completed tasks visible for review
             // You could add auto-removal logic here if desired
+        }
+    }
+
+    /**
+     * Update plan state from plan management tool call
+     */
+    private fun updatePlanFromToolCall(params: Map<String, String>) {
+        val action = params["action"]?.uppercase() ?: return
+        val planMarkdown = params["planMarkdown"] ?: ""
+
+        when (action) {
+            "CREATE", "UPDATE" -> {
+                if (planMarkdown.isNotBlank()) {
+                    _currentPlan = MarkdownPlanParser.parseToPlan(planMarkdown)
+                }
+            }
+            "COMPLETE_STEP" -> {
+                val taskIndex = params["taskIndex"]?.toIntOrNull() ?: return
+                val stepIndex = params["stepIndex"]?.toIntOrNull() ?: return
+                _currentPlan?.let { plan ->
+                    if (taskIndex in 1..plan.tasks.size) {
+                        val task = plan.tasks[taskIndex - 1]
+                        if (stepIndex in 1..task.steps.size) {
+                            val step = task.steps[stepIndex - 1]
+                            step.complete()
+                            task.updateStatusFromSteps()
+                            // Trigger recomposition by creating a new plan instance
+                            _currentPlan = plan.copy(updatedAt = Clock.System.now().toEpochMilliseconds())
+                        }
+                    }
+                }
+            }
+            "FAIL_STEP" -> {
+                val taskIndex = params["taskIndex"]?.toIntOrNull() ?: return
+                val stepIndex = params["stepIndex"]?.toIntOrNull() ?: return
+                _currentPlan?.let { plan ->
+                    if (taskIndex in 1..plan.tasks.size) {
+                        val task = plan.tasks[taskIndex - 1]
+                        if (stepIndex in 1..task.steps.size) {
+                            val step = task.steps[stepIndex - 1]
+                            step.fail()
+                            task.updateStatusFromSteps()
+                            _currentPlan = plan.copy(updatedAt = Clock.System.now().toEpochMilliseconds())
+                        }
+                    }
+                }
+            }
+            // VIEW action doesn't modify state
         }
     }
 

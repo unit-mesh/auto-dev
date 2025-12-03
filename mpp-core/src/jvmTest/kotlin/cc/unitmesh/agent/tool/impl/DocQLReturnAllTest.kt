@@ -126,6 +126,7 @@ class DocQLReturnAllTest {
             is ToolResult.Success -> resultAll.content
             is ToolResult.Error -> resultAll.message
             is ToolResult.AgentResult -> resultAll.content
+            is ToolResult.Pending -> resultAll.message
         }
         
         println("returnAll=true result: ${content.take(500)}")
@@ -171,6 +172,7 @@ class DocQLReturnAllTest {
             is ToolResult.Success -> resultDefault.content
             is ToolResult.Error -> resultDefault.message
             is ToolResult.AgentResult -> resultDefault.content
+            is ToolResult.Pending -> resultDefault.message
         }
         
         println("returnAll=false result: ${content.take(500)}")
