@@ -66,9 +66,47 @@
   opacity: 0.7;
 }
 
+.header-config-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.header-config-btn:hover {
+  opacity: 1;
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
 .app-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.config-prompt {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.config-btn {
+  padding: 10px 20px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.config-btn:hover {
+  background: var(--vscode-button-hoverBackground);
 }
 
