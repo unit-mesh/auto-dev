@@ -52,6 +52,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     // Handle messages from webview
     webviewView.webview.onDidReceiveMessage(async (message) => {
+      this.log(`Received message from webview: ${JSON.stringify(message)}`);
       switch (message.type) {
         case 'sendMessage':
           await this.handleUserMessage(message.content);
@@ -244,10 +245,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   /**
    * Create renderer that forwards events to webview
    * Mirrors TuiRenderer from mpp-ui
+   * Must implement JsCodingAgentRenderer interface including __doNotUseOrImplementIt
    */
   private createRenderer(): any {
     const self = this;
     return {
+      // Required by Kotlin JS export interface
+      __doNotUseOrImplementIt: {},
+
       renderIterationHeader: (current: number, max: number) => {
         self.postMessage({ type: 'iterationUpdate', data: { current, max } });
       },
@@ -294,6 +299,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         self.postMessage({ type: 'responseChunk', content: `\n💡 ${advice}\n` });
       },
       renderUserConfirmationRequest: () => {},
+      addLiveTerminal: () => {},
       forceStop: () => {
         self.postMessage({ type: 'taskComplete', data: { success: false, message: 'Stopped' } });
       }
@@ -310,7 +316,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       return;
     }
 
-    const trimmedContent = content.trim();
+    const trimmedContent = content?.trim();
     if (!trimmedContent) return;
 
     // Add user message to timeline
@@ -329,19 +335,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     this.isExecuting = true;
 
     try {
-      // Initialize agent if needed
       const agent = this.initializeCodingAgent();
       const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
-
-      // Create task and execute - same pattern as AgentMode.ts
       const task = new KotlinCC.agent.JsAgentTask(trimmedContent, workspacePath);
       const result = await agent.executeTask(task);
 
-      // Add completion message
       if (result && result.message) {
         this.messages.push({ role: 'assistant', content: result.message });
       }
-
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.log(`Error in chat: ${message}`);
@@ -491,14 +492,23 @@ configs:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline';">
   <link rel="stylesheet" href="${styleUri}">
   <title>AutoDev Chat</title>
+  <script>
+    // Acquire VSCode API ONCE and store on window BEFORE React loads
+    (function() {
+      if (typeof acquireVsCodeApi === 'function') {
+        window.vscodeApi = acquireVsCodeApi();
+        console.log('[AutoDev] VSCode API acquired and stored on window.vscodeApi');
+      }
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>
-  <script nonce="${nonce}" src="${scriptUri}"></script>
-  <script nonce="${nonce}">
+  <script src="${scriptUri}"></script>
+  <script>
     // Fallback if React bundle not loaded
     if (!document.getElementById('root').hasChildNodes()) {
       document.getElementById('root').innerHTML = \`
