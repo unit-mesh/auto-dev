@@ -40,16 +40,9 @@ const App: React.FC = () => {
   // Handle messages from extension
   const handleExtensionMessage = useCallback((msg: ExtensionMessage) => {
     switch (msg.type) {
-      // User message
+      // User message is already added in handleSend for immediate feedback
+      // So we skip adding it again here to avoid duplicates
       case 'userMessage':
-        setAgentState(prev => ({
-          ...prev,
-          timeline: [...prev.timeline, {
-            type: 'message',
-            timestamp: Date.now(),
-            message: { role: 'user', content: msg.content || '' }
-          }]
-        }));
         break;
 
       // LLM response start
