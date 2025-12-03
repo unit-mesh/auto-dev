@@ -8,9 +8,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Timeline } from './components/Timeline';
 import { ChatInput } from './components/ChatInput';
+import { ModelConfig } from './components/ModelSelector';
 import { useVSCode, ExtensionMessage } from './hooks/useVSCode';
 import type { AgentState, ToolCallInfo, TerminalOutput, ToolCallTimelineItem } from './types/timeline';
 import './App.css';
+
+interface ConfigState {
+  availableConfigs: ModelConfig[];
+  currentConfigName: string | null;
+}
 
 const App: React.FC = () => {
   // Agent state - mirrors ComposeRenderer's state
@@ -21,6 +27,12 @@ const App: React.FC = () => {
     currentIteration: 0,
     maxIterations: 10,
     tasks: [],
+  });
+
+  // Config state - mirrors IdeaAgentViewModel's config management
+  const [configState, setConfigState] = useState<ConfigState>({
+    availableConfigs: [],
+    currentConfigName: null
   });
 
   const { postMessage, onMessage, isVSCode } = useVSCode();
@@ -183,6 +195,16 @@ const App: React.FC = () => {
           maxIterations: Number(msg.data?.max) || prev.maxIterations
         }));
         break;
+
+      // Config update from extension
+      case 'configUpdate':
+        if (msg.data) {
+          setConfigState({
+            availableConfigs: (msg.data.availableConfigs as ModelConfig[]) || [],
+            currentConfigName: (msg.data.currentConfigName as string) || null
+          });
+        }
+        break;
     }
   }, []);
 
@@ -209,6 +231,16 @@ const App: React.FC = () => {
   // Handle open config
   const handleOpenConfig = useCallback(() => {
     postMessage({ type: 'openConfig' });
+  }, [postMessage]);
+
+  // Handle stop execution
+  const handleStop = useCallback(() => {
+    postMessage({ type: 'stopExecution' });
+  }, [postMessage]);
+
+  // Handle config selection
+  const handleConfigSelect = useCallback((config: ModelConfig) => {
+    postMessage({ type: 'selectConfig', data: { configName: config.name } });
   }, [postMessage]);
 
   // Check if we need to show config prompt
@@ -262,8 +294,14 @@ const App: React.FC = () => {
       <ChatInput
         onSend={handleSend}
         onClear={handleClear}
+        onStop={handleStop}
+        onConfigSelect={handleConfigSelect}
+        onConfigureClick={handleOpenConfig}
         disabled={agentState.isProcessing}
+        isExecuting={agentState.isProcessing}
         placeholder="Ask AutoDev anything... (use / for commands, @ for agents)"
+        availableConfigs={configState.availableConfigs}
+        currentConfigName={configState.currentConfigName}
       />
     </div>
   );
