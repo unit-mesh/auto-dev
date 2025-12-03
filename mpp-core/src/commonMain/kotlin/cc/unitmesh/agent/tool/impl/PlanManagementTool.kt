@@ -23,11 +23,11 @@ data class PlanManagementParams(
 object PlanManagementSchema : DeclarativeToolSchema(
     description = "Manage task plans for complex multi-step work.",
     properties = mapOf(
-        "action" to string(description = "Action: CREATE, UPDATE, COMPLETE_STEP, FAIL_STEP, VIEW", required = true,
-            enum = listOf("CREATE", "UPDATE", "COMPLETE_STEP", "FAIL_STEP", "VIEW")),
-        "planMarkdown" to string(description = "Plan content in markdown format", required = false),
-        "taskIndex" to string(description = "1-based task index", required = false),
-        "stepIndex" to string(description = "1-based step index", required = false)
+        "action" to string(description = "Action: CREATE (new plan), COMPLETE_STEP (mark step done), FAIL_STEP (mark step failed), VIEW (show plan). Use COMPLETE_STEP to update progress - do NOT resend the full plan.", required = true,
+            enum = listOf("CREATE", "COMPLETE_STEP", "FAIL_STEP", "VIEW")),
+        "planMarkdown" to string(description = "Plan content in markdown format (only for CREATE)", required = false),
+        "taskIndex" to string(description = "1-based task index (for COMPLETE_STEP/FAIL_STEP)", required = false),
+        "stepIndex" to string(description = "1-based step index (for COMPLETE_STEP/FAIL_STEP)", required = false)
     )
 ) {
     override fun getExampleUsage(toolName: String): String =
@@ -165,11 +165,11 @@ class PlanManagementTool(
 
         Actions:
         - CREATE: Create a new plan from markdown (planMarkdown required)
-        - UPDATE: Update existing plan with new markdown
         - COMPLETE_STEP: Mark a step as completed (taskIndex and stepIndex required, 1-based)
         - FAIL_STEP: Mark a step as failed
         - VIEW: View current plan status
 
+        IMPORTANT: Use COMPLETE_STEP to mark progress. Do NOT resend the full plan markdown to update progress.
         Use for complex tasks (3+ steps). Skip for simple one-step tasks.
     """.trimIndent()
 
