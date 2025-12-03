@@ -26,19 +26,75 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   private codingAgent: any = null;
   private llmService: any = null;
   private configWrapper: AutoDevConfigWrapper | null = null;
+  private completionManager: any = null;
   private isExecuting = false;
   private messages: Array<{ role: string; content: string }> = [];
+  private editorChangeDisposable: vscode.Disposable | undefined;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly log: (message: string) => void
-  ) {}
+  ) {
+    // Initialize completion manager
+    try {
+      if (KotlinCC?.llm?.JsCompletionManager) {
+        this.completionManager = new KotlinCC.llm.JsCompletionManager();
+        this.log('CompletionManager initialized');
+      }
+    } catch (error) {
+      this.log(`Failed to initialize CompletionManager: ${error}`);
+    }
 
-  resolveWebviewView(
+    // Listen to active editor changes
+    this.editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor && this.webviewView) {
+        this.sendActiveFileUpdate(editor.document);
+      }
+    });
+  }
+
+  /**
+   * Send active file update to webview
+   */
+  private sendActiveFileUpdate(document: vscode.TextDocument): void {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) return;
+
+    const relativePath = vscode.workspace.asRelativePath(document.uri, false);
+    const fileName = document.fileName.split('/').pop() || document.fileName.split('\\').pop() || '';
+    const isDirectory = false;
+
+    // Skip binary files and non-file schemes
+    if (document.uri.scheme !== 'file') return;
+    const binaryExtensions = ['jar', 'class', 'exe', 'dll', 'so', 'dylib', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'pdf', 'zip', 'tar', 'gz', 'rar', '7z'];
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    if (binaryExtensions.includes(ext)) return;
+
+    this.postMessage({
+      type: 'activeFileChanged',
+      data: {
+        path: relativePath,
+        name: fileName,
+        isDirectory
+      }
+    });
+  }
+
+  /**
+   * Send current active file to webview
+   */
+  private sendCurrentActiveFile(): void {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      this.sendActiveFileUpdate(editor.document);
+    }
+  }
+
+  async resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
-  ): void {
+  ): Promise<void> {
     this.webviewView = webviewView;
 
     webviewView.webview.options = {
@@ -72,11 +128,45 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         case 'selectConfig':
           await this.selectConfig(message.data?.configName as string);
           break;
+        case 'searchFiles':
+          await this.handleSearchFiles(message.data?.query as string);
+          break;
+        case 'getRecentFiles':
+          await this.handleGetRecentFiles();
+          break;
+        case 'readFileContent':
+          await this.handleReadFileContent(message.data?.path as string);
+          break;
+        case 'requestConfig':
+          // Webview is ready and requesting config
+          this.sendConfigUpdate();
+          // Also send current active file
+          this.sendCurrentActiveFile();
+          break;
+        case 'getActiveFile':
+          // Get current active file
+          this.sendCurrentActiveFile();
+          break;
+        case 'getCompletions':
+          // Get completion suggestions from mpp-core
+          await this.handleGetCompletions(
+            message.data?.text as string,
+            message.data?.cursorPosition as number
+          );
+          break;
+        case 'applyCompletion':
+          // Apply a completion item
+          await this.handleApplyCompletion(
+            message.data?.text as string,
+            message.data?.cursorPosition as number,
+            message.data?.completionIndex as number
+          );
+          break;
       }
     });
 
     // Initialize agent from config file
-    this.initializeFromConfig();
+    await this.initializeFromConfig();
   }
 
   /**
@@ -468,6 +558,313 @@ configs:
       case 'rerun-tool':
         // Rerun a tool
         break;
+
+      case 'optimizePrompt':
+        // Optimize prompt using LLM
+        await this.handlePromptOptimize(data?.prompt as string);
+        break;
+
+      case 'openMcpConfig':
+        // Open MCP configuration
+        await this.openMcpConfig();
+        break;
+    }
+  }
+
+  /**
+   * Open MCP configuration file
+   */
+  private async openMcpConfig(): Promise<void> {
+    try {
+      const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+      const mcpConfigPath = `${homeDir}/.autodev/mcp.json`;
+
+      // Check if file exists, create if not
+      const fs = await import('fs').then(m => m.promises);
+      try {
+        await fs.access(mcpConfigPath);
+      } catch {
+        // Create default MCP config
+        const defaultConfig = {
+          mcpServers: {}
+        };
+        await fs.mkdir(`${homeDir}/.autodev`, { recursive: true });
+        await fs.writeFile(mcpConfigPath, JSON.stringify(defaultConfig, null, 2));
+      }
+
+      // Open the file in VSCode
+      const uri = vscode.Uri.file(mcpConfigPath);
+      await vscode.window.showTextDocument(uri);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.log(`Failed to open MCP config: ${message}`);
+      vscode.window.showErrorMessage(`Failed to open MCP config: ${message}`);
+    }
+  }
+
+  /**
+   * Handle prompt optimization request
+   * Uses LLM to enhance the user's prompt
+   */
+  private async handlePromptOptimize(prompt: string): Promise<void> {
+    if (!prompt || !this.llmService) {
+      this.postMessage({ type: 'promptOptimizeFailed', data: { error: 'No prompt or LLM service' } });
+      return;
+    }
+
+    try {
+      const systemPrompt = `You are a prompt optimization assistant. Your task is to enhance the user's prompt to be more clear, specific, and effective for an AI coding assistant.
+
+Rules:
+1. Keep the original intent and meaning
+2. Add clarity and specificity where needed
+3. Structure the prompt for better understanding
+4. Keep it concise - don't make it unnecessarily long
+5. Return ONLY the optimized prompt, no explanations
+
+User's original prompt:`;
+
+      const response = await this.llmService.chat([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ]);
+
+      if (response) {
+        this.postMessage({ type: 'promptOptimized', data: { optimizedPrompt: response.trim() } });
+      } else {
+        this.postMessage({ type: 'promptOptimizeFailed', data: { error: 'Empty response' } });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.log(`Prompt optimization failed: ${message}`);
+      this.postMessage({ type: 'promptOptimizeFailed', data: { error: message } });
+    }
+  }
+
+  /**
+   * Handle file search request from webview
+   * Searches for files matching the query in the workspace
+   */
+  private async handleSearchFiles(query: string): Promise<void> {
+    if (!query || query.length < 2) {
+      this.postMessage({ type: 'searchFilesResult', data: { files: [], folders: [] } });
+      return;
+    }
+
+    try {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders) {
+        this.postMessage({ type: 'searchFilesResult', data: { files: [], folders: [] } });
+        return;
+      }
+
+      const basePath = workspaceFolders[0].uri.fsPath;
+      const lowerQuery = query.toLowerCase();
+
+      // Search for files matching the query
+      const files = await vscode.workspace.findFiles(
+        `**/*${query}*`,
+        '**/node_modules/**',
+        50
+      );
+
+      const fileResults: Array<{ name: string; path: string; relativePath: string; isDirectory: boolean }> = [];
+      const folderPaths = new Set<string>();
+
+      for (const file of files) {
+        const relativePath = vscode.workspace.asRelativePath(file, false);
+        const name = file.path.split('/').pop() || '';
+
+        // Skip binary files
+        const ext = name.split('.').pop()?.toLowerCase() || '';
+        const binaryExts = ['jar', 'class', 'exe', 'dll', 'so', 'dylib', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'pdf', 'zip', 'tar', 'gz'];
+        if (binaryExts.includes(ext)) continue;
+
+        fileResults.push({
+          name,
+          path: relativePath, // Use relative path for consistency with activeFileChanged
+          relativePath,
+          isDirectory: false
+        });
+
+        // Collect parent folders that match the query
+        const parts = relativePath.split('/');
+        let currentPath = '';
+        for (let i = 0; i < parts.length - 1; i++) {
+          currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+          if (parts[i].toLowerCase().includes(lowerQuery)) {
+            folderPaths.add(currentPath);
+          }
+        }
+      }
+
+      const folderResults = Array.from(folderPaths).slice(0, 10).map(p => ({
+        name: p.split('/').pop() || p,
+        path: p, // Use relative path for consistency
+        relativePath: p,
+        isDirectory: true
+      }));
+
+      this.postMessage({
+        type: 'searchFilesResult',
+        data: {
+          files: fileResults.slice(0, 30),
+          folders: folderResults
+        }
+      });
+    } catch (error) {
+      this.log(`Error searching files: ${error}`);
+      this.postMessage({ type: 'searchFilesResult', data: { files: [], folders: [] } });
+    }
+  }
+
+  /**
+   * Handle get recent files request from webview
+   * Returns recently opened files in the workspace
+   */
+  private async handleGetRecentFiles(): Promise<void> {
+    try {
+      // Get recently opened text documents
+      const recentFiles: Array<{ name: string; path: string; relativePath: string; isDirectory: boolean }> = [];
+
+      // Get visible text editors first (most recently used)
+      for (const editor of vscode.window.visibleTextEditors) {
+        const doc = editor.document;
+        if (doc.uri.scheme === 'file') {
+          const relativePath = vscode.workspace.asRelativePath(doc.uri, false);
+          recentFiles.push({
+            name: doc.fileName.split('/').pop() || '',
+            path: relativePath, // Use relative path for consistency
+            relativePath,
+            isDirectory: false
+          });
+        }
+      }
+
+      // Add other open documents
+      for (const doc of vscode.workspace.textDocuments) {
+        const relativePath = vscode.workspace.asRelativePath(doc.uri, false);
+        if (doc.uri.scheme === 'file' && !recentFiles.some(f => f.path === relativePath)) {
+          recentFiles.push({
+            name: doc.fileName.split('/').pop() || '',
+            path: relativePath, // Use relative path for consistency
+            relativePath,
+            isDirectory: false
+          });
+        }
+      }
+
+      this.postMessage({
+        type: 'recentFilesResult',
+        data: { files: recentFiles.slice(0, 20) }
+      });
+    } catch (error) {
+      this.log(`Error getting recent files: ${error}`);
+      this.postMessage({ type: 'recentFilesResult', data: { files: [] } });
+    }
+  }
+
+  /**
+   * Handle read file content request from webview
+   * filePath can be either relative or absolute path
+   */
+  private async handleReadFileContent(filePath: string): Promise<void> {
+    if (!filePath) {
+      this.postMessage({ type: 'fileContentResult', data: { content: null, error: 'No path provided' } });
+      return;
+    }
+
+    try {
+      // Convert relative path to absolute if needed
+      let uri: vscode.Uri;
+      if (filePath.startsWith('/') || filePath.match(/^[a-zA-Z]:\\/)) {
+        // Already absolute path
+        uri = vscode.Uri.file(filePath);
+      } else {
+        // Relative path - resolve against workspace
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+          this.postMessage({ type: 'fileContentResult', data: { content: null, error: 'No workspace folder' } });
+          return;
+        }
+        uri = vscode.Uri.joinPath(workspaceFolder.uri, filePath);
+      }
+
+      const content = await vscode.workspace.fs.readFile(uri);
+      const text = new TextDecoder().decode(content);
+
+      this.postMessage({
+        type: 'fileContentResult',
+        data: { path: filePath, content: text }
+      });
+    } catch (error) {
+      this.log(`Error reading file: ${error}`);
+      this.postMessage({
+        type: 'fileContentResult',
+        data: { path: filePath, content: null, error: String(error) }
+      });
+    }
+  }
+
+  /**
+   * Handle get completions request from webview
+   * Uses mpp-core's CompletionManager
+   */
+  private async handleGetCompletions(text: string, cursorPosition: number): Promise<void> {
+    if (!this.completionManager) {
+      this.postMessage({ type: 'completionsResult', data: { items: [] } });
+      return;
+    }
+
+    try {
+      const items = this.completionManager.getCompletions(text, cursorPosition);
+      const itemsArray = Array.from(items || []).map((item: any, index: number) => ({
+        text: item.text,
+        displayText: item.displayText,
+        description: item.description,
+        icon: item.icon,
+        triggerType: item.triggerType,
+        index
+      }));
+
+      this.postMessage({ type: 'completionsResult', data: { items: itemsArray } });
+    } catch (error) {
+      this.log(`Error getting completions: ${error}`);
+      this.postMessage({ type: 'completionsResult', data: { items: [] } });
+    }
+  }
+
+  /**
+   * Handle apply completion request from webview
+   * Uses mpp-core's CompletionManager insert handler
+   */
+  private async handleApplyCompletion(
+    text: string,
+    cursorPosition: number,
+    completionIndex: number
+  ): Promise<void> {
+    if (!this.completionManager) {
+      this.postMessage({ type: 'completionApplied', data: null });
+      return;
+    }
+
+    try {
+      const result = this.completionManager.applyCompletion(text, cursorPosition, completionIndex);
+      if (result) {
+        this.postMessage({
+          type: 'completionApplied',
+          data: {
+            newText: result.newText,
+            newCursorPosition: result.newCursorPosition,
+            shouldTriggerNextCompletion: result.shouldTriggerNextCompletion
+          }
+        });
+      } else {
+        this.postMessage({ type: 'completionApplied', data: null });
+      }
+    } catch (error) {
+      this.log(`Error applying completion: ${error}`);
+      this.postMessage({ type: 'completionApplied', data: null });
     }
   }
 

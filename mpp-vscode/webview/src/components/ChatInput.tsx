@@ -1,18 +1,30 @@
-import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import React, { useState, useRef, useEffect, KeyboardEvent, useCallback } from 'react';
 import { ModelSelector, ModelConfig } from './ModelSelector';
+import { TopToolbar } from './TopToolbar';
+import { SelectedFile } from './FileChip';
+import { DevInInput } from './DevInInput';
+import { CompletionPopup, CompletionItem } from './CompletionPopup';
 import './ChatInput.css';
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, files?: SelectedFile[]) => void;
   onClear?: () => void;
   onStop?: () => void;
   onConfigSelect?: (config: ModelConfig) => void;
   onConfigureClick?: () => void;
+  onMcpConfigClick?: () => void;
+  onPromptOptimize?: (prompt: string) => Promise<string>;
+  onGetCompletions?: (text: string, cursorPosition: number) => void;
+  onApplyCompletion?: (text: string, cursorPosition: number, completionIndex: number) => void;
+  completionItems?: CompletionItem[];
+  completionResult?: { newText: string; newCursorPosition: number; shouldTriggerNextCompletion: boolean } | null;
   disabled?: boolean;
   isExecuting?: boolean;
   placeholder?: string;
   availableConfigs?: ModelConfig[];
   currentConfigName?: string | null;
+  totalTokens?: number | null;
+  activeFile?: SelectedFile | null;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -21,38 +33,131 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onStop,
   onConfigSelect,
   onConfigureClick,
+  onMcpConfigClick,
+  onPromptOptimize,
+  onGetCompletions,
+  onApplyCompletion,
+  completionItems: externalCompletionItems,
+  completionResult,
   disabled = false,
   isExecuting = false,
   placeholder = 'Ask AutoDev...',
   availableConfigs = [],
-  currentConfigName = null
+  currentConfigName = null,
+  totalTokens = null,
+  activeFile = null
 }) => {
   const [input, setInput] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [completionOpen, setCompletionOpen] = useState(false);
+  const [selectedCompletionIndex, setSelectedCompletionIndex] = useState(0);
+  const [autoAddCurrentFile, setAutoAddCurrentFile] = useState(true);
+  const inputRef = useRef<HTMLDivElement>(null);
+  const cursorPositionRef = useRef(0);
 
-  // Auto-resize textarea
+  // Use external completion items if provided
+  const completionItems = externalCompletionItems || [];
+
+  // Auto-add active file when it changes
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
+    if (autoAddCurrentFile && activeFile) {
+      setSelectedFiles(prev => {
+        if (prev.some(f => f.path === activeFile.path)) return prev;
+        return [...prev, activeFile];
+      });
     }
-  }, [input]);
+  }, [activeFile, autoAddCurrentFile]);
 
-  // Focus on mount
+  // Handle completion result from mpp-core
   useEffect(() => {
-    textareaRef.current?.focus();
+    if (completionResult) {
+      setInput(completionResult.newText);
+      cursorPositionRef.current = completionResult.newCursorPosition;
+      if (completionResult.shouldTriggerNextCompletion && onGetCompletions) {
+        // Trigger next completion
+        onGetCompletions(completionResult.newText, completionResult.newCursorPosition);
+      } else {
+        setCompletionOpen(false);
+      }
+    }
+  }, [completionResult, onGetCompletions]);
+
+  // Update completion items when external items change
+  useEffect(() => {
+    if (externalCompletionItems && externalCompletionItems.length > 0) {
+      setCompletionOpen(true);
+      setSelectedCompletionIndex(0);
+    } else if (externalCompletionItems && externalCompletionItems.length === 0) {
+      setCompletionOpen(false);
+    }
+  }, [externalCompletionItems]);
+
+  const handleAddFile = useCallback((file: SelectedFile) => {
+    setSelectedFiles(prev => {
+      if (prev.some(f => f.path === file.path)) return prev;
+      return [...prev, file];
+    });
   }, []);
+
+  const handleRemoveFile = useCallback((file: SelectedFile) => {
+    setSelectedFiles(prev => prev.filter(f => f.path !== file.path));
+  }, []);
+
+  const handleClearFiles = useCallback(() => {
+    setSelectedFiles([]);
+  }, []);
+
+  // Handle completion trigger - request completions from mpp-core
+  const handleTriggerCompletion = useCallback((trigger: '/' | '@' | '$', position: number) => {
+    cursorPositionRef.current = position;
+    if (onGetCompletions) {
+      // Use mpp-core for completions
+      onGetCompletions(input.substring(0, position) + trigger, position + 1);
+    }
+  }, [input, onGetCompletions]);
+
+  // Handle completion selection
+  const handleSelectCompletion = useCallback((item: CompletionItem, _index: number) => {
+    if (onApplyCompletion && item.index !== undefined) {
+      // Use mpp-core to apply completion
+      onApplyCompletion(input, cursorPositionRef.current, item.index);
+    } else {
+      // Fallback: simple text replacement
+      setInput(prev => prev + (item.insertText || item.text));
+    }
+    setCompletionOpen(false);
+  }, [input, onApplyCompletion]);
 
   const handleSubmit = () => {
     const trimmed = input.trim();
     if (trimmed && !disabled) {
-      onSend(trimmed);
+      onSend(trimmed, selectedFiles.length > 0 ? selectedFiles : undefined);
       setInput('');
+      // Keep files in context for follow-up questions
     }
   };
 
+  const handlePromptOptimize = useCallback(async () => {
+    if (!onPromptOptimize || !input.trim() || isEnhancing || isExecuting) return;
+
+    setIsEnhancing(true);
+    try {
+      const enhanced = await onPromptOptimize(input);
+      if (enhanced) {
+        setInput(enhanced);
+      }
+    } catch (error) {
+      console.error('Failed to optimize prompt:', error);
+    } finally {
+      setIsEnhancing(false);
+    }
+  }, [input, onPromptOptimize, isEnhancing, isExecuting]);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Don't submit if completion popup is open
+    if (completionOpen) return;
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -60,46 +165,39 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="chat-input-container">
-      {/* Toolbar - Model Selector and Config */}
-      <div className="input-toolbar">
-        <div className="toolbar-left">
-          <ModelSelector
-            availableConfigs={availableConfigs}
-            currentConfigName={currentConfigName}
-            onConfigSelect={onConfigSelect || (() => {})}
-            onConfigureClick={onConfigureClick || (() => {})}
+    <div className="chat-input-container" ref={inputRef}>
+      {/* File Context Toolbar */}
+      <TopToolbar
+        selectedFiles={selectedFiles}
+        onAddFile={handleAddFile}
+        onRemoveFile={handleRemoveFile}
+        onClearFiles={handleClearFiles}
+        autoAddCurrentFile={autoAddCurrentFile}
+        onToggleAutoAdd={() => setAutoAddCurrentFile(prev => !prev)}
+      />
+
+      {/* Input Area with DevIn highlighting */}
+      <div className="input-wrapper">
+        <div className="input-with-completion">
+          <DevInInput
+            value={input}
+            onChange={setInput}
+            onKeyDown={handleKeyDown}
+            onTriggerCompletion={handleTriggerCompletion}
+            placeholder={placeholder}
+            disabled={disabled || isExecuting}
+          />
+
+          {/* Completion Popup - positioned relative to input */}
+          <CompletionPopup
+            isOpen={completionOpen}
+            items={completionItems}
+            selectedIndex={selectedCompletionIndex}
+            onSelect={handleSelectCompletion}
+            onClose={() => setCompletionOpen(false)}
+            onNavigate={setSelectedCompletionIndex}
           />
         </div>
-        <div className="toolbar-right">
-          {onClear && (
-            <button
-              className="toolbar-button"
-              onClick={onClear}
-              title="Clear history"
-              disabled={isExecuting}
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
-                <path d="M10.5 5.5l-5 5m0-5l5 5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Input Area */}
-      <div className="input-wrapper">
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled || isExecuting}
-          rows={1}
-          className="chat-textarea"
-        />
         <div className="input-actions">
           {isExecuting ? (
             <button
@@ -128,9 +226,61 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         </div>
       </div>
 
-      {/* Footer Hint */}
-      <div className="input-hint">
-        <span>Press <kbd>Enter</kbd> to send, <kbd>Shift+Enter</kbd> for new line</span>
+      {/* Bottom Toolbar - Model Selector, Token Info, and Actions */}
+      <div className="input-toolbar">
+        <div className="toolbar-left">
+          <ModelSelector
+            availableConfigs={availableConfigs}
+            currentConfigName={currentConfigName}
+            onConfigSelect={onConfigSelect || (() => {})}
+            onConfigureClick={onConfigureClick || (() => {})}
+          />
+          {/* Token usage indicator */}
+          {totalTokens != null && totalTokens > 0 && (
+            <span className="token-indicator" title="Total tokens used">
+              {totalTokens}t
+            </span>
+          )}
+        </div>
+        <div className="toolbar-right">
+          {/* MCP Config button */}
+          {onMcpConfigClick && (
+            <button
+              className="toolbar-button mcp-button"
+              onClick={onMcpConfigClick}
+              title="MCP Configuration"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+              </svg>
+            </button>
+          )}
+          {/* Prompt optimization button */}
+          {onPromptOptimize && (
+            <button
+              className={`toolbar-button enhance-button ${isEnhancing ? 'enhancing' : ''}`}
+              onClick={handlePromptOptimize}
+              disabled={!input.trim() || isEnhancing || isExecuting}
+              title={isEnhancing ? 'Enhancing prompt...' : 'Enhance prompt with AI'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/>
+              </svg>
+              {isEnhancing && <span className="enhancing-text">...</span>}
+            </button>
+          )}
+          <span className="input-hint">
+            <kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> newline
+          </span>
+          {onClear && (
+            <button className="toolbar-button" onClick={onClear} title="Clear history" disabled={isExecuting}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
+                <path d="M10.5 5.5l-5 5m0-5l5 5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

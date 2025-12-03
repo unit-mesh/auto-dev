@@ -1,0 +1,122 @@
+/* FileChip Component Styles */
+
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: var(--selection-background);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 200px;
+  white-space: nowrap;
+}
+
+.file-chip:hover {
+  background: var(--list-hover-background);
+}
+
+.file-chip.directory {
+  border-color: var(--vscode-gitDecoration-untrackedResourceForeground, #73c991);
+}
+
+.file-chip-icon {
+  display: flex;
+  align-items: center;
+  color: var(--foreground);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.file-chip.directory .file-chip-icon {
+  color: var(--vscode-gitDecoration-untrackedResourceForeground, #73c991);
+}
+
+.file-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.file-chip-path {
+  color: var(--foreground);
+  opacity: 0.5;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  color: var(--foreground);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.file-chip:hover .file-chip-remove {
+  opacity: 0.6;
+}
+
+.file-chip-remove:hover {
+  opacity: 1 !important;
+  background: var(--vscode-inputValidation-errorBackground, rgba(255, 0, 0, 0.2));
+}
+
+/* Expanded FileChip for vertical list */
+.file-chip-expanded {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--selection-background);
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.file-chip-expanded:hover {
+  background: var(--list-hover-background);
+}
+
+.file-chip-expanded .file-chip-icon {
+  flex-shrink: 0;
+}
+
+.file-chip-expanded .file-chip-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-chip-expanded .file-chip-name {
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.file-chip-expanded .file-chip-full-path {
+  font-size: 10px;
+  color: var(--foreground);
+  opacity: 0.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-chip-expanded .file-chip-remove {
+  opacity: 0.4;
+}
+
+.file-chip-expanded:hover .file-chip-remove {
+  opacity: 0.7;
+}
+

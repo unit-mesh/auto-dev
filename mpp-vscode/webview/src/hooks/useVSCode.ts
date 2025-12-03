@@ -34,6 +34,20 @@ export interface ExtensionMessage {
     | 'iterationUpdate'
     // Config events
     | 'configUpdate'
+    // Token events
+    | 'tokenUpdate'
+    // Prompt optimization events
+    | 'promptOptimized'
+    | 'promptOptimizeFailed'
+    // File search events
+    | 'searchFilesResult'
+    | 'recentFilesResult'
+    | 'fileContentResult'
+    // Context events
+    | 'activeFileChanged'
+    // Completion events
+    | 'completionsResult'
+    | 'completionApplied'
     // Error and control
     | 'error'
     | 'historyCleared';
@@ -43,7 +57,7 @@ export interface ExtensionMessage {
 
 // Message types to extension
 export interface WebviewMessage {
-  type: 'sendMessage' | 'clearHistory' | 'action' | 'openConfig' | 'stopExecution' | 'selectConfig';
+  type: 'sendMessage' | 'clearHistory' | 'action' | 'openConfig' | 'stopExecution' | 'selectConfig' | 'searchFiles' | 'getRecentFiles' | 'readFileContent' | 'requestConfig' | 'getActiveFile' | 'getCompletions' | 'applyCompletion';
   content?: string;
   action?: string;
   data?: Record<string, unknown>;
