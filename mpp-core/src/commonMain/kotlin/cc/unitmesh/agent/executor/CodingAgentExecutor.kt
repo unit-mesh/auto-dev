@@ -3,12 +3,14 @@ package cc.unitmesh.agent.executor
 import cc.unitmesh.agent.*
 import cc.unitmesh.agent.conversation.ConversationManager
 import cc.unitmesh.agent.core.SubAgentManager
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.schema.ToolResultFormatter
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.state.ToolExecutionState
+import cc.unitmesh.agent.plan.PlanSummaryData
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
@@ -38,7 +40,13 @@ class CodingAgentExecutor(
     maxIterations: Int = 100,
     private val subAgentManager: SubAgentManager? = null,
     enableLLMStreaming: Boolean = true,
-    private val asyncShellConfig: AsyncShellConfig = AsyncShellConfig()
+    private val asyncShellConfig: AsyncShellConfig = AsyncShellConfig(),
+    /**
+     * When true, only execute the first tool call per LLM response.
+     * This enforces the "one tool per response" rule even when LLM returns multiple tool calls.
+     * Default is true to prevent LLM from executing multiple tools in one iteration.
+     */
+    private val singleToolPerIteration: Boolean = true
 ) : BaseAgentExecutor(
     projectPath = projectPath,
     llmService = llmService,
@@ -47,6 +55,7 @@ class CodingAgentExecutor(
     maxIterations = maxIterations,
     enableLLMStreaming = enableLLMStreaming
 ) {
+    private val logger = getLogger("CodingAgentExecutor")
     private val steps = mutableListOf<AgentStep>()
     private val edits = mutableListOf<AgentEdit>()
 
@@ -92,10 +101,20 @@ class CodingAgentExecutor(
                 break
             }
 
-            val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
-            if (toolCalls.isEmpty()) {
+            val allToolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
+            if (allToolCalls.isEmpty()) {
                 renderer.renderTaskComplete()
                 break
+            }
+
+            // When singleToolPerIteration is enabled, only execute the first tool call
+            // This enforces the "one tool per response" rule even when LLM returns multiple tool calls
+            val toolCalls = if (singleToolPerIteration && allToolCalls.size > 1) {
+                logger.warn { "LLM returned ${allToolCalls.size} tool calls, but singleToolPerIteration is enabled. Only executing the first one: ${allToolCalls.first().toolName}" }
+                renderer.renderError("Warning: LLM returned ${allToolCalls.size} tool calls, only executing the first one")
+                listOf(allToolCalls.first())
+            } else {
+                allToolCalls
             }
 
             val toolResults = executeToolCalls(toolCalls)
@@ -273,6 +292,11 @@ class CodingAgentExecutor(
                 displayOutput,
                 executionResult.metadata
             )
+
+            // Render plan summary bar after plan tool execution
+            if (toolName == "plan" && executionResult.isSuccess) {
+                renderPlanSummaryIfAvailable()
+            }
 
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {
@@ -511,5 +535,15 @@ class CodingAgentExecutor(
      */
     fun getConversationHistory(): List<cc.unitmesh.devins.llm.Message> {
         return conversationManager?.getHistory() ?: emptyList()
+    }
+
+    /**
+     * Render plan summary bar if a plan is available
+     */
+    private fun renderPlanSummaryIfAvailable() {
+        val planStateService = toolOrchestrator.getPlanStateService() ?: return
+        val currentPlan = planStateService.currentPlan.value ?: return
+        val summary = PlanSummaryData.from(currentPlan)
+        renderer.renderPlanSummary(summary)
     }
 }

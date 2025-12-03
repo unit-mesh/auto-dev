@@ -11,6 +11,8 @@ import chalk from 'chalk';
 import hljs from 'highlight.js';
 import { semanticChalk, dividers } from '../../design-system/theme-helpers.js';
 import { BaseRenderer } from './BaseRenderer.js';
+import { cc } from 'autodev-mpp-core/autodev-mpp-core';
+import JsPlanSummaryData = cc.unitmesh.agent.JsPlanSummaryData;
 
 /**
  * CliRenderer extends BaseRenderer and implements the unified JsCodingAgentRenderer interface
@@ -38,6 +40,55 @@ export class CliRenderer extends BaseRenderer {
   renderIterationHeader(current: number, max: number): void {
     // Don't show iteration headers - they're not in the reference format
     // The reference format shows tools directly without iteration numbers
+  }
+
+  /**
+   * Render a compact plan summary bar
+   * Example: 📋 Plan: Create Tag System (3/5 steps, 60%) ████████░░░░░░░░
+   */
+  renderPlanSummary(summary: JsPlanSummaryData): void {
+    const { title, completedSteps, totalSteps, progressPercent, status, currentStepDescription } = summary;
+
+    // Build progress bar (16 chars wide)
+    const barWidth = 16;
+    const filledWidth = Math.round((progressPercent / 100) * barWidth);
+    const emptyWidth = barWidth - filledWidth;
+    const progressBar = '█'.repeat(filledWidth) + '░'.repeat(emptyWidth);
+
+    // Status indicator
+    let statusIcon = '📋';
+    let statusColor = semanticChalk.info;
+    if (status === 'COMPLETED') {
+      statusIcon = '✅';
+      statusColor = semanticChalk.success;
+    } else if (status === 'FAILED') {
+      statusIcon = '❌';
+      statusColor = semanticChalk.error;
+    } else if (status === 'IN_PROGRESS') {
+      statusIcon = '🔄';
+    }
+
+    // Truncate title if too long
+    const maxTitleLen = 30;
+    const displayTitle = title.length > maxTitleLen ? title.substring(0, maxTitleLen - 3) + '...' : title;
+
+    // Main summary line
+    console.log(
+      statusIcon + ' ' +
+      chalk.bold('Plan: ') +
+      chalk.white(displayTitle) + ' ' +
+      semanticChalk.muted(`(${completedSteps}/${totalSteps} steps, ${progressPercent}%) `) +
+      statusColor(progressBar)
+    );
+
+    // Show current step if available
+    if (currentStepDescription && status !== 'COMPLETED') {
+      const maxStepLen = 50;
+      const displayStep = currentStepDescription.length > maxStepLen
+        ? currentStepDescription.substring(0, maxStepLen - 3) + '...'
+        : currentStepDescription;
+      console.log('  ⎿ ' + semanticChalk.muted('Next: ' + displayStep));
+    }
   }
 
   renderLLMResponseStart(): void {
@@ -157,23 +208,65 @@ export class CliRenderer extends BaseRenderer {
           // Fallback to the old regex-based parsing
           docqlParams = params;
         }
-        
+
         const query = docqlParams.query || params.query || paramsStr;
         const docPath = docqlParams.documentPath || params.documentPath;
         const maxResults = docqlParams.maxResults || params.maxResults;
         const reranker = docqlParams.rerankerType || params.rerankerType;
-        
+
         // Build details string - truncate long queries for display
         const displayQuery = query.length > 80 ? query.substring(0, 77) + '...' : query;
         let details = `Query: "${displayQuery}"`;
         if (docPath) details += ` | Doc: ${docPath}`;
         if (maxResults) details += ` | Max: ${maxResults}`;
         if (reranker) details += ` | Reranker: ${reranker}`;
-        
+
         return {
           name: 'DocQL',
           description: 'document query',
           details
+        };
+      }
+      case 'plan': {
+        const action = params.action || 'unknown';
+        const actionLower = action.toLowerCase();
+        if (actionLower === 'create') {
+          return {
+            name: 'Plan',
+            description: 'creating plan',
+            details: 'Creating new task plan...'
+          };
+        } else if (actionLower === 'complete_step') {
+          const steps = params.steps;
+          if (steps) {
+            return {
+              name: 'Plan',
+              description: 'updating progress',
+              details: `Completing multiple steps...`
+            };
+          }
+          return {
+            name: 'Plan',
+            description: 'updating progress',
+            details: `Completing step ${params.taskIndex || '?'}.${params.stepIndex || '?'}`
+          };
+        } else if (actionLower === 'fail_step') {
+          return {
+            name: 'Plan',
+            description: 'marking failed',
+            details: `Step ${params.taskIndex || '?'}.${params.stepIndex || '?'} failed`
+          };
+        } else if (actionLower === 'view') {
+          return {
+            name: 'Plan',
+            description: 'viewing plan',
+            details: 'Viewing current plan status'
+          };
+        }
+        return {
+          name: 'Plan',
+          description: action,
+          details: paramsStr
         };
       }
       default:

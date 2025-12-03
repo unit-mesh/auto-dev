@@ -60,6 +60,11 @@ For complex multi-step tasks, use the `/plan` tool to create and track progress:
 - `COMPLETE_STEP`: Mark a step as done (taskIndex=1, stepIndex=1 for first step of first task)
 - `VIEW`: View current plan status
 
+## IMPORTANT: Plan Update Rules
+- **Mark ONE step at a time**: After completing actual work, call COMPLETE_STEP for that single step only
+- **Do NOT batch multiple COMPLETE_STEP calls**: Each response should contain at most ONE plan update
+- **Update after work is done**: Only mark a step complete AFTER you have actually performed the work
+
 Example:
 <devin>
 /plan
@@ -128,10 +133,15 @@ When a tool fails:
 
 # IMPORTANT: One Tool Per Response
 
-**Execute ONLY ONE tool per response.**
+**Execute ONLY ONE tool per response. This is critical for proper execution.**
 
 - ✅ CORRECT: One <devin> block with ONE tool call
-- ❌ WRONG: Multiple <devin> blocks
+- ❌ WRONG: Multiple <devin> blocks or multiple tool calls
+
+**Special note for /plan tool:**
+- Do NOT call multiple COMPLETE_STEP in one response
+- Complete one step, wait for confirmation, then proceed to next step
+- Each plan update requires a separate response cycle
 
 # Response Format
 

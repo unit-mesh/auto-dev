@@ -20,10 +20,12 @@ package cc.unitmesh.agent.plan
 object MarkdownPlanParser {
     
     // Pattern for task headers: "1. Task Title" or "1. [x] Task Title"
+    // Note: The closing bracket ] must be escaped as \\] for JavaScript compatibility
     private val TASK_HEADER_PATTERN = Regex("^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$")
     
     // Pattern for step items: "- [x] Step description"
-    private val STEP_PATTERN = Regex("^\\s*[-*]\\s*\\[\\s*([xX!*✓]?)\\s*]\\s*(.*)")
+    // Note: The closing bracket ] must be escaped as \\] for JavaScript compatibility
+    private val STEP_PATTERN = Regex("^\\s*[-*]\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
     
     // Pattern for unordered list items without checkbox: "- Step description"
     private val UNORDERED_ITEM_PATTERN = Regex("^\\s*[-*]\\s+(.+)")

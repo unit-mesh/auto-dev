@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.render
 
+import cc.unitmesh.agent.plan.PlanSummaryData
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.llm.compression.TokenInfo
 
@@ -26,6 +27,21 @@ interface CodingAgentRenderer {
     fun renderRecoveryAdvice(recoveryAdvice: String)
 
     fun updateTokenInfo(tokenInfo: TokenInfo) {}
+
+    /**
+     * Render a compact plan summary bar.
+     * Called when plan is created or updated to show progress in a compact format.
+     *
+     * Example display:
+     * ```
+     * 📋 Plan: Create Tag System (3/5 steps, 60%) ████████░░░░░░░░
+     * ```
+     *
+     * @param summary The plan summary data containing progress information
+     */
+    fun renderPlanSummary(summary: PlanSummaryData) {
+        // Default: no-op for renderers that don't support plan summary bar
+    }
 
     fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>)
 

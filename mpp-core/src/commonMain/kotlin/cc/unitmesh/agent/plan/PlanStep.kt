@@ -76,7 +76,8 @@ data class PlanStep(
     }
     
     companion object {
-        private val STEP_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*]\\s*(.*)")
+        // Note: The closing bracket ] must be escaped as \\] for JavaScript compatibility
+        private val STEP_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
         
         /**
          * Parse a step from markdown text

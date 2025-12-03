@@ -39,6 +39,15 @@ class ToolOrchestrator(
 ) {
     private val logger = getLogger("cc.unitmesh.agent.orchestrator.ToolOrchestrator")
 
+    /**
+     * Get the PlanStateService from the registered PlanManagementTool.
+     * Returns null if no plan tool is registered.
+     */
+    fun getPlanStateService(): cc.unitmesh.agent.plan.PlanStateService? {
+        val planTool = registry.getTool("plan") as? cc.unitmesh.agent.tool.impl.PlanManagementTool
+        return planTool?.getPlanStateService()
+    }
+
     // Coroutine scope for background tasks (async shell monitoring)
     private val backgroundScope = CoroutineScope(Dispatchers.Default)
     
@@ -698,15 +707,63 @@ class ToolOrchestrator(
             else -> 0
         }
 
+        // Handle batch steps parameter
+        val steps = parseStepsParameter(params["steps"])
+
         val planParams = cc.unitmesh.agent.tool.impl.PlanManagementParams(
             action = action,
             planMarkdown = planMarkdown,
             taskIndex = taskIndex,
-            stepIndex = stepIndex
+            stepIndex = stepIndex,
+            steps = steps
         )
 
         val invocation = planTool.createInvocation(planParams)
         return invocation.execute(context)
+    }
+
+    /**
+     * Parse the steps parameter which can be:
+     * - A List of Maps with taskIndex and stepIndex
+     * - A JSON string representing an array
+     * - null or empty
+     */
+    private fun parseStepsParameter(stepsParam: Any?): List<cc.unitmesh.agent.tool.impl.StepRef> {
+        if (stepsParam == null) return emptyList()
+
+        return when (stepsParam) {
+            is List<*> -> {
+                stepsParam.mapNotNull { item ->
+                    when (item) {
+                        is Map<*, *> -> {
+                            val taskIdx = when (val t = item["taskIndex"]) {
+                                is Number -> t.toInt()
+                                is String -> t.toIntOrNull() ?: return@mapNotNull null
+                                else -> return@mapNotNull null
+                            }
+                            val stepIdx = when (val s = item["stepIndex"]) {
+                                is Number -> s.toInt()
+                                is String -> s.toIntOrNull() ?: return@mapNotNull null
+                                else -> return@mapNotNull null
+                            }
+                            cc.unitmesh.agent.tool.impl.StepRef(taskIdx, stepIdx)
+                        }
+                        else -> null
+                    }
+                }
+            }
+            is String -> {
+                // Try to parse as JSON array
+                try {
+                    val parsed = kotlinx.serialization.json.Json.decodeFromString<List<cc.unitmesh.agent.tool.impl.StepRef>>(stepsParam)
+                    parsed
+                } catch (e: Exception) {
+                    logger.debug { "Failed to parse steps parameter as JSON: ${e.message}" }
+                    emptyList()
+                }
+            }
+            else -> emptyList()
+        }
     }
 
     private suspend fun executeDocQLTool(
