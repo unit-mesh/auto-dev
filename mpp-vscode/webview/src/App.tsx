@@ -9,6 +9,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Timeline } from './components/Timeline';
 import { ChatInput } from './components/ChatInput';
 import { ModelConfig } from './components/ModelSelector';
+import { SelectedFile } from './components/FileChip';
+import { CompletionItem } from './components/CompletionPopup';
 import { useVSCode, ExtensionMessage } from './hooks/useVSCode';
 import type { AgentState, ToolCallInfo, TerminalOutput, ToolCallTimelineItem } from './types/timeline';
 import './App.css';
@@ -16,6 +18,12 @@ import './App.css';
 interface ConfigState {
   availableConfigs: ModelConfig[];
   currentConfigName: string | null;
+}
+
+interface CompletionResult {
+  newText: string;
+  newCursorPosition: number;
+  shouldTriggerNextCompletion: boolean;
 }
 
 const App: React.FC = () => {
@@ -34,6 +42,16 @@ const App: React.FC = () => {
     availableConfigs: [],
     currentConfigName: null
   });
+
+  // Token usage state
+  const [totalTokens, setTotalTokens] = useState<number | null>(null);
+
+  // Active file state (for auto-add current file feature)
+  const [activeFile, setActiveFile] = useState<SelectedFile | null>(null);
+
+  // Completion state - from mpp-core
+  const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
+  const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
 
   const { postMessage, onMessage, isVSCode } = useVSCode();
 
@@ -198,6 +216,43 @@ const App: React.FC = () => {
           });
         }
         break;
+
+      // Token usage update
+      case 'tokenUpdate':
+        if (msg.data?.totalTokens != null) {
+          setTotalTokens(msg.data.totalTokens as number);
+        }
+        break;
+
+      // Active file changed (for auto-add current file)
+      case 'activeFileChanged':
+        if (msg.data) {
+          setActiveFile({
+            path: msg.data.path as string,
+            name: msg.data.name as string,
+            relativePath: msg.data.path as string,
+            isDirectory: msg.data.isDirectory as boolean || false
+          });
+        }
+        break;
+
+      // Completion results from mpp-core
+      case 'completionsResult':
+        if (msg.data?.items) {
+          setCompletionItems(msg.data.items as CompletionItem[]);
+        }
+        break;
+
+      // Completion applied result
+      case 'completionApplied':
+        if (msg.data) {
+          setCompletionResult({
+            newText: msg.data.newText as string,
+            newCursorPosition: msg.data.newCursorPosition as number,
+            shouldTriggerNextCompletion: msg.data.shouldTriggerNextCompletion as boolean
+          });
+        }
+        break;
     }
   }, []);
 
@@ -206,8 +261,22 @@ const App: React.FC = () => {
     return onMessage(handleExtensionMessage);
   }, [onMessage, handleExtensionMessage]);
 
+  // Request config on mount
+  useEffect(() => {
+    postMessage({ type: 'requestConfig' });
+  }, [postMessage]);
+
   // Send message to extension
-  const handleSend = useCallback((content: string) => {
+  const handleSend = useCallback((content: string, files?: SelectedFile[]) => {
+    // Build message with file context (DevIns format)
+    let fullContent = content;
+    if (files && files.length > 0) {
+      const fileCommands = files.map(f =>
+        f.isDirectory ? `/dir:${f.relativePath}` : `/file:${f.relativePath}`
+      ).join('\n');
+      fullContent = `${fileCommands}\n\n${content}`;
+    }
+
     // Immediately show user message in timeline for feedback
     setAgentState(prev => ({
       ...prev,
@@ -215,12 +284,12 @@ const App: React.FC = () => {
       timeline: [...prev.timeline, {
         type: 'message',
         timestamp: Date.now(),
-        message: { role: 'user', content }
+        message: { role: 'user', content: fullContent }
       }]
     }));
 
     // Send to extension
-    postMessage({ type: 'sendMessage', content });
+    postMessage({ type: 'sendMessage', content: fullContent });
   }, [postMessage]);
 
   // Clear history
@@ -246,6 +315,48 @@ const App: React.FC = () => {
   // Handle config selection
   const handleConfigSelect = useCallback((config: ModelConfig) => {
     postMessage({ type: 'selectConfig', data: { configName: config.name } });
+  }, [postMessage]);
+
+  // Handle prompt optimization
+  const handlePromptOptimize = useCallback(async (prompt: string): Promise<string> => {
+    return new Promise((resolve) => {
+      // Send optimization request to extension
+      postMessage({ type: 'action', action: 'optimizePrompt', data: { prompt } });
+
+      // Listen for response
+      const handler = (event: MessageEvent) => {
+        const msg = event.data;
+        if (msg.type === 'promptOptimized' && msg.data?.optimizedPrompt) {
+          window.removeEventListener('message', handler);
+          resolve(msg.data.optimizedPrompt as string);
+        } else if (msg.type === 'promptOptimizeFailed') {
+          window.removeEventListener('message', handler);
+          resolve(prompt); // Return original on failure
+        }
+      };
+      window.addEventListener('message', handler);
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        window.removeEventListener('message', handler);
+        resolve(prompt);
+      }, 30000);
+    });
+  }, [postMessage]);
+
+  // Handle MCP config click
+  const handleMcpConfigClick = useCallback(() => {
+    postMessage({ type: 'action', action: 'openMcpConfig' });
+  }, [postMessage]);
+
+  // Handle get completions from mpp-core
+  const handleGetCompletions = useCallback((text: string, cursorPosition: number) => {
+    postMessage({ type: 'getCompletions', data: { text, cursorPosition } });
+  }, [postMessage]);
+
+  // Handle apply completion from mpp-core
+  const handleApplyCompletion = useCallback((text: string, cursorPosition: number, completionIndex: number) => {
+    postMessage({ type: 'applyCompletion', data: { text, cursorPosition, completionIndex } });
   }, [postMessage]);
 
   // Check if we need to show config prompt
@@ -310,11 +421,19 @@ const App: React.FC = () => {
         onStop={handleStop}
         onConfigSelect={handleConfigSelect}
         onConfigureClick={handleOpenConfig}
+        onMcpConfigClick={handleMcpConfigClick}
+        onPromptOptimize={handlePromptOptimize}
+        onGetCompletions={handleGetCompletions}
+        onApplyCompletion={handleApplyCompletion}
+        completionItems={completionItems}
+        completionResult={completionResult}
         disabled={agentState.isProcessing}
         isExecuting={agentState.isProcessing}
         placeholder="Ask AutoDev anything... (use / for commands, @ for agents)"
         availableConfigs={configState.availableConfigs}
         currentConfigName={configState.currentConfigName}
+        totalTokens={totalTokens}
+        activeFile={activeFile}
       />
     </div>
   );

@@ -1,16 +1,19 @@
 .chat-input-container {
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--panel-border);
+  position: relative;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
   background: var(--background);
+  margin: 8px;
 }
 
-/* Toolbar */
+/* Bottom Toolbar */
 .input-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  padding: 0 4px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--panel-border);
+  background: var(--selection-background);
 }
 
 .toolbar-left {
@@ -56,37 +59,13 @@
   display: flex;
   gap: 8px;
   align-items: flex-end;
+  padding: 8px;
 }
 
-.chat-textarea {
+.input-with-completion {
+  position: relative;
   flex: 1;
-  padding: 10px 12px;
-  border: 1px solid var(--input-border);
-  background: var(--input-background);
-  color: var(--input-foreground);
-  border-radius: 6px;
-  resize: none;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: 1.4;
-  min-height: 40px;
-  max-height: 150px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.chat-textarea:focus {
-  border-color: var(--accent);
-}
-
-.chat-textarea:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.chat-textarea::placeholder {
-  color: var(--foreground);
-  opacity: 0.5;
+  min-width: 0;
 }
 
 .input-actions {
@@ -149,17 +128,47 @@
 }
 
 .input-hint {
-  margin-top: 6px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--foreground);
-  opacity: 0.5;
+  opacity: 0.4;
+  white-space: nowrap;
 }
 
 .input-hint kbd {
-  background: var(--selection-background);
-  padding: 2px 5px;
-  border-radius: 3px;
+  background: var(--background);
+  padding: 1px 4px;
+  border-radius: 2px;
   font-family: inherit;
+  font-size: 9px;
+}
+
+/* Token indicator */
+.token-indicator {
+  font-size: 11px;
+  color: var(--foreground);
+  opacity: 0.6;
+  padding: 2px 6px;
+  background: var(--background);
+  border-radius: 4px;
+}
+
+/* Enhance button */
+.enhance-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.enhance-button.enhancing {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.enhance-button .enhancing-text {
   font-size: 10px;
 }
 
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}

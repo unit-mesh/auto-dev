@@ -1,0 +1,77 @@
+/* CompletionPopup Component Styles */
+
+.completion-popup {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  background: var(--background);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  max-width: 350px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.completion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.completion-item:hover,
+.completion-item.selected {
+  background: var(--list-hover-background);
+}
+
+.completion-item.selected {
+  background: var(--selection-background);
+}
+
+.completion-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.completion-item.command .completion-icon {
+  background: rgba(220, 220, 170, 0.2);
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+}
+
+.completion-item.agent .completion-icon {
+  background: rgba(78, 201, 176, 0.2);
+  color: var(--vscode-symbolIcon-classForeground, #4ec9b0);
+}
+
+.completion-item.variable .completion-icon {
+  background: rgba(156, 220, 254, 0.2);
+  color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
+}
+
+.completion-label {
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.completion-detail {
+  font-size: 11px;
+  color: var(--foreground);
+  opacity: 0.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
