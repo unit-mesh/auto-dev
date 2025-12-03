@@ -105,16 +105,18 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     
     actual override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
         return try {
+            println("[DefaultFileSystem] searchFiles called: pattern=$pattern, projectPath=$projectPath")
             val projectRoot = Path.of(projectPath)
             if (!projectRoot.exists() || !projectRoot.isDirectory()) {
+                println("[DefaultFileSystem] Project root does not exist or is not a directory")
                 return emptyList()
             }
-            
+
             // Convert glob pattern to regex - handle ** and * differently
             // **/ should match zero or more directory levels (including root)
             // IMPORTANT: Use placeholders without * to avoid conflicts
             val regexPattern = pattern
-                .replace("**/", "___RECURSIVE___")  // Protect **/ first  
+                .replace("**/", "___RECURSIVE___")  // Protect **/ first
                 .replace("**", "___GLOBSTAR___")  // Then protect **
                 .replace(".", "\\.")  // Escape dots
                 .replace("?", "___QUESTION___")  // Protect ? before converting braces
@@ -125,18 +127,22 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                 .replace("___RECURSIVE___", "(?:(?:.*/)|(?:))")  // **/ matches zero or more directories
                 .replace("___GLOBSTAR___", ".*")  // ** without / matches anything
                 .replace("___QUESTION___", ".")  // Now replace ? with .
-            
+
+            println("[DefaultFileSystem] Regex pattern: $regexPattern")
             val regex = regexPattern.toRegex(RegexOption.IGNORE_CASE)
-            
+
             val results = mutableListOf<String>()
-            
+
             // 只保留最基本的排除目录（.git 必须排除，其他依赖 gitignore）
             // Add build to satisfy tests expecting no files under /build/; also pre-filter relative paths containing /build/
             val criticalExcludeDirs = setOf(".git", "build")
-            
+
             // Reload gitignore patterns before search
+            println("[DefaultFileSystem] Reloading gitignore...")
             gitIgnoreParser?.reload()
-            
+
+            println("[DefaultFileSystem] Starting Files.walk...")
+            val startTime = System.currentTimeMillis()
             Files.walk(projectRoot, maxDepth).use { stream ->
                 val iterator = stream
                     .filter { path ->
@@ -177,9 +183,13 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                     }
                 }
             }
-            
+
+            val elapsed = System.currentTimeMillis() - startTime
+            println("[DefaultFileSystem] Files.walk completed in ${elapsed}ms, found ${results.size} results")
             results
         } catch (e: Exception) {
+            println("[DefaultFileSystem] Error during search: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
     }

@@ -33,10 +33,16 @@ import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.editor.EditorCallbacks
+import cc.unitmesh.devins.editor.FileContext
 import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
 import cc.unitmesh.devins.ui.compose.editor.changes.FileChangeSummary
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
+import cc.unitmesh.devins.ui.compose.editor.context.FileSearchPopup
+import cc.unitmesh.devins.ui.compose.editor.context.FileSearchProvider
+import cc.unitmesh.devins.ui.compose.editor.context.SelectedFileItem
+import cc.unitmesh.devins.ui.compose.editor.context.TopToolbar
+import cc.unitmesh.devins.ui.compose.editor.context.WorkspaceFileSearchProvider
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.compose.sketch.getUtf8FontFamily
@@ -74,7 +80,8 @@ fun DevInEditorInput(
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {},
     dismissKeyboardOnSend: Boolean = true,
-    renderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null
+    renderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null,
+    fileSearchProvider: FileSearchProvider? = null
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var highlightedText by remember { mutableStateOf(initialText) }
@@ -93,6 +100,43 @@ fun DevInEditorInput(
     var showToolConfig by remember { mutableStateOf(false) }
     var mcpServers by remember { mutableStateOf<Map<String, McpServerConfig>>(emptyMap()) }
     val mcpClientManager = remember { McpClientManager() }
+
+    // File context state (for TopToolbar)
+    var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
+    var autoAddCurrentFile by remember { mutableStateOf(true) }
+
+    // File search provider - use WorkspaceFileSearchProvider as default if not provided
+    val effectiveSearchProvider = remember { fileSearchProvider ?: WorkspaceFileSearchProvider() }
+
+    // Helper function to convert SelectedFileItem to FileContext
+    fun getFileContexts(): List<FileContext> = selectedFiles.map { file ->
+        FileContext(
+            name = file.name,
+            path = file.path,
+            relativePath = file.relativePath,
+            isDirectory = file.isDirectory
+        )
+    }
+
+    /**
+     * Build and send message with file references (like IDEA's buildAndSendMessage).
+     * Appends DevIns commands for selected files to the message.
+     */
+    fun buildAndSendMessage(text: String) {
+        if (text.isBlank()) return
+
+        // Generate DevIns commands for selected files
+        val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
+        val fullText = if (filesText.isNotEmpty()) "$text\n$filesText" else text
+
+        // Send with file contexts
+        callbacks?.onSubmit(fullText, getFileContexts())
+
+        // Clear input and files
+        textFieldValue = TextFieldValue("")
+        selectedFiles = emptyList()
+        showCompletion = false
+    }
 
     val highlighter = remember { DevInSyntaxHighlighter() }
     val manager = completionManager ?: remember { CompletionManager() }
@@ -268,9 +312,7 @@ fun DevInEditorInput(
         ) {
             scope.launch {
                 delay(100) // Small delay to ensure UI updates
-                callbacks?.onSubmit(trimmedText)
-                textFieldValue = TextFieldValue("")
-                showCompletion = false
+                buildAndSendMessage(trimmedText)
             }
             return
         }
@@ -393,9 +435,7 @@ fun DevInEditorInput(
             // 桌面端：Enter 发送消息（但不在移动端拦截）
             !isAndroid && !Platform.isIOS && event.key == Key.Enter && !event.isShiftPressed -> {
                 if (textFieldValue.text.isNotBlank()) {
-                    callbacks?.onSubmit(textFieldValue.text)
-                    textFieldValue = TextFieldValue("")
-                    showCompletion = false
+                    buildAndSendMessage(textFieldValue.text)
                     if (dismissKeyboardOnSend) {
                         focusManager.clearFocus()
                     }
@@ -448,6 +488,21 @@ fun DevInEditorInput(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Top toolbar with file context management (desktop only)
+                    if (!isMobile) {
+                        TopToolbar(
+                            selectedFiles = selectedFiles,
+                            onAddFile = { file -> selectedFiles = selectedFiles + file },
+                            onRemoveFile = { file ->
+                                selectedFiles = selectedFiles.filter { it.path != file.path }
+                            },
+                            onClearFiles = { selectedFiles = emptyList() },
+                            autoAddCurrentFile = autoAddCurrentFile,
+                            onToggleAutoAdd = { autoAddCurrentFile = !autoAddCurrentFile },
+                            searchProvider = effectiveSearchProvider
+                        )
+                    }
+
                     Box(
                         modifier =
                             Modifier
@@ -497,9 +552,7 @@ fun DevInEditorInput(
                             keyboardActions = KeyboardActions(
                                 onSend = {
                                     if (textFieldValue.text.isNotBlank()) {
-                                        callbacks?.onSubmit(textFieldValue.text)
-                                        textFieldValue = TextFieldValue("")
-                                        showCompletion = false
+                                        buildAndSendMessage(textFieldValue.text)
                                         if (dismissKeyboardOnSend) {
                                             focusManager.clearFocus()
                                         }
@@ -577,9 +630,7 @@ fun DevInEditorInput(
                     BottomToolbar(
                         onSendClick = {
                             if (textFieldValue.text.isNotBlank()) {
-                                callbacks?.onSubmit(textFieldValue.text)
-                                textFieldValue = TextFieldValue("")
-                                showCompletion = false
+                                buildAndSendMessage(textFieldValue.text)
                                 // Force dismiss keyboard on mobile
                                 if (isMobile) {
                                     focusManager.clearFocus()
@@ -620,6 +671,8 @@ fun DevInEditorInput(
                                 }
                             }
                         },
+                        onEnhanceClick = { enhanceCurrentInput() },
+                        isEnhancing = isEnhancing,
                         onSettingsClick = {
                             showToolConfig = true
                         },

@@ -25,6 +25,8 @@ fun BottomToolbar(
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
     onAtClick: () -> Unit = {},
+    onEnhanceClick: () -> Unit = {},
+    isEnhancing: Boolean = false,
     onSettingsClick: () -> Unit = {},
     workspacePath: String? = null,
     totalTokenInfo: cc.unitmesh.llm.compression.TokenInfo? = null,
@@ -147,6 +149,28 @@ fun BottomToolbar(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
+            }
+
+            // Prompt Enhancement button (Ctrl+P)
+            IconButton(
+                onClick = onEnhanceClick,
+                enabled = !isEnhancing,
+                modifier = Modifier.size(36.dp)
+            ) {
+                if (isEnhancing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.AutoAwesome,
+                        contentDescription = "Enhance Prompt (Ctrl+P)",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
             IconButton(
