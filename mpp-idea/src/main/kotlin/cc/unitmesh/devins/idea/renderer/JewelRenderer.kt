@@ -9,6 +9,7 @@ import cc.unitmesh.agent.render.RendererUtils
 import cc.unitmesh.agent.render.TaskInfo
 import cc.unitmesh.agent.render.TaskStatus
 import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.agent.render.ToolCallDisplayInfo
 import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
@@ -148,8 +149,53 @@ class JewelRenderer : BaseRenderer() {
         // Handle plan management tool - update plan state
         if (toolName == "plan") {
             updatePlanFromToolCall(params)
+            // Skip rendering plan tool to timeline - it's shown in PlanSummaryBar
+            return
         }
 
+        renderToolCallInternal(toolName, toolInfo, params, paramsStr, toolType)
+    }
+
+    /**
+     * Render a tool call with parsed parameters.
+     * This is the preferred method as it avoids string parsing issues with complex values.
+     */
+    override fun renderToolCallWithParams(toolName: String, params: Map<String, Any>) {
+        // Convert params to string format for display
+        val paramsStr = params.entries.joinToString(" ") { (key, value) ->
+            "$key=\"$value\""
+        }
+        val toolInfo = formatToolCallDisplay(toolName, paramsStr)
+        val toolType = toolName.toToolType()
+
+        // Convert Map<String, Any> to Map<String, String> for internal use
+        val stringParams = params.mapValues { it.value.toString() }
+
+        // Handle task-boundary tool - update task list
+        if (toolName == "task-boundary") {
+            updateTaskFromToolCall(stringParams)
+        }
+
+        // Handle plan management tool - update plan state with original params
+        if (toolName == "plan") {
+            updatePlanFromToolCallWithAnyParams(params)
+            // Skip rendering plan tool to timeline - it's shown in PlanSummaryBar
+            return
+        }
+
+        renderToolCallInternal(toolName, toolInfo, stringParams, paramsStr, toolType)
+    }
+
+    /**
+     * Internal method to render tool call UI elements
+     */
+    private fun renderToolCallInternal(
+        toolName: String,
+        toolInfo: ToolCallDisplayInfo,
+        params: Map<String, String>,
+        paramsStr: String,
+        toolType: ToolType?
+    ) {
         // Skip adding ToolCallItem for Shell - will be replaced by LiveTerminalItem
         // This prevents the "two bubbles" problem
         if (toolType == ToolType.Shell) {
@@ -220,12 +266,42 @@ class JewelRenderer : BaseRenderer() {
     }
 
     /**
-     * Update plan state from plan management tool call
+     * Update plan state from plan management tool call (string params version)
      */
     private fun updatePlanFromToolCall(params: Map<String, String>) {
         val action = params["action"]?.uppercase() ?: return
         val planMarkdown = params["planMarkdown"] ?: ""
+        val taskIndex = params["taskIndex"]?.toIntOrNull()
+        val stepIndex = params["stepIndex"]?.toIntOrNull()
 
+        updatePlanState(action, planMarkdown, taskIndex, stepIndex)
+    }
+
+    /**
+     * Update plan state from plan management tool call with Any params.
+     * This is the preferred method as it handles complex values correctly.
+     */
+    private fun updatePlanFromToolCallWithAnyParams(params: Map<String, Any>) {
+        val action = (params["action"] as? String)?.uppercase() ?: return
+        val planMarkdown = params["planMarkdown"] as? String ?: ""
+        val taskIndex = when (val v = params["taskIndex"]) {
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull()
+            else -> null
+        }
+        val stepIndex = when (val v = params["stepIndex"]) {
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull()
+            else -> null
+        }
+
+        updatePlanState(action, planMarkdown, taskIndex, stepIndex)
+    }
+
+    /**
+     * Internal method to update plan state
+     */
+    private fun updatePlanState(action: String, planMarkdown: String, taskIndex: Int?, stepIndex: Int?) {
         when (action) {
             "CREATE", "UPDATE" -> {
                 if (planMarkdown.isNotBlank()) {
@@ -233,8 +309,7 @@ class JewelRenderer : BaseRenderer() {
                 }
             }
             "COMPLETE_STEP" -> {
-                val taskIndex = params["taskIndex"]?.toIntOrNull() ?: return
-                val stepIndex = params["stepIndex"]?.toIntOrNull() ?: return
+                if (taskIndex == null || stepIndex == null) return
                 _currentPlan.value?.let { plan ->
                     if (taskIndex in 1..plan.tasks.size) {
                         val task = plan.tasks[taskIndex - 1]
@@ -249,8 +324,7 @@ class JewelRenderer : BaseRenderer() {
                 }
             }
             "FAIL_STEP" -> {
-                val taskIndex = params["taskIndex"]?.toIntOrNull() ?: return
-                val stepIndex = params["stepIndex"]?.toIntOrNull() ?: return
+                if (taskIndex == null || stepIndex == null) return
                 _currentPlan.value?.let { plan ->
                     if (taskIndex in 1..plan.tasks.size) {
                         val task = plan.tasks[taskIndex - 1]

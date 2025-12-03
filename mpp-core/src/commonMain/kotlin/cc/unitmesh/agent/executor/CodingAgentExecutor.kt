@@ -223,11 +223,10 @@ class CodingAgentExecutor(
         for (toolCall in toolsToExecute) {
             val toolName = toolCall.toolName
             val params = toolCall.params.mapValues { it.value as Any }
-            val paramsStr = params.entries.joinToString(" ") { (key, value) ->
-                "$key=\"$value\""
-            }
 
-            renderer.renderToolCall(toolName, paramsStr)
+            // Use renderToolCallWithParams to pass parsed params directly
+            // This avoids string parsing issues with complex values like planMarkdown
+            renderer.renderToolCallWithParams(toolName, params)
 
             val executionContext = OrchestratorContext(
                 workingDirectory = projectPath,

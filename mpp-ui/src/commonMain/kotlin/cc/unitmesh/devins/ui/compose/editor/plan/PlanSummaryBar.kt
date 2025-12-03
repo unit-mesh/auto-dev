@@ -71,25 +71,25 @@ fun PlanSummaryBar(
         shadowElevation = 0.dp
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Collapsed header
+            // Expanded content - placed ABOVE header so it expands upward
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(expandFrom = Alignment.Bottom),
+                exit = shrinkVertically(shrinkTowards = Alignment.Bottom)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    PlanExpandedContent(plan = plan)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+            }
+
+            // Collapsed header - always at bottom
             PlanSummaryHeader(
                 plan = plan,
                 isExpanded = isExpanded,
                 onExpandToggle = { isExpanded = !isExpanded },
                 onDismiss = onDismiss
             )
-
-            // Expanded content
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    PlanExpandedContent(plan = plan)
-                }
-            }
         }
     }
 }

@@ -11,6 +11,22 @@ interface CodingAgentRenderer {
     fun renderLLMResponseEnd()
 
     fun renderToolCall(toolName: String, paramsStr: String)
+
+    /**
+     * Render a tool call with parsed parameters.
+     * This is the preferred method as it avoids string parsing issues with complex values.
+     *
+     * @param toolName The name of the tool being called
+     * @param params The parsed parameters map
+     */
+    fun renderToolCallWithParams(toolName: String, params: Map<String, Any>) {
+        // Default implementation: convert to string format for backward compatibility
+        val paramsStr = params.entries.joinToString(" ") { (key, value) ->
+            "$key=\"$value\""
+        }
+        renderToolCall(toolName, paramsStr)
+    }
+
     fun renderToolResult(
         toolName: String,
         success: Boolean,
