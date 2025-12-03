@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/phodal/auto-dev"
+    "url": "https://github.com/phodal/auto-dev-sketch"
   },
   "engines": {
     "vscode": "^1.85.0"

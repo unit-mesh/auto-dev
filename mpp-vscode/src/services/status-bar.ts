@@ -70,13 +70,6 @@ export class StatusBarManager {
       error: '$(error)'
     };
 
-    const colors: Record<StatusBarState, string | undefined> = {
-      idle: undefined,
-      thinking: new vscode.ThemeColor('statusBarItem.warningForeground').toString(),
-      streaming: new vscode.ThemeColor('statusBarItem.prominentForeground').toString(),
-      error: new vscode.ThemeColor('statusBarItem.errorForeground').toString()
-    };
-
     const icon = icons[this.state];
     const text = message || this.getDefaultText();
     

@@ -127,8 +127,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // Show welcome message on first install
   const welcomeShownKey = 'autodev.welcomeShown';
   if (!context.globalState.get(welcomeShownKey)) {
+    const isMac = process.platform === 'darwin';
+    const keyCombo = isMac ? 'Cmd+Shift+A' : 'Ctrl+Shift+A';
     vscode.window.showInformationMessage(
-      'AutoDev extension installed successfully! Press Cmd+Shift+A to open chat.'
+      `AutoDev extension installed successfully! Press ${keyCombo} to open chat.`
     );
     context.globalState.update(welcomeShownKey, true);
   }
