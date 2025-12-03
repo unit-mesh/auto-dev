@@ -151,36 +151,27 @@ fun DevInEditorInput(
     val inputLineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
     val maxLines = if (isAndroid && isCompactMode) 5 else 8
 
-    // iOS: Use flexible sizing (wrapContent + maxHeight) to avoid keyboard constraint conflicts
+    // iOS: Use smaller, fixed height to avoid keyboard issues
     // Android/Desktop: Use minHeight for touch targets + maxHeight for bounds
-    val minHeight = if (Platform.isIOS) {
-        null // iOS uses natural content height to avoid keyboard conflicts
-    } else if (isCompactMode) {
-        if (isAndroid) 52.dp else 56.dp
-    } else {
-        80.dp
+    val minHeight = when {
+        Platform.isIOS -> 44.dp // iOS: standard touch target height
+        isCompactMode && isAndroid -> 52.dp
+        isCompactMode -> 56.dp
+        else -> 80.dp
     }
 
-    val maxHeight = if (isCompactMode) {
-        when {
-            Platform.isIOS -> 160.dp // iOS: generous max height, flexible min
-            isAndroid -> 120.dp
-            else -> 96.dp
-        }
-    } else {
-        when {
-            Platform.isIOS -> 200.dp // iOS: more room in non-compact mode
-            else -> 160.dp
-        }
+    val maxHeight = when {
+        Platform.isIOS && isCompactMode -> 80.dp // iOS compact: smaller max
+        Platform.isIOS -> 100.dp // iOS: reduced max height
+        isCompactMode && isAndroid -> 120.dp
+        isCompactMode -> 96.dp
+        else -> 160.dp
     }
 
-    val padding = if (isCompactMode) {
-        when {
-            Platform.isIOS -> 14.dp // iOS: slightly more padding for comfort
-            else -> 12.dp
-        }
-    } else {
-        20.dp
+    val padding = when {
+        Platform.isIOS -> 10.dp // iOS: smaller padding
+        isCompactMode -> 12.dp
+        else -> 20.dp
     }
 
     // Initialize MCP client manager with config
@@ -511,18 +502,7 @@ fun DevInEditorInput(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .then(
-                                    // iOS: Use wrapContentHeight + maxHeight only (no minHeight)
-                                    // to avoid conflicts with keyboard constraints
-                                    if (Platform.isIOS) {
-                                        Modifier
-                                            .wrapContentHeight()
-                                            .heightIn(max = maxHeight)
-                                    } else {
-                                        // Android/Desktop: Use traditional min/max constraints
-                                        Modifier.heightIn(min = minHeight!!, max = maxHeight)
-                                    }
-                                )
+                                .heightIn(min = minHeight, max = maxHeight)
                                 .padding(padding)
                     ) {
                         BasicTextField(

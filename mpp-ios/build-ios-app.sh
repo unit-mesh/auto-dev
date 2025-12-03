@@ -341,14 +341,42 @@ elif [ "$ACTION" = "build" ] || [ "$ACTION" = "run" ]; then
 
     if [ "$ACTION" = "run" ]; then
         if [ "$TARGET_TYPE" = "device" ]; then
-            # 真机运行
-            if command -v ios-deploy &> /dev/null; then
-                echo -e "${BLUE}🚀 使用 ios-deploy 安装并运行到设备...${NC}"
-                ios-deploy --debug --bundle "$APP_PATH" --id "$DEVICE_ID"
+            # 真机运行 - 使用 devicectl 安装和启动
+            echo -e "${BLUE}🚀 安装应用到真机...${NC}"
+            
+            # 获取连接的设备 ID (使用 devicectl)
+            # UUID 格式: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+            DEVICE_UUID=$(xcrun devicectl list devices 2>&1 | grep "connected" | grep -oE "[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}" | head -n 1)
+            
+            if [ -z "$DEVICE_UUID" ]; then
+                echo -e "${RED}❌ 未找到已连接的设备${NC}"
+                echo -e "${YELLOW}请确保设备已连接并信任此电脑${NC}"
+                exit 1
+            fi
+            
+            echo -e "${GREEN}✓ 找到设备: ${DEVICE_UUID}${NC}"
+            
+            # 使用 devicectl 安装应用
+            echo -e "${YELLOW}  安装应用...${NC}"
+            xcrun devicectl device install app --device "$DEVICE_UUID" "$APP_PATH"
+            
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}❌ 应用安装失败${NC}"
+                exit 1
+            fi
+            
+            echo -e "${GREEN}✅ 应用安装成功!${NC}"
+            
+            # 使用 devicectl 启动应用
+            BUNDLE_ID="cc.unitmesh.AutoDevApp"
+            echo -e "${YELLOW}  启动应用...${NC}"
+            xcrun devicectl device process launch --device "$DEVICE_UUID" "$BUNDLE_ID"
+            
+            if [ $? -ne 0 ]; then
+                echo -e "${YELLOW}⚠️  应用启动失败，可能需要在设备上信任开发者证书${NC}"
+                echo -e "${CYAN}请在 iPhone 上: 设置 -> 通用 -> VPN与设备管理 -> 信任开发者${NC}"
             else
-                echo -e "${YELLOW}⚠️  未找到 ios-deploy 工具，无法自动安装到真机${NC}"
-                echo -e "请使用以下命令安装: ${CYAN}brew install ios-deploy${NC}"
-                echo -e "或者打开 Xcode 手动运行: ${CYAN}open AutoDevApp.xcworkspace${NC}"
+                echo -e "${GREEN}✅ 应用已启动!${NC}"
             fi
         else
             # 运行到模拟器
