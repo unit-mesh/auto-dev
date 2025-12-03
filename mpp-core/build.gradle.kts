@@ -135,7 +135,7 @@ kotlin {
                 // Kotlin Logging for multiplatform logging
                 implementation("io.github.oshai:kotlin-logging:7.0.13")
 
-                runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
                 // Koog AI Framework - JVM only for now
                 implementation("ai.koog:koog-agents:0.5.2")
                 implementation("ai.koog:agents-mcp:0.5.2")

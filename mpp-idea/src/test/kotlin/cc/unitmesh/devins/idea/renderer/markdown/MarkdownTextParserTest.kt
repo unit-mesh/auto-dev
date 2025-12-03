@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.idea.renderer.markdown
 
+import cc.unitmesh.markdown.MarkdownTextParser
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor

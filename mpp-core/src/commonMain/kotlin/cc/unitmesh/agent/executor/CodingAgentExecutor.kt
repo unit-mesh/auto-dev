@@ -3,12 +3,14 @@ package cc.unitmesh.agent.executor
 import cc.unitmesh.agent.*
 import cc.unitmesh.agent.conversation.ConversationManager
 import cc.unitmesh.agent.core.SubAgentManager
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.schema.ToolResultFormatter
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.state.ToolExecutionState
+import cc.unitmesh.agent.plan.PlanSummaryData
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
@@ -24,8 +26,8 @@ import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContex
 data class AsyncShellConfig(
     /** Initial wait timeout in milliseconds before notifying AI that process is still running */
     val initialWaitTimeoutMs: Long = 60_000L, // 1 minute
-    /** Maximum total wait time in milliseconds */
-    val maxWaitTimeoutMs: Long = 300_000L, // 5 minutes
+    /** Maximum total wait time in milliseconds (2 minutes, similar to Cursor/Claude Code) */
+    val maxWaitTimeoutMs: Long = 120_000L, // 2 minutes
     /** Interval for checking process status after initial timeout */
     val checkIntervalMs: Long = 30_000L // 30 seconds
 )
@@ -38,7 +40,13 @@ class CodingAgentExecutor(
     maxIterations: Int = 100,
     private val subAgentManager: SubAgentManager? = null,
     enableLLMStreaming: Boolean = true,
-    private val asyncShellConfig: AsyncShellConfig = AsyncShellConfig()
+    private val asyncShellConfig: AsyncShellConfig = AsyncShellConfig(),
+    /**
+     * When true, only execute the first tool call per LLM response.
+     * This enforces the "one tool per response" rule even when LLM returns multiple tool calls.
+     * Default is true to prevent LLM from executing multiple tools in one iteration.
+     */
+    private val singleToolPerIteration: Boolean = true
 ) : BaseAgentExecutor(
     projectPath = projectPath,
     llmService = llmService,
@@ -47,6 +55,7 @@ class CodingAgentExecutor(
     maxIterations = maxIterations,
     enableLLMStreaming = enableLLMStreaming
 ) {
+    private val logger = getLogger("CodingAgentExecutor")
     private val steps = mutableListOf<AgentStep>()
     private val edits = mutableListOf<AgentEdit>()
 
@@ -92,10 +101,20 @@ class CodingAgentExecutor(
                 break
             }
 
-            val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
-            if (toolCalls.isEmpty()) {
+            val allToolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
+            if (allToolCalls.isEmpty()) {
                 renderer.renderTaskComplete()
                 break
+            }
+
+            // When singleToolPerIteration is enabled, only execute the first tool call
+            // This enforces the "one tool per response" rule even when LLM returns multiple tool calls
+            val toolCalls = if (singleToolPerIteration && allToolCalls.size > 1) {
+                logger.warn { "LLM returned ${allToolCalls.size} tool calls, but singleToolPerIteration is enabled. Only executing the first one: ${allToolCalls.first().toolName}" }
+                renderer.renderError("Warning: LLM returned ${allToolCalls.size} tool calls, only executing the first one")
+                listOf(allToolCalls.first())
+            } else {
+                allToolCalls
             }
 
             val toolResults = executeToolCalls(toolCalls)
@@ -204,15 +223,15 @@ class CodingAgentExecutor(
         for (toolCall in toolsToExecute) {
             val toolName = toolCall.toolName
             val params = toolCall.params.mapValues { it.value as Any }
-            val paramsStr = params.entries.joinToString(" ") { (key, value) ->
-                "$key=\"$value\""
-            }
 
-            renderer.renderToolCall(toolName, paramsStr)
+            // Use renderToolCallWithParams to pass parsed params directly
+            // This avoids string parsing issues with complex values like planMarkdown
+            renderer.renderToolCallWithParams(toolName, params)
 
             val executionContext = OrchestratorContext(
                 workingDirectory = projectPath,
-                environment = emptyMap()
+                environment = emptyMap(),
+                timeout = asyncShellConfig.maxWaitTimeoutMs  // Use max timeout for shell commands
             )
 
             var executionResult = toolOrchestrator.executeToolCall(
@@ -272,6 +291,11 @@ class CodingAgentExecutor(
                 displayOutput,
                 executionResult.metadata
             )
+
+            // Render plan summary bar after plan tool execution
+            if (toolName == "plan" && executionResult.isSuccess) {
+                renderPlanSummaryIfAvailable()
+            }
 
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {
@@ -510,5 +534,15 @@ class CodingAgentExecutor(
      */
     fun getConversationHistory(): List<cc.unitmesh.devins.llm.Message> {
         return conversationManager?.getHistory() ?: emptyList()
+    }
+
+    /**
+     * Render plan summary bar if a plan is available
+     */
+    private fun renderPlanSummaryIfAvailable() {
+        val planStateService = toolOrchestrator.getPlanStateService() ?: return
+        val currentPlan = planStateService.currentPlan.value ?: return
+        val summary = PlanSummaryData.from(currentPlan)
+        renderer.renderPlanSummary(summary)
     }
 }

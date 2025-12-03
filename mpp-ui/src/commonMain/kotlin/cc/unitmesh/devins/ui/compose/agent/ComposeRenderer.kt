@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.*
+import cc.unitmesh.agent.plan.AgentPlan
+import cc.unitmesh.agent.plan.MarkdownPlanParser
 import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.agent.render.RendererUtils
 import cc.unitmesh.agent.render.TaskInfo
@@ -75,6 +77,10 @@ class ComposeRenderer : BaseRenderer() {
     private val _tasks = mutableStateListOf<TaskInfo>()
     val tasks: List<TaskInfo> = _tasks
 
+    // Plan tracking from plan management tool
+    private var _currentPlan by mutableStateOf<AgentPlan?>(null)
+    val currentPlan: AgentPlan? get() = _currentPlan
+
     // BaseRenderer implementation
 
     override fun renderIterationHeader(
@@ -117,8 +123,17 @@ class ComposeRenderer : BaseRenderer() {
     override fun renderLLMResponseEnd() {
         super.renderLLMResponseEnd()
 
-        // Add the completed reasoning as a message to timeline
+        // Save content and token info before clearing
         val finalContent = _currentStreamingOutput.trim()
+        val tokenInfo = _lastMessageTokenInfo
+
+        // IMPORTANT: Clear streaming output FIRST to avoid showing both
+        // StreamingMessageItem and MessageItem simultaneously (double progress bar issue)
+        _currentStreamingOutput = ""
+        _isProcessing = false
+        _lastMessageTokenInfo = null
+
+        // Then add the completed message to timeline
         if (finalContent.isNotEmpty()) {
             _timeline.add(
                 TimelineItem.MessageItem(
@@ -127,14 +142,10 @@ class ComposeRenderer : BaseRenderer() {
                             role = MessageRole.ASSISTANT,
                             content = finalContent
                         ),
-                    tokenInfo = _lastMessageTokenInfo
+                    tokenInfo = tokenInfo
                 )
             )
         }
-
-        _currentStreamingOutput = ""
-        _isProcessing = false
-        _lastMessageTokenInfo = null // Reset after use
     }
 
     override fun renderToolCall(
@@ -150,6 +161,57 @@ class ComposeRenderer : BaseRenderer() {
             updateTaskFromToolCall(params)
         }
 
+        // Handle plan management tool - update plan state
+        if (toolName == "plan") {
+            updatePlanFromToolCall(params)
+            // Skip rendering plan tool to timeline - it's shown in PlanSummaryBar
+            return
+        }
+
+        renderToolCallInternal(toolName, toolInfo, params, paramsStr, toolType)
+    }
+
+    /**
+     * Render a tool call with parsed parameters.
+     * This is the preferred method as it avoids string parsing issues with complex values.
+     */
+    override fun renderToolCallWithParams(toolName: String, params: Map<String, Any>) {
+        // Convert params to string format for display
+        val paramsStr = params.entries.joinToString(" ") { (key, value) ->
+            "$key=\"$value\""
+        }
+        val toolInfo = formatToolCallDisplay(toolName, paramsStr)
+        val toolType = toolName.toToolType()
+
+        // Convert Map<String, Any> to Map<String, String> for internal use
+        val stringParams = params.mapValues { it.value.toString() }
+
+        // Handle task-boundary tool - update task list
+        if (toolName == "task-boundary") {
+            updateTaskFromToolCall(stringParams)
+        }
+
+        // Handle plan management tool - update plan state with original params
+        if (toolName == "plan") {
+            updatePlanFromToolCallWithAnyParams(params)
+        }
+
+        // Skip rendering plan tool to timeline - it's shown in PlanSummaryBar
+        if (toolName != "plan") {
+            renderToolCallInternal(toolName, toolInfo, stringParams, paramsStr, toolType)
+        }
+    }
+
+    /**
+     * Internal method to render tool call UI elements
+     */
+    private fun renderToolCallInternal(
+        toolName: String,
+        toolInfo: ToolCallInfo,
+        params: Map<String, String>,
+        paramsStr: String,
+        toolType: ToolType?
+    ) {
         // Extract file path for read/write operations
         val filePath =
             when (toolType) {
@@ -220,6 +282,82 @@ class ComposeRenderer : BaseRenderer() {
         }
     }
 
+    /**
+     * Update plan state from plan management tool call (string params version)
+     */
+    private fun updatePlanFromToolCall(params: Map<String, String>) {
+        val action = params["action"]?.uppercase() ?: return
+        val planMarkdown = params["planMarkdown"] ?: ""
+        val taskIndex = params["taskIndex"]?.toIntOrNull()
+        val stepIndex = params["stepIndex"]?.toIntOrNull()
+
+        updatePlanState(action, planMarkdown, taskIndex, stepIndex)
+    }
+
+    /**
+     * Update plan state from plan management tool call with Any params.
+     * This is the preferred method as it handles complex values correctly.
+     */
+    private fun updatePlanFromToolCallWithAnyParams(params: Map<String, Any>) {
+        val action = (params["action"] as? String)?.uppercase() ?: return
+        val planMarkdown = params["planMarkdown"] as? String ?: ""
+        val taskIndex = when (val v = params["taskIndex"]) {
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull()
+            else -> null
+        }
+        val stepIndex = when (val v = params["stepIndex"]) {
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull()
+            else -> null
+        }
+
+        updatePlanState(action, planMarkdown, taskIndex, stepIndex)
+    }
+
+    /**
+     * Internal method to update plan state
+     */
+    private fun updatePlanState(action: String, planMarkdown: String, taskIndex: Int?, stepIndex: Int?) {
+        when (action) {
+            "CREATE", "UPDATE" -> {
+                if (planMarkdown.isNotBlank()) {
+                    _currentPlan = MarkdownPlanParser.parseToPlan(planMarkdown)
+                }
+            }
+            "COMPLETE_STEP" -> {
+                if (taskIndex == null || stepIndex == null) return
+                _currentPlan?.let { plan ->
+                    if (taskIndex in 1..plan.tasks.size) {
+                        val task = plan.tasks[taskIndex - 1]
+                        if (stepIndex in 1..task.steps.size) {
+                            val step = task.steps[stepIndex - 1]
+                            step.complete()
+                            task.updateStatusFromSteps()
+                            // Trigger recomposition by creating a new plan instance
+                            _currentPlan = plan.copy(updatedAt = Clock.System.now().toEpochMilliseconds())
+                        }
+                    }
+                }
+            }
+            "FAIL_STEP" -> {
+                if (taskIndex == null || stepIndex == null) return
+                _currentPlan?.let { plan ->
+                    if (taskIndex in 1..plan.tasks.size) {
+                        val task = plan.tasks[taskIndex - 1]
+                        if (stepIndex in 1..task.steps.size) {
+                            val step = task.steps[stepIndex - 1]
+                            step.fail()
+                            task.updateStatusFromSteps()
+                            _currentPlan = plan.copy(updatedAt = Clock.System.now().toEpochMilliseconds())
+                        }
+                    }
+                }
+            }
+            // VIEW action doesn't modify state
+        }
+    }
+
     override fun renderToolResult(
         toolName: String,
         success: Boolean,
@@ -242,6 +380,10 @@ class ComposeRenderer : BaseRenderer() {
 
             // Extract command from the last tool call if available
             val command = _currentToolCall?.details?.removePrefix("Executing: ") ?: "unknown"
+
+            // IMPORTANT: Clear currentToolCall FIRST to avoid showing both
+            // CurrentToolCallItem and the result item simultaneously (double progress bar issue)
+            _currentToolCall = null
 
             // For Live sessions, we show both the terminal widget and the result summary
             // Don't remove anything, just add a result item after the live terminal
@@ -272,6 +414,10 @@ class ComposeRenderer : BaseRenderer() {
                 )
             }
         } else {
+            // IMPORTANT: Clear currentToolCall FIRST to avoid showing both
+            // CurrentToolCallItem and the result item simultaneously (double progress bar issue)
+            _currentToolCall = null
+
             // Update the last ToolCallItem with result information
             val lastItem = _timeline.lastOrNull()
             if (lastItem is ToolCallItem && lastItem.success == null) {
@@ -317,8 +463,6 @@ class ComposeRenderer : BaseRenderer() {
                 )
             }
         }
-
-        _currentToolCall = null
     }
 
     override fun renderTaskComplete() {

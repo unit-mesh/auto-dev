@@ -1,0 +1,130 @@
+.diff-renderer {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--vscode-editor-background);
+  position: relative;
+}
+
+.diff-renderer.applied {
+  opacity: 0.7;
+}
+
+.diff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: var(--vscode-editorWidget-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.diff-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+}
+
+.diff-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.diff-action-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  transition: background-color 0.2s;
+}
+
+.diff-action-btn:hover:not(:disabled) {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.diff-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.diff-action-btn.accept {
+  background-color: var(--vscode-testing-iconPassed, #4caf50);
+  color: white;
+}
+
+.diff-action-btn.accept:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.diff-action-btn.reject {
+  background-color: var(--vscode-testing-iconFailed, #f44336);
+  color: white;
+}
+
+.diff-action-btn.reject:hover:not(:disabled) {
+  background-color: #da190b;
+}
+
+.diff-content {
+  max-height: 300px;
+  overflow: auto;
+  font-family: var(--vscode-editor-font-family, 'Consolas', 'Monaco', monospace);
+  font-size: var(--vscode-editor-font-size, 13px);
+  line-height: 1.5;
+}
+
+.diff-line {
+  display: flex;
+  padding: 0 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-line.add {
+  background-color: var(--vscode-diffEditor-insertedLineBackground, rgba(76, 175, 80, 0.2));
+}
+
+.diff-line.remove {
+  background-color: var(--vscode-diffEditor-removedLineBackground, rgba(244, 67, 54, 0.2));
+}
+
+.diff-line.header {
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+
+.diff-line-prefix {
+  width: 16px;
+  flex-shrink: 0;
+  color: var(--vscode-descriptionForeground);
+  user-select: none;
+}
+
+.diff-line.add .diff-line-prefix {
+  color: var(--vscode-testing-iconPassed, #4caf50);
+}
+
+.diff-line.remove .diff-line-prefix {
+  color: var(--vscode-testing-iconFailed, #f44336);
+}
+
+.diff-line-content {
+  flex: 1;
+}
+
+.diff-applied-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--vscode-testing-iconPassed, #4caf50);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+

@@ -44,16 +44,26 @@ object AgentToolFormatter {
                 appendLine("## ${tool.name}")
                 val toolType = tool.name.toToolType()
 
-                if (toolType != null) {
+                // Priority: 1. tool.metadata.schema (for tools like plan), 2. toolType.schema, 3. fallback
+                val schema = tool.metadata.schema
+                if (schema != null) {
+                    // Use tool's own schema (e.g., PlanManagementSchema)
                     appendLine("**Parameters JSON Schema:**")
                     appendLine("```json")
-
+                    val jsonSchema = schema.toJsonSchema()
+                    val prettyJson = formatJsonSchema(jsonSchema)
+                    appendLine(prettyJson)
+                    appendLine("```")
+                } else if (toolType != null) {
+                    // Fallback to ToolType schema for backward compatibility
+                    appendLine("**Parameters JSON Schema:**")
+                    appendLine("```json")
                     val jsonSchema = toolType.schema.toJsonSchema()
-                    // Pretty print the JSON schema
                     val prettyJson = formatJsonSchema(jsonSchema)
                     appendLine(prettyJson)
                     appendLine("```")
                 } else {
+                    // No schema available, use parameter class info
                     val paramClass = tool.getParameterClass()
                     when {
                         paramClass.isBlank() || paramClass == "Unit" -> {

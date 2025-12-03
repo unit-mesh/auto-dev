@@ -31,7 +31,7 @@ data class ToolCallDisplayInfo(
 )
 
 /**
- * Task information from task-boundary tool.
+ * Task information from plan management tool.
  */
 data class TaskInfo(
     val taskName: String,

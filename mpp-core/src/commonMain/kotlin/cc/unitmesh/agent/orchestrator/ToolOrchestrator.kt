@@ -39,6 +39,15 @@ class ToolOrchestrator(
 ) {
     private val logger = getLogger("cc.unitmesh.agent.orchestrator.ToolOrchestrator")
 
+    /**
+     * Get the PlanStateService from the registered PlanManagementTool.
+     * Returns null if no plan tool is registered.
+     */
+    fun getPlanStateService(): cc.unitmesh.agent.plan.PlanStateService? {
+        val planTool = registry.getTool("plan") as? cc.unitmesh.agent.tool.impl.PlanManagementTool
+        return planTool?.getPlanStateService()
+    }
+
     // Coroutine scope for background tasks (async shell monitoring)
     private val backgroundScope = CoroutineScope(Dispatchers.Default)
     
@@ -382,7 +391,7 @@ class ToolOrchestrator(
                 else -> {
                     // Handle special tools that need parameter conversion
                     when (toolName.lowercase()) {
-                        "task-boundary" -> executeTaskBoundaryTool(tool, params, basicContext)
+                        "plan" -> executePlanManagementTool(tool, params, basicContext)
                         "docql" -> executeDocQLTool(tool, params, basicContext)
                         else -> {
                             // For truly generic tools, use generic execution
@@ -675,27 +684,86 @@ class ToolOrchestrator(
         return invocation.execute(context)
     }
 
-    private suspend fun executeTaskBoundaryTool(
+    private suspend fun executePlanManagementTool(
         tool: Tool,
         params: Map<String, Any>,
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
-        val taskBoundaryTool = tool as cc.unitmesh.agent.tool.impl.TaskBoundaryTool
-        
-        val taskName = params["taskName"] as? String
-            ?: return ToolResult.Error("taskName parameter is required")
-        val status = params["status"] as? String
-            ?: return ToolResult.Error("status parameter is required")
-        val summary = params["summary"] as? String ?: ""
-        
-        val taskBoundaryParams = cc.unitmesh.agent.tool.impl.TaskBoundaryParams(
-            taskName = taskName,
-            status = status,
-            summary = summary
+        val planTool = tool as cc.unitmesh.agent.tool.impl.PlanManagementTool
+
+        val action = params["action"] as? String
+            ?: return ToolResult.Error("action parameter is required")
+        val planMarkdown = params["planMarkdown"] as? String ?: ""
+
+        // Handle taskIndex and stepIndex - can be Number or String
+        val taskIndex = when (val v = params["taskIndex"]) {
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull() ?: 0
+            else -> 0
+        }
+        val stepIndex = when (val v = params["stepIndex"]) {
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull() ?: 0
+            else -> 0
+        }
+
+        // Handle batch steps parameter
+        val steps = parseStepsParameter(params["steps"])
+
+        val planParams = cc.unitmesh.agent.tool.impl.PlanManagementParams(
+            action = action,
+            planMarkdown = planMarkdown,
+            taskIndex = taskIndex,
+            stepIndex = stepIndex,
+            steps = steps
         )
-        
-        val invocation = taskBoundaryTool.createInvocation(taskBoundaryParams)
+
+        val invocation = planTool.createInvocation(planParams)
         return invocation.execute(context)
+    }
+
+    /**
+     * Parse the steps parameter which can be:
+     * - A List of Maps with taskIndex and stepIndex
+     * - A JSON string representing an array
+     * - null or empty
+     */
+    private fun parseStepsParameter(stepsParam: Any?): List<cc.unitmesh.agent.tool.impl.StepRef> {
+        if (stepsParam == null) return emptyList()
+
+        return when (stepsParam) {
+            is List<*> -> {
+                stepsParam.mapNotNull { item ->
+                    when (item) {
+                        is Map<*, *> -> {
+                            val taskIdx = when (val t = item["taskIndex"]) {
+                                is Number -> t.toInt()
+                                is String -> t.toIntOrNull() ?: return@mapNotNull null
+                                else -> return@mapNotNull null
+                            }
+                            val stepIdx = when (val s = item["stepIndex"]) {
+                                is Number -> s.toInt()
+                                is String -> s.toIntOrNull() ?: return@mapNotNull null
+                                else -> return@mapNotNull null
+                            }
+                            cc.unitmesh.agent.tool.impl.StepRef(taskIdx, stepIdx)
+                        }
+                        else -> null
+                    }
+                }
+            }
+            is String -> {
+                // Try to parse as JSON array
+                try {
+                    val parsed = kotlinx.serialization.json.Json.decodeFromString<List<cc.unitmesh.agent.tool.impl.StepRef>>(stepsParam)
+                    parsed
+                } catch (e: Exception) {
+                    logger.debug { "Failed to parse steps parameter as JSON: ${e.message}" }
+                    emptyList()
+                }
+            }
+            else -> emptyList()
+        }
     }
 
     private suspend fun executeDocQLTool(
@@ -704,16 +772,16 @@ class ToolOrchestrator(
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
         val docqlTool = tool as cc.unitmesh.agent.tool.impl.DocQLTool
-        
+
         val query = params["query"] as? String
             ?: return ToolResult.Error("query parameter is required")
         val documentPath = params["documentPath"] as? String // Optional
-        
+
         val docqlParams = cc.unitmesh.agent.tool.impl.DocQLParams(
             query = query,
             documentPath = documentPath
         )
-        
+
         val invocation = docqlTool.createInvocation(docqlParams)
         return invocation.execute(context)
     }
@@ -738,7 +806,7 @@ class ToolOrchestrator(
 
     /**
      * Execute generic tool using ExecutableTool interface
-     * This handles new tools like task-boundary, ask-agent, etc. without needing specific implementations
+     * This handles new tools like ask-agent, etc. without needing specific implementations
      */
     private suspend fun executeGenericTool(
         tool: Tool,

@@ -59,6 +59,7 @@ object AutoDevComposeIcons {
     val Chat: ImageVector get() = Icons.Default.Chat
     val SmartToy: ImageVector get() = Icons.Default.SmartToy
     val AlternateEmail: ImageVector get() = Icons.Default.AlternateEmail
+    val AutoAwesome: ImageVector get() = Icons.Default.AutoAwesome
 
     // Theme & Display
     val LightMode: ImageVector get() = Icons.Default.LightMode

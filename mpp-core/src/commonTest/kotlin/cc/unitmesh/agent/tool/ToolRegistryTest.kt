@@ -68,4 +68,12 @@ class ToolRegistryTest {
         assertTrue(toolInfo.description.isNotEmpty(), "Should have description")
         assertTrue(toolInfo.isDevIns, "Should be marked as DevIns tool")
     }
+
+    @Test
+    fun testPlanManagementToolRegistered() {
+        val planTool = registry.getTool("plan")
+        assertNotNull(planTool, "Plan management tool should be registered")
+        assertEquals("plan", planTool.name)
+        assertTrue(planTool.description.contains("plan"), "Should have plan-related description")
+    }
 }

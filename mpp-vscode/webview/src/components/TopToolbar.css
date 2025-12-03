@@ -1,0 +1,176 @@
+/* TopToolbar Component Styles */
+
+.top-toolbar {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--background);
+}
+
+.top-toolbar.empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.toolbar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-file-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px dashed var(--panel-border);
+  border-radius: 4px;
+  color: var(--foreground);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.add-file-button:hover {
+  background: var(--list-hover-background);
+  border-color: var(--focus-border);
+}
+
+.add-file-button.icon-only {
+  padding: 4px;
+  border-style: solid;
+}
+
+.add-file-button.icon-only span {
+  display: none;
+}
+
+.files-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.files-row::-webkit-scrollbar {
+  display: none;
+}
+
+.more-files {
+  font-size: 11px;
+  color: var(--foreground);
+  opacity: 0.6;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.more-files:hover {
+  background: var(--list-hover-background);
+  opacity: 1;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.expand-button,
+.clear-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--foreground);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.expand-button:hover,
+.clear-button:hover {
+  opacity: 1;
+  background: var(--list-hover-background);
+}
+
+.clear-button:hover {
+  color: var(--vscode-inputValidation-errorForeground, #f48771);
+}
+
+/* Expanded files list */
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Collapsed state - horizontal scroll */
+.top-toolbar.collapsed .files-row {
+  flex-wrap: nowrap;
+}
+
+/* Expanded state */
+.top-toolbar.expanded {
+  padding-bottom: 8px;
+}
+
+.top-toolbar.expanded .files-row {
+  display: none;
+}
+
+/* Context indicator */
+.context-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--foreground);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.context-indicator:hover {
+  opacity: 0.8;
+  background: var(--list-hover-background);
+}
+
+.context-indicator.active {
+  opacity: 1;
+  color: var(--vscode-textLink-foreground, #3794ff);
+}
+
+.context-indicator .indicator-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.context-indicator.active .indicator-dot {
+  background: var(--vscode-charts-green, #89d185);
+}

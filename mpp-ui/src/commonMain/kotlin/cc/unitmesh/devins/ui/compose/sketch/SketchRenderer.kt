@@ -140,13 +140,6 @@ object SketchRenderer : BaseContentRenderer() {
                     }
                 }
             }
-
-            if (!isComplete && content.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
         }
     }
 }

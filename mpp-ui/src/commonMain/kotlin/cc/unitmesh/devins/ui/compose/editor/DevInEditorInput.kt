@@ -12,13 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
@@ -33,10 +30,17 @@ import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.editor.EditorCallbacks
+import cc.unitmesh.devins.editor.FileContext
 import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
 import cc.unitmesh.devins.ui.compose.editor.changes.FileChangeSummary
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
+import cc.unitmesh.devins.ui.compose.editor.plan.PlanSummaryBar
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
+import cc.unitmesh.devins.ui.compose.editor.context.FileSearchPopup
+import cc.unitmesh.devins.ui.compose.editor.context.FileSearchProvider
+import cc.unitmesh.devins.ui.compose.editor.context.SelectedFileItem
+import cc.unitmesh.devins.ui.compose.editor.context.TopToolbar
+import cc.unitmesh.devins.ui.compose.editor.context.WorkspaceFileSearchProvider
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.compose.sketch.getUtf8FontFamily
@@ -74,7 +78,8 @@ fun DevInEditorInput(
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {},
     dismissKeyboardOnSend: Boolean = true,
-    renderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null
+    renderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null,
+    fileSearchProvider: FileSearchProvider? = null
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var highlightedText by remember { mutableStateOf(initialText) }
@@ -94,6 +99,43 @@ fun DevInEditorInput(
     var mcpServers by remember { mutableStateOf<Map<String, McpServerConfig>>(emptyMap()) }
     val mcpClientManager = remember { McpClientManager() }
 
+    // File context state (for TopToolbar)
+    var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
+    var autoAddCurrentFile by remember { mutableStateOf(true) }
+
+    // File search provider - use WorkspaceFileSearchProvider as default if not provided
+    val effectiveSearchProvider = remember { fileSearchProvider ?: WorkspaceFileSearchProvider() }
+
+    // Helper function to convert SelectedFileItem to FileContext
+    fun getFileContexts(): List<FileContext> = selectedFiles.map { file ->
+        FileContext(
+            name = file.name,
+            path = file.path,
+            relativePath = file.relativePath,
+            isDirectory = file.isDirectory
+        )
+    }
+
+    /**
+     * Build and send message with file references (like IDEA's buildAndSendMessage).
+     * Appends DevIns commands for selected files to the message.
+     */
+    fun buildAndSendMessage(text: String) {
+        if (text.isBlank()) return
+
+        // Generate DevIns commands for selected files
+        val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
+        val fullText = if (filesText.isNotEmpty()) "$text\n$filesText" else text
+
+        // Send with file contexts
+        callbacks?.onSubmit(fullText, getFileContexts())
+
+        // Clear input and files
+        textFieldValue = TextFieldValue("")
+        selectedFiles = emptyList()
+        showCompletion = false
+    }
+
     val highlighter = remember { DevInSyntaxHighlighter() }
     val manager = completionManager ?: remember { CompletionManager() }
     val focusRequester = remember { FocusRequester() }
@@ -109,36 +151,27 @@ fun DevInEditorInput(
     val inputLineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
     val maxLines = if (isAndroid && isCompactMode) 5 else 8
 
-    // iOS: Use flexible sizing (wrapContent + maxHeight) to avoid keyboard constraint conflicts
+    // iOS: Use smaller, fixed height to avoid keyboard issues
     // Android/Desktop: Use minHeight for touch targets + maxHeight for bounds
-    val minHeight = if (Platform.isIOS) {
-        null // iOS uses natural content height to avoid keyboard conflicts
-    } else if (isCompactMode) {
-        if (isAndroid) 52.dp else 56.dp
-    } else {
-        80.dp
+    val minHeight = when {
+        Platform.isIOS -> 44.dp // iOS: standard touch target height
+        isCompactMode && isAndroid -> 52.dp
+        isCompactMode -> 56.dp
+        else -> 80.dp
     }
 
-    val maxHeight = if (isCompactMode) {
-        when {
-            Platform.isIOS -> 160.dp // iOS: generous max height, flexible min
-            isAndroid -> 120.dp
-            else -> 96.dp
-        }
-    } else {
-        when {
-            Platform.isIOS -> 200.dp // iOS: more room in non-compact mode
-            else -> 160.dp
-        }
+    val maxHeight = when {
+        Platform.isIOS && isCompactMode -> 80.dp // iOS compact: smaller max
+        Platform.isIOS -> 100.dp // iOS: reduced max height
+        isCompactMode && isAndroid -> 120.dp
+        isCompactMode -> 96.dp
+        else -> 160.dp
     }
 
-    val padding = if (isCompactMode) {
-        when {
-            Platform.isIOS -> 14.dp // iOS: slightly more padding for comfort
-            else -> 12.dp
-        }
-    } else {
-        20.dp
+    val padding = when {
+        Platform.isIOS -> 10.dp // iOS: smaller padding
+        isCompactMode -> 12.dp
+        else -> 20.dp
     }
 
     // Initialize MCP client manager with config
@@ -268,9 +301,7 @@ fun DevInEditorInput(
         ) {
             scope.launch {
                 delay(100) // Small delay to ensure UI updates
-                callbacks?.onSubmit(trimmedText)
-                textFieldValue = TextFieldValue("")
-                showCompletion = false
+                buildAndSendMessage(trimmedText)
             }
             return
         }
@@ -393,9 +424,7 @@ fun DevInEditorInput(
             // 桌面端：Enter 发送消息（但不在移动端拦截）
             !isAndroid && !Platform.isIOS && event.key == Key.Enter && !event.isShiftPressed -> {
                 if (textFieldValue.text.isNotBlank()) {
-                    callbacks?.onSubmit(textFieldValue.text)
-                    textFieldValue = TextFieldValue("")
-                    showCompletion = false
+                    buildAndSendMessage(textFieldValue.text)
                     if (dismissKeyboardOnSend) {
                         focusManager.clearFocus()
                     }
@@ -427,6 +456,12 @@ fun DevInEditorInput(
             ),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        // Plan Summary Bar - shown above file changes when a plan is active
+        PlanSummaryBar(
+            plan = renderer?.currentPlan,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // File Change Summary - shown above the editor
         FileChangeSummary()
 
@@ -448,22 +483,26 @@ fun DevInEditorInput(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Top toolbar with file context management (desktop only)
+                    if (!isMobile) {
+                        TopToolbar(
+                            selectedFiles = selectedFiles,
+                            onAddFile = { file -> selectedFiles = selectedFiles + file },
+                            onRemoveFile = { file ->
+                                selectedFiles = selectedFiles.filter { it.path != file.path }
+                            },
+                            onClearFiles = { selectedFiles = emptyList() },
+                            autoAddCurrentFile = autoAddCurrentFile,
+                            onToggleAutoAdd = { autoAddCurrentFile = !autoAddCurrentFile },
+                            searchProvider = effectiveSearchProvider
+                        )
+                    }
+
                     Box(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .then(
-                                    // iOS: Use wrapContentHeight + maxHeight only (no minHeight)
-                                    // to avoid conflicts with keyboard constraints
-                                    if (Platform.isIOS) {
-                                        Modifier
-                                            .wrapContentHeight()
-                                            .heightIn(max = maxHeight)
-                                    } else {
-                                        // Android/Desktop: Use traditional min/max constraints
-                                        Modifier.heightIn(min = minHeight!!, max = maxHeight)
-                                    }
-                                )
+                                .heightIn(min = minHeight, max = maxHeight)
                                 .padding(padding)
                     ) {
                         BasicTextField(
@@ -483,29 +522,16 @@ fun DevInEditorInput(
                                     .onPreviewKeyEvent { handleKeyEvent(it) },
                             textStyle =
                                 TextStyle(
-                                    fontFamily = getUtf8FontFamily(),
+                                    fontFamily = FontFamily.Monospace,
                                     fontSize = inputFontSize,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    // 使用透明颜色，避免与高亮文本重叠产生重影
+                                    color = Color.Transparent,
                                     lineHeight = inputLineHeight
                                 ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             maxLines = maxLines,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = if (isMobile) ImeAction.Send else ImeAction.Default
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onSend = {
-                                    if (textFieldValue.text.isNotBlank()) {
-                                        callbacks?.onSubmit(textFieldValue.text)
-                                        textFieldValue = TextFieldValue("")
-                                        showCompletion = false
-                                        if (dismissKeyboardOnSend) {
-                                            focusManager.clearFocus()
-                                        }
-                                    }
-                                }
-                            ),
+                            // 移除 KeyboardOptions 和 KeyboardActions，使用系统默认行为
+                            // 避免在某些平台上导致键盘弹出异常
                             decorationBox = { innerTextField ->
                                 Box(
                                     modifier =
@@ -541,15 +567,8 @@ fun DevInEditorInput(
                                         )
                                     }
 
-                                    // 实际的输入框（透明）
-                                    Box(
-                                        modifier =
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .wrapContentHeight()
-                                    ) {
-                                        innerTextField()
-                                    }
+                                    // 实际的输入框（透明文本，只保留光标和选择）
+                                    innerTextField()
                                 }
                             }
                         )
@@ -577,9 +596,7 @@ fun DevInEditorInput(
                     BottomToolbar(
                         onSendClick = {
                             if (textFieldValue.text.isNotBlank()) {
-                                callbacks?.onSubmit(textFieldValue.text)
-                                textFieldValue = TextFieldValue("")
-                                showCompletion = false
+                                buildAndSendMessage(textFieldValue.text)
                                 // Force dismiss keyboard on mobile
                                 if (isMobile) {
                                     focusManager.clearFocus()
@@ -620,6 +637,8 @@ fun DevInEditorInput(
                                 }
                             }
                         },
+                        onEnhanceClick = { enhanceCurrentInput() },
+                        isEnhancing = isEnhancing,
                         onSettingsClick = {
                             showToolConfig = true
                         },

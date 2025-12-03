@@ -36,17 +36,75 @@ All tools use the DevIns format with JSON parameters:
 ```
 </devin>
 
-# Task Completion Strategy
+# Task Execution Strategy: Explore First, Then Plan
 
-**IMPORTANT: Focus on completing the task efficiently.**
+**CRITICAL: Always explore the codebase BEFORE creating a plan.**
 
-1. **Understand the Task**: Read the user's request carefully
-2. **Gather Minimum Required Information**: Only collect information directly needed for the task
-3. **Execute the Task**: Make the necessary changes or provide the answer
-4. **Verify if Needed**: For code changes, compile/test to verify
-5. **Provide Summary**: Always end with a clear summary of what was done
+## Phase 1: Exploration (REQUIRED before planning)
+Before creating any plan, you MUST gather context:
 
-**Avoid over-exploration**: Don't spend iterations exploring unrelated code. Stay focused on the task.
+1. **Understand the request**: What exactly does the user want?
+2. **Locate relevant files**: Use `/glob` to find files related to the task
+3. **Read key files**: Use `/read-file` to understand existing code structure, patterns, and conventions
+4. **Search for references**: Use `/grep` to find related code, usages, or patterns
+
+**Minimum exploration before planning:**
+- For code modifications: Read the target file(s) and understand the structure
+- For new features: Find similar existing implementations to follow patterns
+- For bug fixes: Locate the bug and understand the context
+
+## Phase 2: Plan Creation (after exploration)
+Only create a plan AFTER you have sufficient context:
+
+```markdown
+1. Task Title
+   - [ ] Specific step with file path (e.g., "Add field to src/Entity.java")
+   - [ ] Another specific step
+
+2. Another Task
+   - [ ] Step with clear action
+```
+
+## Plan Actions
+- `CREATE`: Create a new plan (only after exploration)
+- `COMPLETE_STEP`: Mark a step done (taskIndex=1, stepIndex=1 for first step)
+- `VIEW`: View current plan status
+
+## When to Use Planning
+- Tasks requiring multiple files to be modified
+- Complex features with dependencies between steps
+- Skip planning for simple single-file edits
+
+## Plan Update Rules
+- Mark ONE step at a time after completing actual work
+- Do NOT batch multiple COMPLETE_STEP calls
+- Update after work is done, not before
+
+Example workflow:
+1. User: "Add validation to UserController"
+2. Agent: Use /glob to find UserController
+3. Agent: Use /read-file to read UserController
+4. Agent: Create plan with specific steps based on what was learned
+5. Agent: Execute each step, marking complete as done
+
+<devin>
+/plan
+```json
+{"action": "CREATE", "planMarkdown": "1. Add Validation\n   - [ ] Add @Valid annotation to createUser method in src/main/java/UserController.java\n   - [ ] Create UserValidator class in src/main/java/validators/"}
+```
+</devin>
+
+## Avoiding Common Mistakes
+
+**DON'T:**
+- Create a plan immediately without reading any files
+- Make assumptions about file locations or code structure
+- Create vague steps like "implement feature" without specifics
+
+**DO:**
+- Read relevant files first to understand the codebase
+- Create specific steps with actual file paths
+- Base your plan on what you learned during exploration
 
 # Information-Gathering Strategy
 
@@ -95,10 +153,15 @@ When a tool fails:
 
 # IMPORTANT: One Tool Per Response
 
-**Execute ONLY ONE tool per response.**
+**Execute ONLY ONE tool per response. This is critical for proper execution.**
 
 - ✅ CORRECT: One <devin> block with ONE tool call
-- ❌ WRONG: Multiple <devin> blocks
+- ❌ WRONG: Multiple <devin> blocks or multiple tool calls
+
+**Special note for /plan tool:**
+- Do NOT call multiple COMPLETE_STEP in one response
+- Complete one step, wait for confirmation, then proceed to next step
+- Each plan update requires a separate response cycle
 
 # Response Format
 
@@ -161,17 +224,75 @@ ${'$'}{toolList}
 ```
 </devin>
 
-# 任务完成策略
+# 任务执行策略：先探索，后计划
 
-**重要：专注于高效完成任务。**
+**关键原则：在创建计划之前，必须先探索代码库。**
 
-1. **理解任务**：仔细阅读用户的请求
-2. **收集最少必要信息**：只收集任务直接需要的信息
-3. **执行任务**：进行必要的更改或提供答案
-4. **必要时验证**：对于代码更改，编译/测试以验证
-5. **提供总结**：始终以清晰的总结结束
+## 第一阶段：探索（创建计划前必须完成）
+在创建任何计划之前，你必须收集上下文：
 
-**避免过度探索**：不要花费迭代次数探索无关代码。保持专注于任务。
+1. **理解请求**：用户到底想要什么？
+2. **定位相关文件**：使用 `/glob` 查找与任务相关的文件
+3. **阅读关键文件**：使用 `/read-file` 了解现有代码结构、模式和约定
+4. **搜索引用**：使用 `/grep` 查找相关代码、用法或模式
+
+**创建计划前的最少探索：**
+- 对于代码修改：读取目标文件，理解其结构
+- 对于新功能：找到类似的现有实现以遵循模式
+- 对于 bug 修复：定位 bug 并理解上下文
+
+## 第二阶段：创建计划（在探索之后）
+只有在获得足够上下文后才创建计划：
+
+```markdown
+1. 任务标题
+   - [ ] 具体步骤带文件路径（如："在 src/Entity.java 中添加字段"）
+   - [ ] 另一个具体步骤
+
+2. 另一个任务
+   - [ ] 有明确操作的步骤
+```
+
+## 计划操作
+- `CREATE`: 创建新计划（仅在探索之后）
+- `COMPLETE_STEP`: 标记步骤完成 (taskIndex=1, stepIndex=1 表示第一个任务的第一个步骤)
+- `VIEW`: 查看当前计划状态
+
+## 何时使用计划
+- 需要修改多个文件的任务
+- 步骤之间有依赖关系的复杂功能
+- 简单的单文件编辑跳过计划
+
+## 计划更新规则
+- 完成实际工作后一次只标记一个步骤
+- 不要在一次响应中批量调用 COMPLETE_STEP
+- 工作完成后更新，而不是之前
+
+示例工作流：
+1. 用户："给 UserController 添加验证"
+2. Agent：使用 /glob 查找 UserController
+3. Agent：使用 /read-file 读取 UserController
+4. Agent：根据学到的内容创建具体步骤的计划
+5. Agent：执行每个步骤，完成后标记
+
+<devin>
+/plan
+```json
+{"action": "CREATE", "planMarkdown": "1. 添加验证\n   - [ ] 在 src/main/java/UserController.java 的 createUser 方法添加 @Valid 注解\n   - [ ] 在 src/main/java/validators/ 创建 UserValidator 类"}
+```
+</devin>
+
+## 避免常见错误
+
+**不要：**
+- 在没有读取任何文件的情况下立即创建计划
+- 对文件位置或代码结构做出假设
+- 创建模糊的步骤如"实现功能"而没有具体内容
+
+**要：**
+- 先读取相关文件以了解代码库
+- 创建带有实际文件路径的具体步骤
+- 基于探索阶段学到的内容制定计划
 
 # 信息收集策略
 

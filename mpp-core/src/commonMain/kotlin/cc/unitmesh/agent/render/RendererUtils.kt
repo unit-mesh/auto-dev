@@ -87,10 +87,38 @@ object RendererUtils {
 
     /**
      * Parse parameter string into a map.
-     * Handles both quoted and unquoted values.
+     * Handles both JSON format and key=value format.
      */
     fun parseParamsString(paramsStr: String): Map<String, String> {
         val params = mutableMapOf<String, String>()
+        val trimmed = paramsStr.trim()
+
+        // Try JSON format first (starts with { and ends with })
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            try {
+                // Simple JSON parsing for flat objects with string values
+                val jsonContent = trimmed.substring(1, trimmed.length - 1)
+                // Match "key": "value" or "key": number patterns
+                val jsonRegex = Regex(""""(\w+)"\s*:\s*(?:"([^"\\]*(?:\\.[^"\\]*)*)"|(\d+(?:\.\d+)?)|(\w+))""")
+                jsonRegex.findAll(jsonContent).forEach { match ->
+                    val key = match.groups[1]?.value
+                    // Value can be: quoted string, number, or unquoted word (like true/false)
+                    val value = match.groups[2]?.value
+                        ?: match.groups[3]?.value
+                        ?: match.groups[4]?.value
+                    if (key != null && value != null) {
+                        params[key] = value
+                    }
+                }
+                if (params.isNotEmpty()) {
+                    return params
+                }
+            } catch (_: Exception) {
+                // Fall through to key=value parsing
+            }
+        }
+
+        // Fallback to key=value format
         val regex = Regex("""(\w+)="([^"]*)"|\s*(\w+)=([^\s]+)""")
         regex.findAll(paramsStr).forEach { match ->
             val key = match.groups[1]?.value ?: match.groups[3]?.value

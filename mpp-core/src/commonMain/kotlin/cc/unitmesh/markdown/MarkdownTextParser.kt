@@ -1,5 +1,6 @@
-package cc.unitmesh.devins.idea.renderer.markdown
+package cc.unitmesh.markdown
 
+import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.findChildOfType
@@ -104,7 +105,7 @@ object MarkdownTextParser {
      * Extract link text from an inline link node.
      */
     fun extractLinkText(node: ASTNode, content: String): String {
-        val linkText = node.findChildOfType(org.intellij.markdown.MarkdownElementTypes.LINK_TEXT)
+        val linkText = node.findChildOfType(MarkdownElementTypes.LINK_TEXT)
         return linkText?.children?.filter { it.type == MarkdownTokenTypes.TEXT }
             ?.joinToString("") { it.getTextInNode(content).toString() }
             ?: node.getTextInNode(content).toString()
@@ -114,7 +115,7 @@ object MarkdownTextParser {
      * Extract link destination URL from an inline link node.
      */
     fun extractLinkDestination(node: ASTNode, content: String): String {
-        val linkDest = node.findChildOfType(org.intellij.markdown.MarkdownElementTypes.LINK_DESTINATION)
+        val linkDest = node.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
         return linkDest?.getTextInNode(content)?.toString() ?: ""
     }
 
@@ -122,7 +123,7 @@ object MarkdownTextParser {
      * Extract image alt text from an image node.
      */
     fun extractImageAltText(node: ASTNode, content: String): String {
-        return node.findChildOfType(org.intellij.markdown.MarkdownElementTypes.LINK_TEXT)
+        return node.findChildOfType(MarkdownElementTypes.LINK_TEXT)
             ?.getTextInNode(content)?.toString()?.trim('[', ']') ?: "image"
     }
 
@@ -133,4 +134,3 @@ object MarkdownTextParser {
         return node.getTextInNode(content).toString().trim('<', '>')
     }
 }
-

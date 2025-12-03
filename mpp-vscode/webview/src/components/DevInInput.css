@@ -1,0 +1,78 @@
+/* DevInInput Component Styles */
+
+.devin-input-container {
+  position: relative;
+  flex: 1;
+  min-height: 36px;
+}
+
+/* Highlight overlay - positioned behind textarea */
+.devin-highlight-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow: hidden;
+  pointer-events: none;
+  color: transparent;
+  background: transparent;
+}
+
+/* Textarea - transparent text, visible caret */
+.devin-textarea {
+  position: relative;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--foreground);
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  min-height: 36px;
+  max-height: 150px;
+  outline: none;
+  /* Make text visible but also show highlighting */
+  caret-color: var(--foreground);
+}
+
+.devin-textarea::placeholder {
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
+.devin-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Syntax highlighting colors */
+.devin-command {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  background: rgba(220, 220, 170, 0.1);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.devin-agent {
+  color: var(--vscode-symbolIcon-classForeground, #4ec9b0);
+  background: rgba(78, 201, 176, 0.1);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.devin-variable {
+  color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
+  background: rgba(156, 220, 254, 0.1);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+

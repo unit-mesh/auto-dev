@@ -1,7 +1,38 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.plan.PlanSummaryData
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import kotlin.js.JsExport
+
+/**
+ * JS-friendly plan summary data
+ */
+@JsExport
+data class JsPlanSummaryData(
+    val planId: String,
+    val title: String,
+    val totalSteps: Int,
+    val completedSteps: Int,
+    val failedSteps: Int,
+    val progressPercent: Int,
+    val status: String,
+    val currentStepDescription: String?
+) {
+    companion object {
+        fun from(summary: PlanSummaryData): JsPlanSummaryData {
+            return JsPlanSummaryData(
+                planId = summary.planId,
+                title = summary.title,
+                totalSteps = summary.totalSteps,
+                completedSteps = summary.completedSteps,
+                failedSteps = summary.failedSteps,
+                progressPercent = summary.progressPercent,
+                status = summary.status.name,
+                currentStepDescription = summary.currentStepDescription
+            )
+        }
+    }
+}
 
 /**
  * JS-friendly renderer interface
@@ -28,6 +59,9 @@ interface JsCodingAgentRenderer {
 
     // Error recovery methods
     fun renderRecoveryAdvice(recoveryAdvice: String)
+
+    // Plan summary bar (optional - default no-op in BaseRenderer)
+    fun renderPlanSummary(summary: JsPlanSummaryData) {}
 }
 
 /**
@@ -93,9 +127,11 @@ class JsRendererAdapter(private val jsRenderer: JsCodingAgentRenderer) : CodingA
 
     override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
         // For now, just use error rendering since JS renderer doesn't have this method yet
-        jsRenderer.renderError("🔐 Tool '$toolName' requires user confirmation: $params (Auto-approved)")
+        jsRenderer.renderError("Tool '$toolName' requires user confirmation: $params (Auto-approved)")
     }
 
-
+    override fun renderPlanSummary(summary: PlanSummaryData) {
+        jsRenderer.renderPlanSummary(JsPlanSummaryData.from(summary))
+    }
 }
 

@@ -1,0 +1,205 @@
+.chat-input-container {
+  position: relative;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--background);
+  margin: 8px;
+}
+
+/* Bottom Toolbar */
+.input-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-top: 1px solid var(--panel-border);
+  background: var(--selection-background);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--foreground);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toolbar-button:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--selection-background);
+}
+
+.toolbar-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 8px;
+}
+
+.input-with-completion {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-textarea {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  background: var(--input-background);
+  color: var(--input-foreground);
+  border-radius: 6px;
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  min-height: 40px;
+  max-height: 150px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-textarea:focus {
+  border-color: var(--accent);
+}
+
+.chat-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-textarea::placeholder {
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
+.input-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-button {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.action-button span {
+  display: inline-block;
+}
+
+.send-button {
+  background: var(--button-background);
+  color: var(--button-foreground);
+}
+
+.send-button:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stop-button {
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  color: var(--vscode-inputValidation-errorForeground, #f48771);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+}
+
+.stop-button:hover {
+  background: var(--vscode-inputValidation-errorBackground, #6a2d2d);
+}
+
+.clear-button {
+  background: transparent;
+  color: var(--foreground);
+  opacity: 0.6;
+}
+
+.clear-button:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--selection-background);
+}
+
+.input-hint {
+  font-size: 10px;
+  color: var(--foreground);
+  opacity: 0.4;
+  white-space: nowrap;
+}
+
+.input-hint kbd {
+  background: var(--background);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 9px;
+}
+
+/* Token indicator */
+.token-indicator {
+  font-size: 11px;
+  color: var(--foreground);
+  opacity: 0.6;
+  padding: 2px 6px;
+  background: var(--background);
+  border-radius: 4px;
+}
+
+/* Enhance button */
+.enhance-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.enhance-button.enhancing {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.enhance-button .enhancing-text {
+  font-size: 10px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
