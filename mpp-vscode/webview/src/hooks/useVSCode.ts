@@ -7,8 +7,13 @@ interface VSCodeAPI {
   setState: (state: unknown) => void;
 }
 
-// Declare the global acquireVsCodeApi function
-declare function acquireVsCodeApi(): VSCodeAPI;
+// Declare the global VSCode API on window (acquired in HTML before React loads)
+declare global {
+  interface Window {
+    vscodeApi?: VSCodeAPI;
+    acquireVsCodeApi?: () => VSCodeAPI;
+  }
+}
 
 // Message types from extension
 // Mirrors mpp-ui's ComposeRenderer events
@@ -49,13 +54,23 @@ let vscodeApi: VSCodeAPI | null = null;
 
 function getVSCodeAPI(): VSCodeAPI | null {
   if (vscodeApi) return vscodeApi;
-  
-  try {
-    vscodeApi = acquireVsCodeApi();
+
+  // First, check if API was already acquired and stored on window (by HTML script)
+  if (window.vscodeApi) {
+    vscodeApi = window.vscodeApi;
     return vscodeApi;
+  }
+
+  // Fallback: try to acquire it ourselves (only works if not already acquired)
+  try {
+    const acquireFn = window.acquireVsCodeApi;
+    if (typeof acquireFn === 'function') {
+      vscodeApi = acquireFn();
+      return vscodeApi;
+    }
+    return null;
   } catch {
     // Running outside VSCode (e.g., in browser for development)
-    console.warn('VSCode API not available, running in standalone mode');
     return null;
   }
 }
@@ -69,8 +84,6 @@ export function useVSCode() {
   const postMessage = useCallback((message: WebviewMessage) => {
     if (api) {
       api.postMessage(message);
-    } else {
-      console.log('Would send to VSCode:', message);
     }
   }, [api]);
 

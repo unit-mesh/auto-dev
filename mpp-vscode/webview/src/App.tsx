@@ -215,6 +215,18 @@ const App: React.FC = () => {
 
   // Send message to extension
   const handleSend = useCallback((content: string) => {
+    // Immediately show user message in timeline for feedback
+    setAgentState(prev => ({
+      ...prev,
+      isProcessing: true,
+      timeline: [...prev.timeline, {
+        type: 'message',
+        timestamp: Date.now(),
+        message: { role: 'user', content }
+      }]
+    }));
+
+    // Send to extension
     postMessage({ type: 'sendMessage', content });
   }, [postMessage]);
 
@@ -280,6 +292,14 @@ const App: React.FC = () => {
           currentStreamingContent={agentState.isProcessing ? agentState.currentStreamingContent : undefined}
           onAction={handleAction}
         />
+
+        {/* Show loading indicator when processing */}
+        {agentState.isProcessing && !agentState.currentStreamingContent && (
+          <div className="loading-indicator">
+            <div className="loading-spinner"></div>
+            <span>Processing...</span>
+          </div>
+        )}
 
         {/* Show Open Config button when config is needed */}
         {needsConfig && (
