@@ -37,6 +37,7 @@ import cc.unitmesh.devins.editor.FileContext
 import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
 import cc.unitmesh.devins.ui.compose.editor.changes.FileChangeSummary
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
+import cc.unitmesh.devins.ui.compose.editor.plan.PlanSummaryBar
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.context.FileSearchPopup
 import cc.unitmesh.devins.ui.compose.editor.context.FileSearchProvider
@@ -467,6 +468,12 @@ fun DevInEditorInput(
             ),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        // Plan Summary Bar - shown above file changes when a plan is active
+        PlanSummaryBar(
+            plan = renderer?.currentPlan,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // File Change Summary - shown above the editor
         FileChangeSummary()
 

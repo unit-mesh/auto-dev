@@ -4,6 +4,7 @@ import { TopToolbar } from './TopToolbar';
 import { SelectedFile } from './FileChip';
 import { DevInInput } from './DevInInput';
 import { CompletionPopup, CompletionItem } from './CompletionPopup';
+import { PlanSummaryBar, PlanData } from './plan';
 import './ChatInput.css';
 
 interface ChatInputProps {
@@ -25,6 +26,7 @@ interface ChatInputProps {
   currentConfigName?: string | null;
   totalTokens?: number | null;
   activeFile?: SelectedFile | null;
+  currentPlan?: PlanData | null;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -45,7 +47,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   availableConfigs = [],
   currentConfigName = null,
   totalTokens = null,
-  activeFile = null
+  activeFile = null,
+  currentPlan = null
 }) => {
   const [input, setInput] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
@@ -166,6 +169,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="chat-input-container" ref={inputRef}>
+      {/* Plan Summary Bar - shown above file toolbar when a plan is active */}
+      <PlanSummaryBar plan={currentPlan} />
+
       {/* File Context Toolbar */}
       <TopToolbar
         selectedFiles={selectedFiles}

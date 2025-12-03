@@ -51,6 +51,7 @@ fun IdeaAgentApp(
     val timeline by viewModel.renderer.timeline.collectAsState()
     val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
     val isExecuting by viewModel.isExecuting.collectAsState()
+    val currentPlan by viewModel.renderer.currentPlan.collectAsState()
     val showConfigDialog by viewModel.showConfigDialog.collectAsState()
     val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
     val configWrapper by viewModel.configWrapper.collectAsState()
@@ -172,6 +173,7 @@ fun IdeaAgentApp(
                             onConfigSelect = { config ->
                                 viewModel.setActiveConfig(config.name)
                             },
+                            currentPlan = currentPlan,
                             onConfigureClick = { viewModel.setShowConfigDialog(true) }
                         )
                     }

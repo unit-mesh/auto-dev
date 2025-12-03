@@ -1,0 +1,301 @@
+/* Plan Summary Bar Styles */
+
+.plan-summary-bar {
+  border: 1px solid var(--vscode-editorWidget-border, rgba(128, 128, 128, 0.3));
+  border-radius: 4px 4px 0 0;
+  background: var(--vscode-editorWidget-background, rgba(37, 37, 38, 0.9));
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.plan-summary-bar.status-completed {
+  background: var(--vscode-testing-iconPassed, rgba(76, 175, 80, 0.1));
+  border-color: var(--vscode-testing-iconPassed, rgba(76, 175, 80, 0.3));
+}
+
+.plan-summary-bar.status-failed {
+  background: var(--vscode-testing-iconFailed, rgba(244, 67, 54, 0.1));
+  border-color: var(--vscode-testing-iconFailed, rgba(244, 67, 54, 0.3));
+}
+
+/* Header */
+.plan-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.plan-summary-header:hover {
+  background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+}
+
+.plan-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Status icons */
+.status-icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+.status-icon.completed {
+  color: var(--vscode-testing-iconPassed, #4caf50);
+}
+
+.status-icon.failed {
+  color: var(--vscode-testing-iconFailed, #f44336);
+}
+
+.status-icon.in-progress {
+  color: var(--vscode-progressBar-background, #2196f3);
+  animation: spin 2s linear infinite;
+}
+
+.status-icon.blocked {
+  color: var(--vscode-editorWarning-foreground, #ff9800);
+}
+
+.status-icon.todo {
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.5));
+}
+
+/* Expand arrow */
+.expand-arrow {
+  font-size: 10px;
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.5));
+  transition: transform 0.2s ease;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(0deg);
+}
+
+/* Title */
+.plan-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vscode-foreground, #cccccc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+/* Progress indicator */
+.plan-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-bar {
+  width: 60px;
+  height: 4px;
+  background: var(--vscode-progressBar-background, rgba(128, 128, 128, 0.3));
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.status-completed {
+  background: var(--vscode-testing-iconPassed, #4caf50);
+}
+
+.progress-fill.status-failed {
+  background: var(--vscode-testing-iconFailed, #f44336);
+}
+
+.progress-fill.status-in-progress {
+  background: var(--vscode-progressBar-background, #2196f3);
+}
+
+.progress-fill.status-todo,
+.progress-fill.status-blocked {
+  background: var(--vscode-foreground, rgba(255, 255, 255, 0.3));
+}
+
+.progress-text {
+  font-size: 10px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.6));
+}
+
+/* Current step */
+.current-step {
+  font-size: 10px;
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.5));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+/* Dismiss button */
+.dismiss-button {
+  background: none;
+  border: none;
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.5));
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.dismiss-button:hover {
+  opacity: 1;
+  color: var(--vscode-foreground, #cccccc);
+}
+
+/* Expanded content */
+.plan-expanded-content {
+  border-top: 1px solid var(--vscode-editorWidget-border, rgba(128, 128, 128, 0.2));
+  padding: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Task item */
+.task-item {
+  background: var(--vscode-editor-background, rgba(30, 30, 30, 0.5));
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.task-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--vscode-foreground, #cccccc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-progress {
+  font-size: 10px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.5));
+}
+
+/* Steps */
+.task-steps {
+  margin-top: 6px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-icon {
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+}
+
+.step-icon.completed {
+  color: var(--vscode-testing-iconPassed, #4caf50);
+}
+
+.step-icon.failed {
+  color: var(--vscode-testing-iconFailed, #f44336);
+}
+
+.step-icon.in-progress {
+  color: var(--vscode-progressBar-background, #2196f3);
+}
+
+.step-icon.spinning {
+  animation: spin 2s linear infinite;
+}
+
+.step-icon.todo {
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.3));
+}
+
+.step-description {
+  font-size: 10px;
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.7));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.step-completed .step-description {
+  color: var(--vscode-foreground, rgba(255, 255, 255, 0.5));
+}
+
+.step-failed .step-description {
+  color: var(--vscode-testing-iconFailed, #f44336);
+}
+
+/* Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Scrollbar */
+.plan-expanded-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.plan-expanded-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.plan-expanded-content::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background, rgba(128, 128, 128, 0.3));
+  border-radius: 3px;
+}
+
+.plan-expanded-content::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground, rgba(128, 128, 128, 0.5));
+}
+

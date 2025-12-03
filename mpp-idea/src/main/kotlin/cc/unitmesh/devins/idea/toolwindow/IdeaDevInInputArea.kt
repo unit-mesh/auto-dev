@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.plan.AgentPlan
 import cc.unitmesh.devins.idea.editor.*
+import cc.unitmesh.devins.idea.toolwindow.plan.IdeaPlanSummaryBar
 import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -76,7 +78,8 @@ fun IdeaDevInInputArea(
     availableConfigs: List<NamedModelConfig> = emptyList(),
     currentConfigName: String? = null,
     onConfigSelect: (NamedModelConfig) -> Unit = {},
-    onConfigureClick: () -> Unit = {}
+    onConfigureClick: () -> Unit = {},
+    currentPlan: AgentPlan? = null
 ) {
     var inputText by remember { mutableStateOf("") }
     var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
@@ -102,6 +105,12 @@ fun IdeaDevInInputArea(
                 shape = borderShape
             )
     ) {
+        // Plan summary bar - shown above top toolbar when a plan is active
+        IdeaPlanSummaryBar(
+            plan = currentPlan,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // Top toolbar with file selection (no individual border)
         IdeaTopToolbar(
             project = project,
