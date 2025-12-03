@@ -206,6 +206,16 @@ const App: React.FC = () => {
     postMessage({ type: 'action', action, data });
   }, [postMessage]);
 
+  // Handle open config
+  const handleOpenConfig = useCallback(() => {
+    postMessage({ type: 'openConfig' });
+  }, [postMessage]);
+
+  // Check if we need to show config prompt
+  const needsConfig = agentState.timeline.length === 0 &&
+    agentState.currentStreamingContent.includes('No configuration found') ||
+    agentState.currentStreamingContent.includes('Configuration Required');
+
   return (
     <div className="app">
       <header className="app-header">
@@ -224,6 +234,9 @@ const App: React.FC = () => {
             )}
           </div>
         )}
+        <button className="header-config-btn" onClick={handleOpenConfig} title="Open Config">
+          ⚙️
+        </button>
         {!isVSCode && (
           <span className="dev-badge">Dev Mode</span>
         )}
@@ -235,6 +248,15 @@ const App: React.FC = () => {
           currentStreamingContent={agentState.isProcessing ? agentState.currentStreamingContent : undefined}
           onAction={handleAction}
         />
+
+        {/* Show Open Config button when config is needed */}
+        {needsConfig && (
+          <div className="config-prompt">
+            <button className="config-btn" onClick={handleOpenConfig}>
+              📝 Open Config File
+            </button>
+          </div>
+        )}
       </div>
 
       <ChatInput

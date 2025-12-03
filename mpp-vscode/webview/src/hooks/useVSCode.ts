@@ -36,7 +36,7 @@ export interface ExtensionMessage {
 
 // Message types to extension
 export interface WebviewMessage {
-  type: 'sendMessage' | 'clearHistory' | 'action';
+  type: 'sendMessage' | 'clearHistory' | 'action' | 'openConfig';
   content?: string;
   action?: string;
   data?: Record<string, unknown>;

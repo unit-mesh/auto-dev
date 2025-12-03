@@ -70,7 +70,14 @@
         "autodev.provider": {
           "type": "string",
           "default": "openai",
-          "enum": ["openai", "anthropic", "google", "deepseek", "ollama", "openrouter"],
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "deepseek",
+            "ollama",
+            "openrouter"
+          ],
           "description": "LLM provider"
         },
         "autodev.model": {
@@ -105,8 +112,14 @@
     "languages": [
       {
         "id": "DevIns",
-        "aliases": ["devins", "devin"],
-        "extensions": [".devins", ".devin"],
+        "aliases": [
+          "devins",
+          "devin"
+        ],
+        "extensions": [
+          ".devins",
+          ".devin"
+        ],
         "configuration": "syntaxes/language-configuration.json",
         "icon": {
           "light": "./resources/icon.svg",
@@ -140,10 +153,10 @@
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
+    "@vscode/vsce": "^2.22.0",
     "esbuild": "^0.19.8",
     "eslint": "^8.54.0",
     "typescript": "^5.3.2",
-    "@vscode/vsce": "^2.22.0",
     "vitest": "^1.0.0"
   },
   "dependencies": {
@@ -151,7 +164,7 @@
     "@modelcontextprotocol/sdk": "^1.0.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "yaml": "^2.8.2",
     "zod": "^3.22.4"
   }
 }
-

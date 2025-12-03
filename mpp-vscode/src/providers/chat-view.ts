@@ -2,20 +2,30 @@
  * Chat View Provider - Webview for chat interface
  *
  * Uses mpp-core's CodingAgent for agent-based interactions
- * Mirrors mpp-ui's AgentChatInterface architecture
+ * Mirrors mpp-ui's AgentChatInterface and IdeaAgentViewModel architecture
+ *
+ * Configuration is loaded from ~/.autodev/config.yaml (same as CLI and Desktop)
  */
 
 import * as vscode from 'vscode';
-import { CodingAgent, ToolRegistry, ModelConfig, VSCodeRenderer } from '../bridge/mpp-core';
+import { ConfigManager, AutoDevConfigWrapper, LLMConfig } from '../services/config-manager';
+
+// Import mpp-core bridge
+// @ts-ignore - Kotlin/JS generated module
+import MppCore from '@autodev/mpp-core';
+
+const { JsKoogLLMService, JsModelConfig } = MppCore.cc.unitmesh.llm;
+const { JsCodingAgent, JsAgentTask } = MppCore.cc.unitmesh.agent;
 
 /**
  * Chat View Provider for the sidebar webview
  */
 export class ChatViewProvider implements vscode.WebviewViewProvider {
   private webviewView: vscode.WebviewView | undefined;
-  private codingAgent: CodingAgent | undefined;
-  private toolRegistry: ToolRegistry | undefined;
-  private renderer: VSCodeRenderer | undefined;
+  private codingAgent: any = null;
+  private llmService: any = null;
+  private configWrapper: AutoDevConfigWrapper | null = null;
+  private isExecuting = false;
   private messages: Array<{ role: string; content: string }> = [];
 
   constructor(
@@ -51,11 +61,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         case 'action':
           await this.handleAction(message.action, message.data);
           break;
+        case 'openConfig':
+          await this.openConfigFile();
+          break;
       }
     });
 
-    // Initialize agent
-    this.initializeAgent();
+    // Initialize agent from config file
+    this.initializeFromConfig();
   }
 
   /**
@@ -75,99 +88,264 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     this.webviewView?.webview.postMessage(message);
   }
 
-  private initializeAgent(): void {
-    const config = vscode.workspace.getConfiguration('autodev');
-    const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
-
-    const modelConfig: ModelConfig = {
-      provider: config.get<string>('provider', 'openai'),
-      model: config.get<string>('model', 'gpt-4'),
-      apiKey: config.get<string>('apiKey', ''),
-      baseUrl: config.get<string>('baseUrl', '')
-    };
-
-    // Create renderer that forwards events to webview
-    this.renderer = new VSCodeRenderer(this);
-
+  /**
+   * Initialize from ~/.autodev/config.yaml
+   * Mirrors IdeaAgentViewModel.loadConfiguration()
+   */
+  private async initializeFromConfig(): Promise<void> {
     try {
-      // Initialize tool registry with VSCode tools
-      this.toolRegistry = new ToolRegistry(workspacePath);
+      this.configWrapper = await ConfigManager.load();
+      const activeConfig = this.configWrapper.getActiveConfig();
 
-      // Initialize coding agent (will use config from mpp-core)
-      this.codingAgent = new CodingAgent(
-        modelConfig,
-        this.toolRegistry,
-        this.renderer,
-        workspacePath
-      );
+      if (!activeConfig || !this.configWrapper.isValid()) {
+        this.log('No valid configuration found in ~/.autodev/config.yaml');
+        // Show welcome message with config instructions
+        this.postMessage({
+          type: 'responseChunk',
+          content: this.getWelcomeMessage()
+        });
+        return;
+      }
 
-      this.log(`CodingAgent initialized for workspace: ${workspacePath}`);
+      // Create LLM service
+      this.llmService = this.createLLMService(activeConfig);
+      this.log(`LLM Service initialized: ${activeConfig.provider}/${activeConfig.model}`);
+
+      // Show ready message
+      this.postMessage({
+        type: 'responseChunk',
+        content: `✨ **AutoDev Ready**\n\nUsing: \`${activeConfig.name}\` (${activeConfig.provider}/${activeConfig.model})\n\nType a message or use DevIns commands like \`/file:path\` or \`@code\`.`
+      });
+
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.log(`Failed to initialize CodingAgent: ${message}`);
-      // Don't show error - agent will be initialized on first message if needed
+      this.log(`Failed to load configuration: ${message}`);
     }
   }
 
-  private async handleUserMessage(content: string): Promise<void> {
-    // Initialize agent if not ready
-    if (!this.codingAgent) {
-      this.initializeAgent();
+  /**
+   * Create LLM service from config
+   */
+  private createLLMService(config: LLMConfig): any {
+    const modelConfig = new JsModelConfig(
+      config.provider.toUpperCase(),
+      config.model,
+      config.apiKey || '',
+      config.temperature ?? 0.7,
+      config.maxTokens ?? 8192,
+      config.baseUrl || ''
+    );
+    return new JsKoogLLMService(modelConfig);
+  }
+
+  /**
+   * Initialize CodingAgent (lazy initialization)
+   */
+  private async initializeCodingAgent(): Promise<any> {
+    if (this.codingAgent) {
+      return this.codingAgent;
     }
 
-    // Add user message to timeline
-    this.messages.push({ role: 'user', content });
-    this.postMessage({ type: 'userMessage', content });
+    if (!this.llmService) {
+      throw new Error('LLM service not configured. Please configure ~/.autodev/config.yaml');
+    }
 
-    // Check if this is a DevIns command
-    const isDevInsCommand = content.startsWith('/') || content.startsWith('@');
+    const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+    const mcpServers = this.configWrapper?.getEnabledMcpServers() || {};
+
+    // Create renderer that forwards events to webview
+    const renderer = this.createRenderer();
+
+    this.codingAgent = new JsCodingAgent(
+      workspacePath,
+      this.llmService,
+      10, // maxIterations
+      renderer,
+      Object.keys(mcpServers).length > 0 ? mcpServers : null,
+      null // toolConfig
+    );
+
+    this.log(`CodingAgent initialized for workspace: ${workspacePath}`);
+    return this.codingAgent;
+  }
+
+  /**
+   * Create renderer that forwards events to webview
+   * Mirrors TuiRenderer from mpp-ui
+   */
+  private createRenderer(): any {
+    const self = this;
+    return {
+      renderIterationHeader: (current: number, max: number) => {
+        self.postMessage({ type: 'iterationUpdate', data: { current, max } });
+      },
+      renderLLMResponseStart: () => {
+        self.postMessage({ type: 'startResponse' });
+      },
+      renderLLMResponseChunk: (chunk: string) => {
+        self.postMessage({ type: 'responseChunk', content: chunk });
+      },
+      renderLLMResponseEnd: () => {
+        self.postMessage({ type: 'endResponse' });
+      },
+      renderToolCall: (toolName: string, params: string) => {
+        self.postMessage({
+          type: 'toolCall',
+          data: { toolName, params, description: `Calling ${toolName}` }
+        });
+      },
+      renderToolResult: (toolName: string, success: boolean, output: string | null, fullOutput: string | null) => {
+        self.postMessage({
+          type: 'toolResult',
+          data: { toolName, success, output, fullOutput }
+        });
+      },
+      renderTaskComplete: () => {
+        self.postMessage({ type: 'taskComplete', data: { success: true, message: 'Task completed' } });
+      },
+      renderFinalResult: (success: boolean, message: string, iterations: number) => {
+        self.postMessage({
+          type: 'taskComplete',
+          data: { success, message: `${message} (${iterations} iterations)` }
+        });
+      },
+      renderError: (message: string) => {
+        self.postMessage({ type: 'error', content: message });
+      },
+      renderRepeatWarning: (toolName: string, count: number) => {
+        self.postMessage({
+          type: 'error',
+          content: `Warning: ${toolName} called ${count} times`
+        });
+      },
+      renderRecoveryAdvice: (advice: string) => {
+        self.postMessage({ type: 'responseChunk', content: `\n💡 ${advice}\n` });
+      },
+      renderUserConfirmationRequest: () => {},
+      forceStop: () => {
+        self.postMessage({ type: 'taskComplete', data: { success: false, message: 'Stopped' } });
+      }
+    };
+  }
+
+  /**
+   * Handle user message
+   * Mirrors IdeaAgentViewModel.executeTask()
+   */
+  private async handleUserMessage(content: string): Promise<void> {
+    if (this.isExecuting) {
+      this.postMessage({ type: 'error', content: 'Already executing a task. Please wait.' });
+      return;
+    }
+
+    const trimmedContent = content.trim();
+    if (!trimmedContent) return;
+
+    // Add user message to timeline
+    this.messages.push({ role: 'user', content: trimmedContent });
+    this.postMessage({ type: 'userMessage', content: trimmedContent });
+
+    // Check if LLM is configured
+    if (!this.llmService) {
+      this.postMessage({
+        type: 'responseChunk',
+        content: this.getConfigRequiredMessage()
+      });
+      return;
+    }
+
+    this.isExecuting = true;
 
     try {
-      if (this.codingAgent && isDevInsCommand) {
-        // Use CodingAgent for DevIns commands
-        await this.codingAgent.execute(content);
-      } else {
-        // Simple chat mode - stream response directly
-        this.postMessage({ type: 'startResponse' });
+      // Initialize agent if needed
+      const agent = await this.initializeCodingAgent();
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
 
-        // For now, echo back a helpful message
-        const response = this.getHelpfulResponse(content);
-        this.postMessage({ type: 'responseChunk', content: response });
-        this.postMessage({ type: 'endResponse' });
+      // Create task and execute
+      const task = new JsAgentTask(trimmedContent, workspacePath);
+      const result = await agent.executeTask(task);
 
-        this.messages.push({ role: 'assistant', content: response });
+      // Add completion message
+      if (result.message) {
+        this.messages.push({ role: 'assistant', content: result.message });
       }
+
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.log(`Error in chat: ${message}`);
       this.postMessage({ type: 'error', content: message });
+    } finally {
+      this.isExecuting = false;
     }
   }
 
-  private getHelpfulResponse(content: string): string {
-    // Provide helpful guidance for users
-    return `I'm AutoDev, your AI coding assistant. Here's how to use me:
+  private getWelcomeMessage(): string {
+    return `# Welcome to AutoDev! 🚀
 
-**Commands (start with /):**
-- \`/file:path\` - Read a file
-- \`/write:path\` - Write to a file
-- \`/run:command\` - Run a shell command
-- \`/commit\` - Generate commit message
+No configuration found. Please create \`~/.autodev/config.yaml\`:
 
-**Agents (start with @):**
-- \`@code\` - Code generation
-- \`@test\` - Test generation
-- \`@doc\` - Documentation
-- \`@review\` - Code review
+\`\`\`yaml
+active: default
+configs:
+  - name: default
+    provider: openai  # or anthropic, deepseek, ollama, etc.
+    apiKey: your-api-key
+    model: gpt-4
+\`\`\`
 
-**Variables (use $):**
-- \`$selection\` - Current selection
-- \`$file\` - Current file
-- \`$language\` - Current language
+**Supported Providers:**
+- \`openai\` - OpenAI (GPT-4, GPT-3.5)
+- \`anthropic\` - Anthropic (Claude)
+- \`deepseek\` - DeepSeek
+- \`ollama\` - Ollama (local models)
+- \`openrouter\` - OpenRouter
 
-Try: \`@code write a function to sort an array\`
+Click **Open Config** below to create the file.`;
+  }
 
-Your message: "${content}"`;
+  private getConfigRequiredMessage(): string {
+    return `⚠️ **Configuration Required**
+
+Please configure your LLM provider in \`~/.autodev/config.yaml\`.
+
+Click **Open Config** to edit the configuration file.`;
+  }
+
+  /**
+   * Open config file in editor
+   */
+  private async openConfigFile(): Promise<void> {
+    const configPath = ConfigManager.getConfigPath();
+    const uri = vscode.Uri.file(configPath);
+
+    try {
+      await vscode.workspace.fs.stat(uri);
+    } catch {
+      // File doesn't exist, create it with template
+      const template = `# AutoDev Configuration
+# See: https://github.com/phodal/auto-dev
+
+active: default
+configs:
+  - name: default
+    provider: openai
+    apiKey: your-api-key-here
+    model: gpt-4
+    # baseUrl: https://api.openai.com/v1  # Optional
+    # temperature: 0.7
+    # maxTokens: 8192
+
+# MCP Servers (optional)
+# mcpServers:
+#   filesystem:
+#     command: npx
+#     args: ["-y", "@anthropic/mcp-server-filesystem"]
+`;
+      await vscode.workspace.fs.writeFile(uri, Buffer.from(template, 'utf-8'));
+    }
+
+    const doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc);
   }
 
   private async handleAction(action: string, data: any): Promise<void> {
