@@ -658,7 +658,6 @@ User's original prompt:`;
         return;
       }
 
-      const basePath = workspaceFolders[0].uri.fsPath;
       const lowerQuery = query.toLowerCase();
 
       // Search for files matching the query
@@ -880,9 +879,6 @@ User's original prompt:`;
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(webviewPath, 'assets', 'index.js'));
     const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(webviewPath, 'assets', 'index.css'));
 
-    // Use nonce for security
-    const nonce = this.getNonce();
-
     // Try to use React build, fallback to inline HTML
     return `<!DOCTYPE html>
 <html lang="en">
@@ -967,15 +963,6 @@ User's original prompt:`;
   </script>
 </body>
 </html>`;
-  }
-
-  private getNonce(): string {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 32; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
   }
 }
 

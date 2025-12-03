@@ -9,15 +9,14 @@
 import MppCore from '@autodev/mpp-core';
 
 // Access the exported Kotlin/JS classes
-const { 
-  JsKoogLLMService, 
-  JsModelConfig, 
+const {
+  JsKoogLLMService,
+  JsModelConfig,
   JsMessage,
   JsModelRegistry,
   JsCompletionManager,
   JsDevInsCompiler,
-  JsToolRegistry,
-  JsCompressionConfig
+  JsToolRegistry
 } = MppCore.cc.unitmesh.llm;
 
 const { JsCodingAgent, JsAgentTask } = MppCore.cc.unitmesh.agent;
