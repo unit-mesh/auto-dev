@@ -12,13 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
@@ -545,27 +542,16 @@ fun DevInEditorInput(
                                     .onPreviewKeyEvent { handleKeyEvent(it) },
                             textStyle =
                                 TextStyle(
-                                    fontFamily = getUtf8FontFamily(),
+                                    fontFamily = FontFamily.Monospace,
                                     fontSize = inputFontSize,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    // 使用透明颜色，避免与高亮文本重叠产生重影
+                                    color = Color.Transparent,
                                     lineHeight = inputLineHeight
                                 ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             maxLines = maxLines,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = if (isMobile) ImeAction.Send else ImeAction.Default
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onSend = {
-                                    if (textFieldValue.text.isNotBlank()) {
-                                        buildAndSendMessage(textFieldValue.text)
-                                        if (dismissKeyboardOnSend) {
-                                            focusManager.clearFocus()
-                                        }
-                                    }
-                                }
-                            ),
+                            // 移除 KeyboardOptions 和 KeyboardActions，使用系统默认行为
+                            // 避免在某些平台上导致键盘弹出异常
                             decorationBox = { innerTextField ->
                                 Box(
                                     modifier =
@@ -601,15 +587,8 @@ fun DevInEditorInput(
                                         )
                                     }
 
-                                    // 实际的输入框（透明）
-                                    Box(
-                                        modifier =
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .wrapContentHeight()
-                                    ) {
-                                        innerTextField()
-                                    }
+                                    // 实际的输入框（透明文本，只保留光标和选择）
+                                    innerTextField()
                                 }
                             }
                         )
