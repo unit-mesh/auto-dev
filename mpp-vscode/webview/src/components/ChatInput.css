@@ -68,6 +68,37 @@
   min-width: 0;
 }
 
+.chat-textarea {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  background: var(--input-background);
+  color: var(--input-foreground);
+  border-radius: 6px;
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  min-height: 40px;
+  max-height: 150px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-textarea:focus {
+  border-color: var(--accent);
+}
+
+.chat-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-textarea::placeholder {
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
 .input-actions {
   display: flex;
   gap: 4px;
