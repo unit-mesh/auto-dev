@@ -27,6 +27,8 @@ export interface ExtensionMessage {
     // Task events
     | 'taskComplete'
     | 'iterationUpdate'
+    // Config events
+    | 'configUpdate'
     // Error and control
     | 'error'
     | 'historyCleared';
@@ -36,7 +38,7 @@ export interface ExtensionMessage {
 
 // Message types to extension
 export interface WebviewMessage {
-  type: 'sendMessage' | 'clearHistory' | 'action' | 'openConfig';
+  type: 'sendMessage' | 'clearHistory' | 'action' | 'openConfig' | 'stopExecution' | 'selectConfig';
   content?: string;
   action?: string;
   data?: Record<string, unknown>;

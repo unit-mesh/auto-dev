@@ -1,21 +1,22 @@
 /**
  * Chat View Provider - Webview for chat interface
  *
- * Uses mpp-core's CodingAgent for agent-based interactions
- * Mirrors mpp-ui's AgentChatInterface and IdeaAgentViewModel architecture
- *
+ * Uses mpp-core's JsCodingAgent for agent-based interactions
  * Configuration is loaded from ~/.autodev/config.yaml (same as CLI and Desktop)
+ *
+ * Architecture mirrors:
+ * - mpp-ui/src/jsMain/typescript/modes/AgentMode.ts
+ * - mpp-idea/src/main/kotlin/cc/unitmesh/devins/idea/toolwindow/IdeaAgentViewModel.kt
  */
 
 import * as vscode from 'vscode';
 import { ConfigManager, AutoDevConfigWrapper, LLMConfig } from '../services/config-manager';
 
-// Import mpp-core bridge
 // @ts-ignore - Kotlin/JS generated module
 import MppCore from '@autodev/mpp-core';
 
-const { JsKoogLLMService, JsModelConfig } = MppCore.cc.unitmesh.llm;
-const { JsCodingAgent, JsAgentTask } = MppCore.cc.unitmesh.agent;
+// Access Kotlin/JS exports - same pattern as AgentMode.ts
+const KotlinCC = MppCore.cc.unitmesh;
 
 /**
  * Chat View Provider for the sidebar webview
@@ -64,11 +65,54 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         case 'openConfig':
           await this.openConfigFile();
           break;
+        case 'stopExecution':
+          this.stopExecution();
+          break;
+        case 'selectConfig':
+          await this.selectConfig(message.data?.configName as string);
+          break;
       }
     });
 
     // Initialize agent from config file
     this.initializeFromConfig();
+  }
+
+  /**
+   * Stop current execution
+   */
+  private stopExecution(): void {
+    if (this.isExecuting) {
+      this.isExecuting = false;
+      this.postMessage({ type: 'taskComplete', data: { success: false, message: 'Stopped by user' } });
+      this.log('Execution stopped by user');
+    }
+  }
+
+  /**
+   * Select a different config
+   */
+  private async selectConfig(configName: string): Promise<void> {
+    if (!this.configWrapper || !configName) return;
+
+    const configs = this.configWrapper.getAllConfigs();
+    const selectedConfig = configs.find(c => c.name === configName);
+
+    if (selectedConfig) {
+      // Recreate LLM service with new config
+      this.llmService = this.createLLMService(selectedConfig);
+      this.codingAgent = null; // Reset agent to use new LLM service
+
+      this.log(`Switched to config: ${configName}`);
+
+      // Send updated config state to webview
+      this.sendConfigUpdate(configName);
+
+      this.postMessage({
+        type: 'responseChunk',
+        content: `✨ Switched to: \`${selectedConfig.name}\` (${selectedConfig.provider}/${selectedConfig.model})`
+      });
+    }
   }
 
   /**
@@ -89,6 +133,28 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   }
 
   /**
+   * Send config update to webview
+   */
+  private sendConfigUpdate(currentConfigName?: string): void {
+    if (!this.configWrapper) return;
+
+    const configs = this.configWrapper.getAllConfigs();
+    const availableConfigs = configs.map(c => ({
+      name: c.name,
+      provider: c.provider,
+      model: c.model
+    }));
+
+    this.postMessage({
+      type: 'configUpdate',
+      data: {
+        availableConfigs,
+        currentConfigName: currentConfigName || this.configWrapper.getActiveConfig()?.name || null
+      }
+    });
+  }
+
+  /**
    * Initialize from ~/.autodev/config.yaml
    * Mirrors IdeaAgentViewModel.loadConfiguration()
    */
@@ -96,6 +162,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     try {
       this.configWrapper = await ConfigManager.load();
       const activeConfig = this.configWrapper.getActiveConfig();
+
+      // Send config state to webview
+      this.sendConfigUpdate();
 
       if (!activeConfig || !this.configWrapper.isValid()) {
         this.log('No valid configuration found in ~/.autodev/config.yaml');
@@ -125,23 +194,25 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
   /**
    * Create LLM service from config
+   * Same pattern as AgentMode.ts
    */
   private createLLMService(config: LLMConfig): any {
-    const modelConfig = new JsModelConfig(
-      config.provider.toUpperCase(),
+    const modelConfig = new KotlinCC.llm.JsModelConfig(
+      config.provider,  // Use lowercase provider name like AgentMode.ts
       config.model,
       config.apiKey || '',
       config.temperature ?? 0.7,
       config.maxTokens ?? 8192,
       config.baseUrl || ''
     );
-    return new JsKoogLLMService(modelConfig);
+    return new KotlinCC.llm.JsKoogLLMService(modelConfig);
   }
 
   /**
    * Initialize CodingAgent (lazy initialization)
+   * Same pattern as AgentMode.ts
    */
-  private async initializeCodingAgent(): Promise<any> {
+  private initializeCodingAgent(): any {
     if (this.codingAgent) {
       return this.codingAgent;
     }
@@ -150,13 +221,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       throw new Error('LLM service not configured. Please configure ~/.autodev/config.yaml');
     }
 
-    const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+    const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
     const mcpServers = this.configWrapper?.getEnabledMcpServers() || {};
 
     // Create renderer that forwards events to webview
     const renderer = this.createRenderer();
 
-    this.codingAgent = new JsCodingAgent(
+    // Create CodingAgent - same constructor as AgentMode.ts
+    this.codingAgent = new KotlinCC.agent.JsCodingAgent(
       workspacePath,
       this.llmService,
       10, // maxIterations
@@ -258,15 +330,15 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     try {
       // Initialize agent if needed
-      const agent = await this.initializeCodingAgent();
-      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+      const agent = this.initializeCodingAgent();
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
 
-      // Create task and execute
-      const task = new JsAgentTask(trimmedContent, workspacePath);
+      // Create task and execute - same pattern as AgentMode.ts
+      const task = new KotlinCC.agent.JsAgentTask(trimmedContent, workspacePath);
       const result = await agent.executeTask(task);
 
       // Add completion message
-      if (result.message) {
+      if (result && result.message) {
         this.messages.push({ role: 'assistant', content: result.message });
       }
 
