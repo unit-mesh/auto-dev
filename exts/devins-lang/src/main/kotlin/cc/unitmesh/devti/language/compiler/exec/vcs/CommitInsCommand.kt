@@ -7,6 +7,7 @@ import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.Project
@@ -48,7 +49,8 @@ class CommitInsCommand(val myProject: Project, val commitMsg: String) : InsComma
                     "",
                     dataContext
                 )
-                shelveAction.actionPerformed(event)
+                // Use ActionUtil to properly invoke the action instead of calling actionPerformed directly
+                ActionUtil.performActionDumbAwareWithCallbacks(shelveAction, event)
             }, ModalityState.NON_MODAL)
         }
     }

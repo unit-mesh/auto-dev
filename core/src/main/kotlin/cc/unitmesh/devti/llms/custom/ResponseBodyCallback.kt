@@ -22,7 +22,7 @@
 package cc.unitmesh.devti.llms.custom
 
 import com.intellij.openapi.diagnostic.logger
-import io.reactivex.rxjava3.core.FlowableEmitter
+import kotlinx.coroutines.channels.ProducerScope
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -39,10 +39,9 @@ class AutoDevHttpException(error: String, private val statusCode: Int) : Runtime
 
 /**
  * Callback to parse Server Sent Events (SSE) from raw InputStream and
- * emit the events with io.reactivex.FlowableEmitter to allow streaming of
- * SSE.
+ * emit the events with ProducerScope to allow streaming of SSE.
  */
-class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private val emitDone: Boolean) : Callback {
+class ResponseBodyCallback(private val emitter: ProducerScope<SSE>, private val emitDone: Boolean) : Callback {
     val logger = logger<ResponseBodyCallback>()
 
     override fun onResponse(call: Call, response: Response) {
@@ -59,7 +58,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
             reader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
             var line: String? = null
             var sse: SSE? = null
-            while (!emitter.isCancelled && reader.readLine().also { line = it } != null) {
+            while (!emitter.isClosedForSend && reader.readLine().also { line = it } != null) {
                 sse = when {
                     line!!.startsWith("data:") -> {
                         val data = line!!.substring(5).trim { it <= ' ' }
@@ -69,11 +68,11 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                     line == "" && sse != null -> {
                         if (sse.isDone) {
                             if (emitDone) {
-                                emitter.onNext(sse)
+                                emitter.trySend(sse)
                             }
                             break
                         }
-                        emitter.onNext(sse)
+                        emitter.trySend(sse)
                         null
                     }
                     // starts with event:
@@ -82,8 +81,8 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                         val eventName = line!!.substring(6).trim { it <= ' ' }
                         if (eventName == "ping") {
                             // skip ping event and data
-                            emitter.onNext(sse ?: SSE(""))
-                            emitter.onNext(sse ?: SSE(""))
+                            emitter.trySend(sse ?: SSE(""))
+                            emitter.trySend(sse ?: SSE(""))
                         }
 
                         null
@@ -108,8 +107,8 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                             }
 
                             line.startsWith("{") && line.endsWith("}") -> {
-                                emitter.onNext(SSE(line))
-                                emitter.onComplete()
+                                emitter.trySend(SSE(line))
+                                emitter.close()
                                 return
                             }
 
@@ -121,7 +120,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                 }
             }
 
-            emitter.onComplete()
+            emitter.close()
         } catch (t: Throwable) {
             logger<ResponseBodyCallback>().error("Error while reading SSE", t)
             logger<ResponseBodyCallback>().error("Request: ${call.request()}")
@@ -138,6 +137,6 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
     }
 
     override fun onFailure(call: Call, e: IOException) {
-        emitter.onError(e)
+        emitter.close(e)
     }
 }

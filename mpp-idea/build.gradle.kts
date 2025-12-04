@@ -201,12 +201,22 @@ dependencies {
 
 intellijPlatform {
     pluginConfiguration {
-        name = "AutoDev Compose UI"
+        name = "AutoDev Experiment"
         version = mppVersion
 
         ideaVersion {
             sinceBuild = "252"
         }
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
+
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
     }
 
     buildSearchableOptions = false

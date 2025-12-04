@@ -115,10 +115,19 @@ object RunTestUtil {
             }
 
             is BuildView -> {
-                when (executionConsole.consoleView) {
-                    is SMTRunnerConsoleView -> {
-                        return getTestView(executionConsole.consoleView as SMTRunnerConsoleView)
+                // Use reflection to access internal consoleView to avoid using Internal API
+                try {
+                    val consoleViewField = BuildView::class.java.getDeclaredField("consoleView")
+                    consoleViewField.isAccessible = true
+                    val consoleView = consoleViewField.get(executionConsole)
+                    when (consoleView) {
+                        is SMTRunnerConsoleView -> {
+                            return getTestView(consoleView)
+                        }
                     }
+                } catch (e: Exception) {
+                    // Fallback: return null if reflection fails
+                    return null
                 }
             }
 

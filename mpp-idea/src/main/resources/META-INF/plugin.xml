@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File for mpp-idea Compose UI module -->
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <id>cc.unitmesh.devins.idea</id>
-    <name>AutoDev Next</name>
+    <name>AutoDev Experiment</name>
     <vendor email="h@phodal.com" url="https://github.com/unit-mesh">UnitMesh</vendor>
 
     <description><![CDATA[

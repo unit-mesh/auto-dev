@@ -64,39 +64,17 @@ cd mpp-idea && ../gradlew buildPlugin
 - `IdeaAgentViewModelTest` requires IntelliJ Platform Test Framework
 - `JewelRendererTest` can run standalone with JUnit 5
 
-**Swing/Compose Z-Index Issues (SwingPanel blocking Compose popups):**
+## VSCode Plugin (mpp-vscode)
 
-When using `SwingPanel` to embed Swing components (e.g., `EditorTextField`) in Compose, Swing components render on top of Compose popups, causing z-index issues.
-
-**Solution 1: For Popup/Dropdown menus**
-1. Enable Jewel's custom popup renderer in `IdeaAgentToolWindowFactory`:
-   ```kotlin
-   JewelFlags.useCustomPopupRenderer = true
-   ```
-2. Use Jewel's `PopupMenu` instead of `androidx.compose.ui.window.Popup`:
-   ```kotlin
-   PopupMenu(
-       onDismissRequest = { expanded = false; true },
-       horizontalAlignment = Alignment.Start
-   ) {
-       selectableItem(selected = ..., onClick = { ... }) { Text("Item") }
-   }
-   ```
-
-**Solution 2: For Dialogs**
-Use IntelliJ's `DialogWrapper` with `org.jetbrains.jewel.bridge.compose` instead of `androidx.compose.ui.window.Dialog`:
-```kotlin
-class MyDialogWrapper(project: Project?) : DialogWrapper(project) {
-    override fun createCenterPanel(): JComponent = compose {
-        // Compose content here
-    }
-}
-```
+`mpp-vscode` is a standalone npm package with `devDependencies` on parent project.
 
 ## Release
 
 1. modify version in `gradle.properties`
 2. publish cli version: `cd mpp-ui && npm publish:remote`
-3. publish Desktop: `git tag compose-vVersion` (same in `gradle.properties`), `git push origin compose-vVersion`
-4. draft release in GitHub, run gh cli: `gh release create compose-vVersion --draft`
+
+### Desktop Compose App
+
+1. publish Desktop: `git tag compose-vVersion` (same in `gradle.properties`), `git push origin compose-vVersion`
+2. draft release in GitHub, run gh cli: `gh release create compose-vVersion --draft`
 

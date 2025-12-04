@@ -121,7 +121,11 @@ class ProcessExecutor(val project: Project) {
         commandLine.withEnvironment("BASH_SILENCE_DEPRECATION_WARNING", "1")
         commandLine.withEnvironment("GIT_PAGER", "cat")
         val commands: List<String> = listOf("bash", "--noprofile", "--norc", "-i")
-        return commandLine.startProcessWithPty(commands)
+        
+        // Use createProcess instead of startProcessWithPty to avoid Internal API
+        return commandLine.withExePath(commands[0])
+            .withParameters(commands.drop(1))
+            .createProcess()
     }
 
     private fun createProcess(shellScript: String): Process {
@@ -149,7 +153,10 @@ class ProcessExecutor(val project: Project) {
             commandLine.withWorkDirectory(basedir)
         }
 
-        return commandLine.startProcessWithPty(commands)
+        // Use createProcess instead of startProcessWithPty to avoid Internal API
+        return commandLine.withExePath(commands[0])
+            .withParameters(commands.drop(1))
+            .createProcess()
     }
 
     private fun formatCommand(command: String): String {
