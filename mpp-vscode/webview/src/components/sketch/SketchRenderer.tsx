@@ -18,6 +18,7 @@ import { DiffRenderer } from './DiffRenderer';
 import { ThinkingRenderer } from './ThinkingRenderer';
 import { TerminalRenderer } from './TerminalRenderer';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { DevInRenderer } from './DevInRenderer';
 import './SketchRenderer.css';
 
 interface SketchRendererProps {
@@ -117,12 +118,11 @@ function renderBlock(
       );
 
     case 'devin':
-      // TODO: Implement DevInRenderer
       return (
-        <CodeBlockRenderer
-          code={block.text}
-          language="devin"
+        <DevInRenderer
+          content={block.text}
           isComplete={isComplete}
+          onAction={onAction}
         />
       );
 

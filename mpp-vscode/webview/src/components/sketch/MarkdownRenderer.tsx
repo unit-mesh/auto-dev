@@ -14,8 +14,24 @@ interface MarkdownRendererProps {
   content: string;
 }
 
+/**
+ * Filter out <devin>...</devin> tags and their content from markdown
+ * These are tool call blocks that should not be displayed as text
+ */
+function filterDevinTags(content: string): string {
+  // Remove <devin>...</devin> blocks (including multiline)
+  let filtered = content.replace(/<devin>[\s\S]*?<\/devin>/gi, '');
+  // Remove unclosed <devin> tags at the end (streaming)
+  filtered = filtered.replace(/<devin>[\s\S]*$/gi, '');
+  // Remove standalone </devin> tags
+  filtered = filtered.replace(/<\/devin>/gi, '');
+  return filtered.trim();
+}
+
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
-  if (!content.trim()) {
+  const filteredContent = filterDevinTags(content);
+
+  if (!filteredContent.trim()) {
     return null;
   }
 
@@ -108,7 +124,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
           ),
         }}
       >
-        {content}
+        {filteredContent}
       </ReactMarkdown>
     </div>
   );

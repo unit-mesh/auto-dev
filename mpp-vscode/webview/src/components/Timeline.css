@@ -22,9 +22,11 @@
   border: 1px solid var(--vscode-input-border);
 }
 
+/* Assistant messages: transparent background for unified look */
 .timeline-item.message.assistant {
-  background-color: var(--vscode-editorWidget-background);
-  border: 1px solid var(--vscode-panel-border);
+  background-color: transparent;
+  border: none;
+  padding: 4px 12px;
 }
 
 .timeline-item.message.system {

@@ -130,12 +130,8 @@ const TerminalItemRenderer: React.FC<{ item: TerminalTimelineItem; onAction?: (a
   </div>
 );
 
-const TaskCompleteItemRenderer: React.FC<{ item: { success: boolean; message: string } }> = ({ item }) => (
-  <div className={`timeline-item task-complete ${item.success ? 'success' : 'error'}`}>
-    <span className="task-icon">{item.success ? '✅' : '❌'}</span>
-    <span className="task-message">{item.message}</span>
-  </div>
-);
+// Task complete is not displayed - the completion is implicit from the response
+const TaskCompleteItemRenderer: React.FC<{ item: { success: boolean; message: string } }> = () => null;
 
 const ErrorItemRenderer: React.FC<{ item: { message: string } }> = ({ item }) => (
   <div className="timeline-item error">

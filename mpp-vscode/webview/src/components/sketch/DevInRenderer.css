@@ -1,0 +1,96 @@
+.devin-renderer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.devin-tool-item {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: var(--vscode-editorWidget-background);
+  border-left: 3px solid var(--vscode-testing-iconPassed, #4caf50);
+}
+
+.devin-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.devin-tool-header:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.devin-tool-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.devin-tool-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--vscode-foreground);
+}
+
+.devin-tool-details {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--vscode-editor-font-family, monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.devin-tool-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.devin-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--vscode-descriptionForeground);
+  transition: background-color 0.2s;
+}
+
+.devin-action-btn:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.devin-action-btn.toggle {
+  font-size: 10px;
+}
+
+.devin-tool-params {
+  padding: 8px 12px;
+  border-top: 1px solid var(--vscode-panel-border);
+  background-color: var(--vscode-editor-background);
+}
+
+.devin-tool-params pre {
+  margin: 0;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--vscode-editor-foreground);
+}
+
