@@ -22,9 +22,11 @@ node_modules/
 **/*.test.*
 **/*.spec.*
 
-# Documentation
-README.md
+# Documentation (keep README.md)
 CHANGELOG.md
+
+# Exclude parent directories
+../
 
 # Keep dist and wasm folders
 !dist/
