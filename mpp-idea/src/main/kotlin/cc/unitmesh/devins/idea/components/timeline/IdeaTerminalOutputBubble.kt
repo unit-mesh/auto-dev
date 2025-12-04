@@ -45,7 +45,7 @@ fun IdeaTerminalOutputBubble(
     modifier: Modifier = Modifier,
     project: Project? = null
 ) {
-    var expanded by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier

@@ -26,7 +26,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
@@ -126,7 +125,7 @@ class ProcessExecutor(val project: Project) {
     }
 
     private fun createProcess(shellScript: String): Process {
-        val basedir = ProjectManager.getInstance().openProjects.firstOrNull()?.basePath
+        val basedir = project.basePath
         val commandLine = PtyCommandLine()
         commandLine.withConsoleMode(false)
         commandLine.withUnixOpenTtyToPreserveOutputAfterTermination(true)
