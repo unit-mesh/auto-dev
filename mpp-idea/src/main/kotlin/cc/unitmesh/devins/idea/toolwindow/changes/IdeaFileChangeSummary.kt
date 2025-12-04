@@ -52,22 +52,25 @@ fun IdeaFileChangeSummary(
         return
     }
 
-    // Show diff dialog if a file is selected
-    selectedChange?.let { change ->
-        IdeaFileChangeDiffDialog(
-            project = project,
-            change = change,
-            onDismiss = { selectedChange = null },
-            onUndo = {
-                undoChange(project, change)
-                FileChangeTracker.removeChange(change)
-                selectedChange = null
-            },
-            onKeep = {
-                FileChangeTracker.removeChange(change)
-                selectedChange = null
+    // Handle diff dialog display when a file is selected
+    LaunchedEffect(selectedChange) {
+        selectedChange?.let { change ->
+            ApplicationManager.getApplication().invokeLater {
+                IdeaFileChangeDiffDialogWrapper.show(
+                    project = project,
+                    change = change,
+                    onUndo = {
+                        undoChange(project, change)
+                        FileChangeTracker.removeChange(change)
+                    },
+                    onKeep = {
+                        FileChangeTracker.removeChange(change)
+                    },
+                    onDismiss = {}
+                )
             }
-        )
+            selectedChange = null
+        }
     }
 
     Column(

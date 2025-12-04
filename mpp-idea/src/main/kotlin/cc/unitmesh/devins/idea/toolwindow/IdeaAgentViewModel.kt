@@ -262,8 +262,30 @@ class IdeaAgentViewModel(
                 enableLLMStreaming = true
             )
             agentInitialized = true
+
+            // Start observing PlanStateService and sync to renderer
+            startPlanStateObserver(codingAgent!!)
         }
         return codingAgent!!
+    }
+
+    // Job for observing PlanStateService
+    private var planStateObserverJob: Job? = null
+
+    /**
+     * Start observing PlanStateService and sync plan state to renderer.
+     */
+    private fun startPlanStateObserver(agent: CodingAgent) {
+        // Cancel any existing observer
+        planStateObserverJob?.cancel()
+
+        val planStateService = agent.getPlanStateService() ?: return
+
+        planStateObserverJob = coroutineScope.launch {
+            planStateService.currentPlan.collect { plan ->
+                renderer.setPlan(plan)
+            }
+        }
     }
 
     /**
