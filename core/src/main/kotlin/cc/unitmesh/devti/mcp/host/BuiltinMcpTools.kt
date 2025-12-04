@@ -10,6 +10,7 @@ import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
@@ -20,7 +21,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager.getInstance
 import com.intellij.openapi.module.ModuleManager
-import com.intellij.openapi.progress.impl.CoreProgressManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.OrderEnumerator
@@ -611,13 +612,13 @@ class ListAvailableActionsTool : AbstractMcpTool<NoArgs>() {
 
                 // Create event and presentation to check if action is enabled
                 val event = AnActionEvent.createFromAnAction(action, null, "", dataContext)
-                val presentation = action.templatePresentation.clone()
-
-                // Update presentation to check if action is available
-                action.update(event)
+                
+                // Use ActionUtil to update the presentation properly instead of calling update directly
+                ActionUtil.performDumbAwareUpdate(action, event, false)
 
                 // Only include actions that have text and are enabled
-                if (event.presentation.isEnabledAndVisible && !presentation.text.isNullOrBlank()) {
+                val presentation = event.presentation
+                if (presentation.isEnabledAndVisible && !presentation.text.isNullOrBlank()) {
                     """{"id": "$actionId", "text": "${presentation.text.replace("\"", "\\\"")}"}"""
                 } else {
                     null
@@ -652,13 +653,15 @@ class ExecuteActionByIdTool : AbstractMcpTool<ExecuteActionArgs>() {
         }
 
         ApplicationManager.getApplication().invokeLater({
+            val dataContext = DataManager.getInstance().dataContext
             val event = AnActionEvent.createFromAnAction(
                 action,
                 null,
                 "",
-                DataManager.getInstance().dataContext
+                dataContext
             )
-            action.actionPerformed(event)
+            // Use ActionUtil to properly invoke the action instead of calling actionPerformed directly
+            ActionUtil.performActionDumbAwareWithCallbacks(action, event)
         }, ModalityState.NON_MODAL)
 
         return Response("ok")
@@ -668,26 +671,29 @@ class ExecuteActionByIdTool : AbstractMcpTool<ExecuteActionArgs>() {
 class GetProgressIndicatorsTool : AbstractMcpTool<NoArgs>() {
     override val name: String = "get_progress_indicators"
     override val description: String = """
-        Retrieves the status of all running progress indicators in JetBrains IDE editor.
-        Returns a JSON array of objects containing progress information:
+        Retrieves the status of current progress indicator in JetBrains IDE editor.
+        Returns a JSON object containing progress information:
         - text: The progress text/description
         - fraction: The progress ratio (0.0 to 1.0)
         - indeterminate: Whether the progress is indeterminate
-        Returns an empty array if no progress indicators are running.
+        Returns empty object if no progress indicator is running.
+        Note: Only returns the current thread's progress indicator.
     """.trimIndent()
 
     override fun handle(project: Project, args: NoArgs): Response {
-        val runningIndicators = CoreProgressManager.getCurrentIndicators()
+        val progressManager = ProgressManager.getInstance()
+        val indicator = progressManager.progressIndicator
 
-        val progressInfos = runningIndicators.map { indicator ->
+        if (indicator != null) {
             val text = indicator.text ?: ""
             val fraction = if (indicator.isIndeterminate) -1.0 else indicator.fraction
             val indeterminate = indicator.isIndeterminate
 
-            """{"text": "${text.replace("\"", "\\\"")}", "fraction": $fraction, "indeterminate": $indeterminate}"""
+            val progressInfo = """{"text": "${text.replace("\"", "\\\"")}", "fraction": $fraction, "indeterminate": $indeterminate}"""
+            return Response(progressInfo)
         }
 
-        return Response(progressInfos.joinToString(",\n", prefix = "[", postfix = "]"))
+        return Response("{}")
     }
 }
 
