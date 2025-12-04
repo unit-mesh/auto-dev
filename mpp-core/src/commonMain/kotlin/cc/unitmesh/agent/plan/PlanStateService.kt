@@ -94,6 +94,8 @@ class PlanStateService {
         val plan = _currentPlan.value ?: return
         val task = plan.getTask(taskId) ?: return
         task.updateStatus(status)
+        // Trigger StateFlow update by creating a new plan instance with updated timestamp
+        _currentPlan.value = plan.copy(updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
         notifyTaskUpdated(task)
     }
     
@@ -103,6 +105,8 @@ class PlanStateService {
     fun completeStep(taskId: String, stepId: String) {
         val plan = _currentPlan.value ?: return
         plan.completeStep(taskId, stepId)
+        // Trigger StateFlow update by creating a new plan instance with updated timestamp
+        _currentPlan.value = plan.copy(updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
         notifyStepCompleted(taskId, stepId)
     }
     
@@ -113,6 +117,8 @@ class PlanStateService {
         val plan = _currentPlan.value ?: return
         val task = plan.getTask(taskId) ?: return
         task.updateStepStatus(stepId, status)
+        // Trigger StateFlow update by creating a new plan instance with updated timestamp
+        _currentPlan.value = plan.copy(updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
         notifyTaskUpdated(task)
     }
     
