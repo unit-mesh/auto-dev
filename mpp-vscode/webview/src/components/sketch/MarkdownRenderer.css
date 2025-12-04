@@ -6,9 +6,13 @@
 
 /* Headings */
 .md-heading {
-  margin: 0.5em 0 0.25em 0;
+  margin: 0.25em 0 0.15em 0;
   font-weight: 600;
   color: var(--vscode-foreground);
+}
+
+.md-heading:first-child {
+  margin-top: 0;
 }
 
 .md-h1 { font-size: 1.5em; border-bottom: 1px solid var(--vscode-panel-border); padding-bottom: 0.3em; }
@@ -20,13 +24,29 @@
 
 /* Paragraph */
 .md-paragraph {
-  margin: 0.5em 0;
+  margin: 0.25em 0;
+}
+
+.md-paragraph:first-child {
+  margin-top: 0;
+}
+
+.md-paragraph:last-child {
+  margin-bottom: 0;
 }
 
 /* Lists */
 .md-list {
-  margin: 0.5em 0;
+  margin: 0.25em 0;
   padding-left: 1.5em;
+}
+
+.md-list:first-child {
+  margin-top: 0;
+}
+
+.md-list:last-child {
+  margin-bottom: 0;
 }
 
 .md-ul { list-style-type: disc; }
@@ -64,11 +84,19 @@
 
 /* Code block */
 .md-pre {
-  margin: 0.5em 0;
+  margin: 0.25em 0;
   padding: 12px;
   background-color: var(--vscode-textCodeBlock-background);
   border-radius: 6px;
   overflow-x: auto;
+}
+
+.md-pre:first-child {
+  margin-top: 0;
+}
+
+.md-pre:last-child {
+  margin-bottom: 0;
 }
 
 .md-code-block {
@@ -81,11 +109,19 @@
 
 /* Blockquote */
 .md-blockquote {
-  margin: 0.5em 0;
+  margin: 0.25em 0;
   padding: 0.5em 1em;
   border-left: 3px solid var(--vscode-textBlockQuote-border);
   background-color: var(--vscode-textBlockQuote-background);
   color: var(--vscode-descriptionForeground);
+}
+
+.md-blockquote:first-child {
+  margin-top: 0;
+}
+
+.md-blockquote:last-child {
+  margin-bottom: 0;
 }
 
 .md-blockquote p {

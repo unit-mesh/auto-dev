@@ -1,6 +1,12 @@
 /**
  * CodeFence parser - mirrors mpp-core's CodeFence.parseAll()
  * Parses markdown content into code blocks and text blocks
+ *
+ * Handles:
+ * - Standard markdown code fences (```)
+ * - <devin> tags (converted from ```devin blocks)
+ * - <thinking> tags
+ * - <!-- walkthrough_start --> comments
  */
 
 export interface CodeBlock {
@@ -10,80 +16,223 @@ export interface CodeBlock {
   extension?: string;
 }
 
+// Regex patterns matching mpp-core's CodeFence
+const devinStartRegex = /<devin>/;
+const devinEndRegex = /<\/devin>/;
+const thinkingStartRegex = /<thinking>/;
+const thinkingEndRegex = /<\/thinking>/;
+const walkthroughStartRegex = /<!--\s*walkthrough_start\s*-->/;
+const walkthroughEndRegex = /<!--\s*walkthrough_end\s*-->/;
+const normalCodeBlockRegex = /\s*```([\w#+ ]*)\n/;
+const languageRegex = /\s*```([\w#+ ]*)/;
+
+/**
+ * Pre-process ```devin blocks to <devin> tags
+ * Matches mpp-core's preProcessDevinBlock
+ */
+function preProcessDevinBlock(content: string): string {
+  let currentContent = content;
+
+  // Find all ```devin blocks
+  const devinMatches = [...content.matchAll(/(?:^|\n)```devin\n([\s\S]*?)\n```(?:\n|$)/g)];
+
+  for (const match of devinMatches) {
+    let devinContent = match[1] || '';
+
+    // Check if there's an unclosed code block inside
+    if (normalCodeBlockRegex.test(devinContent)) {
+      if (!devinContent.trim().endsWith('```')) {
+        devinContent += '\n```';
+      }
+    }
+
+    const replacement = `\n<devin>\n${devinContent}\n</devin>`;
+    currentContent = currentContent.replace(match[0], replacement);
+  }
+
+  return currentContent;
+}
+
 /**
  * Parse content into code blocks and text blocks
  * Handles markdown code fences (```) and special block types
  */
 export function parseCodeBlocks(content: string): CodeBlock[] {
   const blocks: CodeBlock[] = [];
-  const lines = content.split('\n');
-  
-  let currentBlock: CodeBlock | null = null;
-  let textBuffer: string[] = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmedLine = line.trim();
-    
-    // Check for code fence start
-    if (trimmedLine.startsWith('```')) {
-      // Flush text buffer
-      if (textBuffer.length > 0) {
-        const text = textBuffer.join('\n').trim();
-        if (text) {
-          blocks.push({
-            languageId: '',
-            text,
-            isComplete: true
-          });
+  let currentIndex = 0;
+
+  // Pre-process ```devin blocks to <devin> tags
+  let processedContent = content;
+  if (content.includes('```devin\n')) {
+    processedContent = preProcessDevinBlock(content);
+  }
+
+  // Find all special tag matches
+  interface TagMatch {
+    type: string;
+    match: RegExpExecArray;
+  }
+  const tagMatches: TagMatch[] = [];
+
+  // Find <devin> tags
+  let match: RegExpExecArray | null;
+  const devinRegex = new RegExp(devinStartRegex.source, 'g');
+  while ((match = devinRegex.exec(processedContent)) !== null) {
+    tagMatches.push({ type: 'devin', match });
+  }
+
+  // Find <thinking> tags
+  const thinkingRegex = new RegExp(thinkingStartRegex.source, 'g');
+  while ((match = thinkingRegex.exec(processedContent)) !== null) {
+    tagMatches.push({ type: 'thinking', match });
+  }
+
+  // Find <!-- walkthrough_start --> tags
+  const walkthroughRegex = new RegExp(walkthroughStartRegex.source, 'g');
+  while ((match = walkthroughRegex.exec(processedContent)) !== null) {
+    tagMatches.push({ type: 'walkthrough', match });
+  }
+
+  // Sort by position
+  tagMatches.sort((a, b) => a.match.index - b.match.index);
+
+  // Process each tag match
+  for (const { type, match: startMatch } of tagMatches) {
+    if (startMatch.index >= currentIndex) {
+      // Parse content before this tag
+      if (startMatch.index > currentIndex) {
+        const beforeText = processedContent.substring(currentIndex, startMatch.index);
+        if (beforeText.trim()) {
+          parseMarkdownContent(beforeText, blocks);
         }
-        textBuffer = [];
       }
-      
-      if (currentBlock) {
-        // End of code block
-        currentBlock.isComplete = true;
-        blocks.push(currentBlock);
-        currentBlock = null;
-      } else {
-        // Start of code block
-        const langMatch = trimmedLine.match(/^```(\w+)?/);
-        const languageId = langMatch?.[1] || '';
-        currentBlock = {
-          languageId,
-          text: '',
-          isComplete: false,
-          extension: getExtensionForLanguage(languageId)
-        };
-      }
-      continue;
-    }
-    
-    if (currentBlock) {
-      // Inside code block
-      currentBlock.text += (currentBlock.text ? '\n' : '') + line;
-    } else {
-      // Regular text
-      textBuffer.push(line);
+
+      // Find the corresponding end tag
+      const endRegex = type === 'devin' ? devinEndRegex :
+                       type === 'thinking' ? thinkingEndRegex :
+                       walkthroughEndRegex;
+
+      const endMatch = endRegex.exec(processedContent.substring(startMatch.index + startMatch[0].length));
+      const isComplete = endMatch !== null;
+
+      const tagContent = isComplete
+        ? processedContent.substring(
+            startMatch.index + startMatch[0].length,
+            startMatch.index + startMatch[0].length + endMatch!.index
+          ).trim()
+        : processedContent.substring(startMatch.index + startMatch[0].length).trim();
+
+      blocks.push({
+        languageId: type,
+        text: tagContent,
+        isComplete,
+        extension: type
+      });
+
+      currentIndex = isComplete
+        ? startMatch.index + startMatch[0].length + endMatch!.index + endMatch![0].length
+        : processedContent.length;
     }
   }
-  
-  // Handle remaining content
-  if (currentBlock) {
-    // Unclosed code block
-    blocks.push(currentBlock);
-  } else if (textBuffer.length > 0) {
-    const text = textBuffer.join('\n').trim();
+
+  // Parse remaining content
+  if (currentIndex < processedContent.length) {
+    const remainingContent = processedContent.substring(currentIndex);
+    if (remainingContent.trim()) {
+      parseMarkdownContent(remainingContent, blocks);
+    }
+  }
+
+  // Filter out empty blocks (except special types)
+  return blocks.filter(block => {
+    if (block.languageId === 'devin' || block.languageId === 'thinking' || block.languageId === 'walkthrough') {
+      return true;
+    }
+    return block.text.trim().length > 0;
+  });
+}
+
+/**
+ * Parse markdown content (text and code blocks)
+ */
+function parseMarkdownContent(content: string, blocks: CodeBlock[]): void {
+  const lines = content.split('\n');
+
+  let codeStarted = false;
+  let languageId: string | null = null;
+  const codeBuilder: string[] = [];
+  const textBuilder: string[] = [];
+
+  for (const line of lines) {
+    if (!codeStarted) {
+      const trimmedLine = line.trimStart();
+      const matchResult = languageRegex.exec(trimmedLine);
+
+      if (matchResult) {
+        // Save accumulated text
+        if (textBuilder.length > 0) {
+          const text = textBuilder.join('\n').trim();
+          if (text) {
+            blocks.push({
+              languageId: 'markdown',
+              text,
+              isComplete: true,
+              extension: 'md'
+            });
+          }
+          textBuilder.length = 0;
+        }
+
+        languageId = matchResult[1]?.trim() || null;
+        codeStarted = true;
+      } else {
+        textBuilder.push(line);
+      }
+    } else {
+      const trimmedLine = line.trimStart();
+
+      if (trimmedLine === '```') {
+        // End of code block
+        const codeContent = codeBuilder.join('\n').trim();
+        blocks.push({
+          languageId: languageId || 'markdown',
+          text: codeContent,
+          isComplete: true,
+          extension: getExtensionForLanguage(languageId || 'md')
+        });
+
+        codeBuilder.length = 0;
+        codeStarted = false;
+        languageId = null;
+      } else {
+        codeBuilder.push(line);
+      }
+    }
+  }
+
+  // Add remaining text
+  if (textBuilder.length > 0) {
+    const text = textBuilder.join('\n').trim();
     if (text) {
       blocks.push({
-        languageId: '',
+        languageId: 'markdown',
         text,
-        isComplete: true
+        isComplete: true,
+        extension: 'md'
       });
     }
   }
-  
-  return blocks;
+
+  // Add unclosed code block
+  if (codeStarted && codeBuilder.length > 0) {
+    const code = codeBuilder.join('\n').trim();
+    blocks.push({
+      languageId: languageId || 'markdown',
+      text: code,
+      isComplete: false,
+      extension: getExtensionForLanguage(languageId || 'md')
+    });
+  }
 }
 
 /**

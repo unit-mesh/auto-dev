@@ -1,13 +1,10 @@
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
 }
 
 .timeline-item {
   display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
@@ -26,7 +23,8 @@
 .timeline-item.message.assistant {
   background-color: transparent;
   border: none;
-  padding: 4px 12px;
+  gap: 0;
+  margin: 8px 4px;
 }
 
 .timeline-item.message.system {
@@ -95,12 +93,12 @@
 
 /* Tool call items */
 .timeline-item.tool-call {
-  margin-left: 16px;
+  margin-left: 0;
 }
 
 /* Terminal items */
 .timeline-item.terminal {
-  margin-left: 16px;
+  margin-left: 0;
 }
 
 /* Task complete items */

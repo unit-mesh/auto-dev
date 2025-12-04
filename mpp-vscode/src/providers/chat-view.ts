@@ -229,6 +229,39 @@ export class ChatViewProvider implements vscode.WebviewViewProvider, vscode.Disp
   }
 
   /**
+   * Send code context to the chat (for CodeLens integration)
+   */
+  sendCodeContext(context: {
+    filepath: string;
+    language: string;
+    element: {
+      type: string;
+      name: string;
+      code: string;
+      range: {
+        start: { line: number; character: number };
+        end: { line: number; character: number };
+      };
+    };
+  }) {
+    // Format code context message
+    const codeBlock = `\`\`\`${context.language}\n${context.element.code}\n\`\`\``;
+    const message = `**${context.element.type}: ${context.element.name}**\n\nFile: \`${context.filepath}\`\n\n${codeBlock}`;
+    
+    // Show the view if not visible
+    if (this.webviewView) {
+      this.webviewView.show(true);
+    }
+
+    // Send the formatted message to webview
+    this.postMessage({
+      type: 'addCodeContext',
+      content: message,
+      context: context
+    });
+  }
+
+  /**
    * Post a message to the webview
    */
   postMessage(message: any): void {
@@ -1050,5 +1083,23 @@ User's original prompt:`;
 </body>
 </html>`;
   }
-}
 
+  /**
+   * Get current model config for CodeLens actions
+   */
+  getCurrentModelConfig(): { provider: string; model: string; apiKey: string; temperature?: number; maxTokens?: number; baseUrl?: string } | undefined {
+    if (!this.configWrapper) return undefined;
+    
+    const activeConfig = this.configWrapper.getActiveConfig();
+    if (!activeConfig) return undefined;
+    
+    return {
+      provider: activeConfig.provider,
+      model: activeConfig.model,
+      apiKey: activeConfig.apiKey || '',
+      temperature: activeConfig.temperature,
+      maxTokens: activeConfig.maxTokens,
+      baseUrl: activeConfig.baseUrl
+    };
+  }
+}

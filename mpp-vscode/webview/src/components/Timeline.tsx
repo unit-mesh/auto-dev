@@ -34,14 +34,6 @@ export const Timeline: React.FC<TimelineProps> = ({
       {/* Streaming content indicator */}
       {currentStreamingContent && (
         <div className="timeline-item message assistant streaming">
-          <div className="timeline-item-header">
-            <span className="timeline-role">AutoDev</span>
-            <span className="streaming-indicator">
-              <span className="dot"></span>
-              <span className="dot"></span>
-              <span className="dot"></span>
-            </span>
-          </div>
           <div className="timeline-item-content">
             <SketchRenderer
               content={currentStreamingContent}
@@ -80,22 +72,9 @@ const TimelineItemRenderer: React.FC<TimelineItemRendererProps> = ({ item, onAct
 const MessageItemRenderer: React.FC<{ item: MessageTimelineItem; onAction?: (action: string, data: any) => void }> = ({ item, onAction }) => {
   const { message, isStreaming } = item;
   const isUser = message.role === 'user';
-  const isSystem = message.role === 'system';
 
   return (
     <div className={`timeline-item message ${message.role} ${isStreaming ? 'streaming' : ''}`}>
-      <div className="timeline-item-header">
-        <span className="timeline-role">
-          {isUser ? 'You' : isSystem ? 'System' : 'AutoDev'}
-        </span>
-        {isStreaming && (
-          <span className="streaming-indicator">
-            <span className="dot"></span>
-            <span className="dot"></span>
-            <span className="dot"></span>
-          </span>
-        )}
-      </div>
       <div className="timeline-item-content">
         {isUser ? (
           <p className="user-message">{message.content}</p>

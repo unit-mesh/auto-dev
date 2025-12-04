@@ -13,8 +13,7 @@ interface ToolCallRendererProps {
 }
 
 export const ToolCallRenderer: React.FC<ToolCallRendererProps> = ({
-  toolCall,
-  onAction
+  toolCall
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -67,10 +66,6 @@ export const ToolCallRenderer: React.FC<ToolCallRendererProps> = ({
     }
   };
 
-  const handleRerun = () => {
-    onAction?.('rerun-tool', { toolName, params });
-  };
-
   return (
     <div className={`tool-call-renderer ${getStatusClass()}`}>
       <div className="tool-call-header" onClick={() => setIsExpanded(!isExpanded)}>
@@ -99,12 +94,6 @@ export const ToolCallRenderer: React.FC<ToolCallRendererProps> = ({
               <pre>{truncateOutput(output)}</pre>
             </div>
           )}
-          
-          <div className="tool-call-actions">
-            <button className="tool-action-btn" onClick={handleRerun}>
-              🔄 Rerun
-            </button>
-          </div>
         </div>
       )}
     </div>

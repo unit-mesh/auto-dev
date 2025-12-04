@@ -18,7 +18,6 @@ import { DiffRenderer } from './DiffRenderer';
 import { ThinkingRenderer } from './ThinkingRenderer';
 import { TerminalRenderer } from './TerminalRenderer';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { DevInRenderer } from './DevInRenderer';
 import './SketchRenderer.css';
 
 interface SketchRendererProps {
@@ -118,13 +117,9 @@ function renderBlock(
       );
 
     case 'devin':
-      return (
-        <DevInRenderer
-          content={block.text}
-          isComplete={isComplete}
-          onAction={onAction}
-        />
-      );
+      // DevIn blocks are handled by ToolCallRenderer in timeline
+      // Don't render them here to avoid duplication
+      return null;
 
     case 'plan':
       // TODO: Implement PlanRenderer
