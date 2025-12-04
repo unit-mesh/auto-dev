@@ -15,10 +15,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.jayway.jsonpath.JsonPath
-import io.reactivex.rxjava3.core.BackpressureStrategy
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.FlowableEmitter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -71,26 +69,22 @@ open class CustomSSEProcessor(private val project: Project) {
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun streamSSE(call: Call, promptText: String, keepHistory: Boolean = false, messages: MutableList<Message>): Flow<String> {
-        var emit: FlowableEmitter<SSE>? = null
-        val sseFlowable = Flowable
-            .create({ emitter: FlowableEmitter<SSE> ->
-                emit = emitter.apply { call.enqueue(ResponseBodyCallback(emitter, true)) }
-            }, BackpressureStrategy.BUFFER)
+        var producerScope: ProducerScope<SSE>? = null
+        val sseFlow = callbackFlow {
+            producerScope = this
+            call.enqueue(ResponseBodyCallback(this, true))
+            awaitClose { }
+        }
 
         try {
             var output = ""
             var reasonerOutput = ""
             return CustomFlowWrapper(callbackFlow {
                 withContext(Dispatchers.IO) {
-                    sseFlowable
-                        .doOnError {
-                            it.printStackTrace()
-                            trySend(it.message ?: "Error occurs")
-                            close()
-                        }
-                        .blockingForEach { sse ->
+                    try {
+                        sseFlow.collect { sse ->
                             if (sse.data == "[DONE]") {
-                                return@blockingForEach
+                                return@collect
                             }
 
                             if (responseFormat.isNotEmpty()) {
@@ -148,6 +142,11 @@ open class CustomSSEProcessor(private val project: Project) {
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        trySend(e.message ?: "Error occurs")
+                        close()
+                    }
 
                     // when stream finished, check if any response parsed succeeded
                     // if not, notice user check response format
@@ -176,7 +175,7 @@ open class CustomSSEProcessor(private val project: Project) {
                     close()
                 }
                 awaitClose()
-            }).also { it.cancelCallback { emit?.onComplete() } }
+            }).also { it.cancelCallback { producerScope?.close() } }
         } catch (e: Exception) {
             if (hasSuccessRequest) {
                 logger.info("Failed to stream", e)
