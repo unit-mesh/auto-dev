@@ -6,8 +6,7 @@ import cc.unitmesh.agent.plan.TaskStatus as PlanTaskStatus
 import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.RendererUtils
-import cc.unitmesh.agent.render.TaskInfo
-import cc.unitmesh.agent.render.TaskStatus
+
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.agent.render.ToolCallDisplayInfo
 import cc.unitmesh.agent.render.ToolCallInfo
@@ -78,10 +77,6 @@ class JewelRenderer : BaseRenderer() {
 
     private val _currentExecutionTime = MutableStateFlow(0L)
     val currentExecutionTime: StateFlow<Long> = _currentExecutionTime.asStateFlow()
-
-    // Task tracking (from task-boundary tool)
-    private val _tasks = MutableStateFlow<List<TaskInfo>>(emptyList())
-    val tasks: StateFlow<List<TaskInfo>> = _tasks.asStateFlow()
 
     // Plan tracking (from plan management tool)
     private val _currentPlan = MutableStateFlow<AgentPlan?>(null)
@@ -157,11 +152,6 @@ class JewelRenderer : BaseRenderer() {
 
         jewelRendererLogger.info("renderToolCall: parsed params keys=${params.keys}")
 
-        // Handle task-boundary tool - update task list
-        if (toolName == "task-boundary") {
-            updateTaskFromToolCall(params)
-        }
-
         // Handle plan management tool - update plan state
         if (toolName == "plan") {
             jewelRendererLogger.info("renderToolCall: detected plan tool, calling updatePlanFromToolCall")
@@ -187,11 +177,6 @@ class JewelRenderer : BaseRenderer() {
 
         // Convert Map<String, Any> to Map<String, String> for internal use
         val stringParams = params.mapValues { it.value.toString() }
-
-        // Handle task-boundary tool - update task list
-        if (toolName == "task-boundary") {
-            updateTaskFromToolCall(stringParams)
-        }
 
         // Handle plan management tool - update plan state with original params
         if (toolName == "plan") {
@@ -251,35 +236,6 @@ class JewelRenderer : BaseRenderer() {
                 executionTimeMs = null
             )
         )
-    }
-
-    /**
-     * Update task list from task-boundary tool call
-     */
-    private fun updateTaskFromToolCall(params: Map<String, String>) {
-        val taskName = params["taskName"] ?: return
-        val statusStr = params["status"] ?: "WORKING"
-        val summary = params["summary"] ?: ""
-        val status = TaskStatus.fromString(statusStr)
-
-        _tasks.update { tasks ->
-            val existingIndex = tasks.indexOfFirst { it.taskName == taskName }
-            if (existingIndex >= 0) {
-                tasks.toMutableList().apply {
-                    this[existingIndex] = tasks[existingIndex].copy(
-                        status = status,
-                        summary = summary,
-                        timestamp = System.currentTimeMillis()
-                    )
-                }
-            } else {
-                tasks + TaskInfo(
-                    taskName = taskName,
-                    status = status,
-                    summary = summary
-                )
-            }
-        }
     }
 
     /**
@@ -529,7 +485,6 @@ class JewelRenderer : BaseRenderer() {
         _taskCompleted.value = false
         _totalTokenInfo.value = TokenInfo()
         _lastMessageTokenInfo = null
-        _tasks.value = emptyList()
         executionStartTime = 0L
         _currentExecutionTime.value = 0L
     }

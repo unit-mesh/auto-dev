@@ -77,9 +77,9 @@ fun IdeaTerminalRenderer(
         // Command display
         CommandDisplay(command = command, isDangerous = isDangerous, dangerReason = dangerReason)
         // Output (if available)
-        if (showOutput && executionResult != null) {
-            OutputDisplay(result = executionResult!!)
-        }
+//        if (showOutput && executionResult != null) {
+//            OutputDisplay(result = executionResult!!)
+//        }
     }
 }
 
