@@ -23,6 +23,7 @@ import cc.unitmesh.agent.diff.FileChangeTracker
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -31,6 +32,8 @@ import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.IconButton
 import org.jetbrains.jewel.ui.component.Text
 import org.jetbrains.jewel.ui.icons.AllIconsKeys
+
+private val logger = Logger.getInstance("IdeaFileChangeSummary")
 
 /**
  * File Change Summary Component for IntelliJ IDEA using Jewel components.
@@ -254,7 +257,7 @@ private fun undoChange(project: Project, change: FileChange) {
                     }
                 }
             } catch (e: Exception) {
-                println("Failed to undo change for ${change.filePath}: ${e.message}")
+                logger.error("Failed to undo change for ${change.filePath}", e)
             }
         }
     }

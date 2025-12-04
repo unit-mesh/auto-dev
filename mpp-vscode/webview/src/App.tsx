@@ -16,6 +16,22 @@ import { useVSCode, ExtensionMessage } from './hooks/useVSCode';
 import type { AgentState, ToolCallInfo, TerminalOutput, ToolCallTimelineItem } from './types/timeline';
 import './App.css';
 
+/**
+ * Type guard to validate PlanData structure from extension messages.
+ */
+function isPlanData(data: unknown): data is PlanData {
+  if (!data || typeof data !== 'object') return false;
+  const plan = data as Record<string, unknown>;
+  return (
+    typeof plan.planId === 'string' &&
+    typeof plan.title === 'string' &&
+    typeof plan.totalSteps === 'number' &&
+    typeof plan.completedSteps === 'number' &&
+    typeof plan.progressPercent === 'number' &&
+    Array.isArray(plan.tasks)
+  );
+}
+
 interface ConfigState {
   availableConfigs: ModelConfig[];
   currentConfigName: string | null;
@@ -260,8 +276,8 @@ const App: React.FC = () => {
 
       // Plan update from mpp-core PlanStateService
       case 'planUpdate':
-        if (msg.data) {
-          setCurrentPlan(msg.data as unknown as PlanData);
+        if (msg.data && isPlanData(msg.data)) {
+          setCurrentPlan(msg.data);
         } else {
           setCurrentPlan(null);
         }

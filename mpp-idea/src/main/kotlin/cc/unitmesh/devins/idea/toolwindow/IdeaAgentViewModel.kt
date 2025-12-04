@@ -576,6 +576,7 @@ class IdeaAgentViewModel(
 
     override fun dispose() {
         currentJob?.cancel()
+        planStateObserverJob?.cancel()
         coroutineScope.cancel()
     }
 }

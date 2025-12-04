@@ -323,9 +323,14 @@ class JewelRenderer : BaseRenderer() {
         when (action) {
             "CREATE", "UPDATE" -> {
                 if (planMarkdown.isNotBlank()) {
-                    val plan = MarkdownPlanParser.parseToPlan(planMarkdown)
-                    jewelRendererLogger.info("Parsed plan: ${plan.tasks.size} tasks")
-                    _currentPlan.value = plan
+                    try {
+                        val plan = MarkdownPlanParser.parseToPlan(planMarkdown)
+                        jewelRendererLogger.info("Parsed plan: ${plan.tasks.size} tasks")
+                        _currentPlan.value = plan
+                    } catch (e: Exception) {
+                        jewelRendererLogger.warn("Failed to parse plan markdown", e)
+                        // Keep previous valid plan on parse failure
+                    }
                 }
             }
             "COMPLETE_STEP" -> {

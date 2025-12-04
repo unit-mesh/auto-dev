@@ -89,8 +89,8 @@ fun IdeaFileChangeItem(
             )
 
             // Parent path
-            val parentPath = change.filePath.substringBeforeLast('/')
-            if (parentPath.isNotEmpty()) {
+            val parentPath = change.filePath.substringBeforeLast('/', "")
+            if (parentPath.isNotEmpty() && parentPath != change.filePath) {
                 Text(
                     text = parentPath.substringAfterLast('/'),
                     style = JewelTheme.defaultTextStyle.copy(

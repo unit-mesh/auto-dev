@@ -21,7 +21,7 @@ const KotlinCC = MppCore.cc.unitmesh;
 /**
  * Chat View Provider for the sidebar webview
  */
-export class ChatViewProvider implements vscode.WebviewViewProvider {
+export class ChatViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   private webviewView: vscode.WebviewView | undefined;
   private codingAgent: any = null;
   private llmService: any = null;
@@ -31,6 +31,17 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   private messages: Array<{ role: string; content: string }> = [];
   private editorChangeDisposable: vscode.Disposable | undefined;
   private planStateUnsubscribe: (() => void) | null = null;
+
+  /**
+   * Dispose of resources when the provider is no longer needed.
+   */
+  dispose(): void {
+    if (this.planStateUnsubscribe) {
+      this.planStateUnsubscribe();
+      this.planStateUnsubscribe = null;
+    }
+    this.editorChangeDisposable?.dispose();
+  }
 
   constructor(
     private readonly context: vscode.ExtensionContext,
