@@ -32,7 +32,8 @@ function filterDevinTags(content: string): string {
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   const filteredContent = filterDevinTags(content);
 
-  if (!filteredContent.trim()) {
+  // filterDevinTags already returns trimmed content
+  if (!filteredContent) {
     return null;
   }
 

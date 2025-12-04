@@ -80,8 +80,12 @@ export const DevInRenderer: React.FC<DevInRendererProps> = ({
   isComplete = false,
   onAction
 }) => {
-  const toolCalls = useMemo(() => parseDevInContent(content), [content]);
-  
+  // Skip parsing during streaming to avoid unnecessary work
+  const toolCalls = useMemo(
+    () => (isComplete ? parseDevInContent(content) : []),
+    [content, isComplete]
+  );
+
   // Don't render incomplete or empty devin blocks
   if (!isComplete || toolCalls.length === 0) {
     return null;
