@@ -363,10 +363,15 @@ export class VSCodeRenderer {
     });
   }
 
-  renderTaskComplete(): void {
+  renderTaskComplete(executionTimeMs: number = 0): void {
+    let message = 'Task completed';
+    if (executionTimeMs > 0) {
+      const seconds = (executionTimeMs / 1000).toFixed(2);
+      message = `Task completed (${seconds}s)`;
+    }
     this.chatProvider.postMessage({
       type: 'taskComplete',
-      data: { success: true, message: 'Task completed' }
+      data: { success: true, message }
     });
   }
 
@@ -474,7 +479,7 @@ export class CodingAgent {
       renderToolCall: (name: string, params: string) => renderer.renderToolCall(name, params),
       renderToolResult: (name: string, success: boolean, output: string | null, full: string | null) =>
         renderer.renderToolResult(name, success, output, full),
-      renderTaskComplete: () => renderer.renderTaskComplete(),
+      renderTaskComplete: (executionTimeMs?: number) => renderer.renderTaskComplete(executionTimeMs),
       renderFinalResult: (success: boolean, msg: string, iters: number) =>
         renderer.renderFinalResult(success, msg, iters),
       renderError: (msg: string) => renderer.renderError(msg),

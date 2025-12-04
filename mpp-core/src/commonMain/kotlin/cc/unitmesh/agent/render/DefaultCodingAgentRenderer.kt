@@ -68,8 +68,15 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
         println()
     }
 
-    override fun renderTaskComplete() {
-        println("✓ Task marked as complete\n")
+    override fun renderTaskComplete(executionTimeMs: Long) {
+        val timeStr = if (executionTimeMs > 0) {
+            val seconds = executionTimeMs / 1000.0
+            val rounded = (seconds * 100).toLong() / 100.0
+            " (${rounded}s)"
+        } else {
+            ""
+        }
+        println("✓ Task marked as complete$timeStr\n")
     }
 
     override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {

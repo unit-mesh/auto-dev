@@ -524,8 +524,13 @@ export class CliRenderer extends BaseRenderer {
     return null;
   }
 
-  renderTaskComplete(): void {
-    console.log(semanticChalk.successBold('\n✓ Task marked as complete\n'));
+  renderTaskComplete(executionTimeMs: number = 0): void {
+    if (executionTimeMs > 0) {
+      const seconds = (executionTimeMs / 1000).toFixed(2);
+      console.log(semanticChalk.successBold(`\n✓ Task marked as complete (${seconds}s)\n`));
+    } else {
+      console.log(semanticChalk.successBold('\n✓ Task marked as complete\n'));
+    }
   }
 
   renderFinalResult(success: boolean, message: string, iterations: number): void {

@@ -407,9 +407,23 @@ class JewelRenderer : BaseRenderer() {
         }
     }
 
-    override fun renderTaskComplete() {
+    override fun renderTaskComplete(executionTimeMs: Long) {
         _taskCompleted.value = true
         _isProcessing.value = false
+
+        // Add a completion message with execution time to the timeline
+        if (executionTimeMs > 0) {
+            val seconds = executionTimeMs / 1000.0
+            val rounded = (seconds * 100).toLong() / 100.0
+            _timeline.update { items ->
+                items + TimelineItem.MessageItem(
+                    message = Message(
+                        role = MessageRole.ASSISTANT,
+                        content = "✓ Task marked as complete (${rounded}s)"
+                    )
+                )
+            }
+        }
     }
 
     override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {

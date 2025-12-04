@@ -62,6 +62,9 @@ class CodingAgentExecutor(
     private val recentToolCalls = mutableListOf<String>()
     private val MAX_REPEAT_COUNT = 3
 
+    // Track task execution time
+    private var taskStartTime: Long = 0L
+
     /**
      * 执行 Agent 任务
      */
@@ -71,13 +74,17 @@ class CodingAgentExecutor(
         onProgress: (String) -> Unit = {}
     ): AgentResult {
         resetExecution()
+
+        // Start tracking execution time
+        taskStartTime = Platform.getCurrentTimestamp()
+
         conversationManager = ConversationManager(llmService, systemPrompt)
-        
+
         // Set up token tracking callback to update renderer
         conversationManager?.onTokenUpdate = { tokenInfo ->
             renderer.updateTokenInfo(tokenInfo)
         }
-        
+
         val initialUserMessage = buildInitialUserMessage(task)
 
         onProgress("🚀 CodingAgent started")
@@ -103,7 +110,8 @@ class CodingAgentExecutor(
 
             val allToolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
             if (allToolCalls.isEmpty()) {
-                renderer.renderTaskComplete()
+                val executionTimeMs = Platform.getCurrentTimestamp() - taskStartTime
+                renderer.renderTaskComplete(executionTimeMs)
                 break
             }
 
@@ -122,7 +130,8 @@ class CodingAgentExecutor(
             conversationManager!!.addToolResults(toolResultsText)
 
             if (isTaskComplete(llmResponse.toString())) {
-                renderer.renderTaskComplete()
+                val executionTimeMs = Platform.getCurrentTimestamp() - taskStartTime
+                renderer.renderTaskComplete(executionTimeMs)
                 break
             }
 
@@ -140,6 +149,7 @@ class CodingAgentExecutor(
         steps.clear()
         edits.clear()
         recentToolCalls.clear()
+        taskStartTime = 0L
     }
 
     private fun buildInitialUserMessage(task: AgentTask): String {

@@ -43,7 +43,7 @@ class ServerSideRenderer : CodingAgentRenderer {
         eventChannel.trySend(AgentEvent.ToolResult(toolName, success, output))
     }
     
-    override fun renderTaskComplete() {
+    override fun renderTaskComplete(executionTimeMs: Long) {
         // Will be handled by renderFinalResult
     }
     

@@ -68,9 +68,14 @@ export class ServerRenderer extends BaseRenderer {
     }
   }
 
-  renderTaskComplete(): void {
+  renderTaskComplete(executionTimeMs: number = 0): void {
     console.log('');
-    console.log(semanticChalk.success('✅ Task marked as complete'));
+    if (executionTimeMs > 0) {
+      const seconds = (executionTimeMs / 1000).toFixed(2);
+      console.log(semanticChalk.success(`✅ Task marked as complete (${seconds}s)`));
+    } else {
+      console.log(semanticChalk.success('✅ Task marked as complete'));
+    }
   }
 
   renderRepeatWarning(toolName: string, count: number): void {
@@ -308,12 +313,12 @@ export class ServerRenderer extends BaseRenderer {
           const docPath = paramsObj.documentPath;
           const maxResults = paramsObj.maxResults;
           const reranker = paramsObj.rerankerType;
-          
+
           let details = `Query: "${query}"`;
           if (docPath) details += ` | Doc: ${docPath}`;
           if (maxResults) details += ` | Max: ${maxResults}`;
           if (reranker) details += ` | Reranker: ${reranker}`;
-          
+
           return {
             name: 'DocQL',
             description: 'document query',
