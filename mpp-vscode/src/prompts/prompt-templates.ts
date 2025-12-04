@@ -149,7 +149,7 @@ export function getTestFilePath(sourcePath: string, language: string): string {
     javascriptreact: '.test.jsx',
     java: 'Test.java',
     kotlin: 'Test.kt',
-    python: '_test.py',
+    python: '.py',
     go: '_test.go',
     rust: '',
     csharp: 'Tests.cs',
@@ -161,6 +161,7 @@ export function getTestFilePath(sourcePath: string, language: string): string {
     const testDir = dirPath.replace('/src/main/', '/src/test/');
     return `${testDir}/${baseName}${testSuffix}`;
   }
-  if (language === 'python') return `${dirPath}/test_${baseName}.py`;
+  // Python uses test_ prefix for pytest convention
+  if (language === 'python') return `${dirPath}/test_${baseName}${testSuffix}`;
   return `${dirPath}/${baseName}${testSuffix}`;
 }

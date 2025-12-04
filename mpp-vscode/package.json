@@ -68,6 +68,10 @@
       {
         "command": "autodev.codelens.autoMethod",
         "title": "AutoDev: Auto Method"
+      },
+      {
+        "command": "autodev.codelens.showMenu",
+        "title": "AutoDev: Show CodeLens Menu"
       }
     ],
     "viewsContainers": {
@@ -199,9 +203,10 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "npm run build:extension && npm run build:webview",
-    "build:extension": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:ws --format=cjs --platform=node",
+    "build": "npm run build:extension && npm run build:webview && npm run copy:wasm",
+    "build:extension": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:ws --external:web-tree-sitter --format=cjs --platform=node",
     "build:webview": "cd webview && npm install && npm run build",
+    "copy:wasm": "node scripts/copy-wasm.js",
     "watch": "npm run build:extension -- --watch",
     "package": "vsce package",
     "lint": "eslint src --ext ts",

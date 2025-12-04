@@ -127,13 +127,13 @@ export async function activate(context: vscode.ExtensionContext) {
   log('DevIns language support registered');
 
   // Register CodeLens Provider
-  const codeLensProvider = new AutoDevCodeLensProvider(log);
+  const codeLensProvider = new AutoDevCodeLensProvider(log, context.extensionPath);
   const codeLensCommands = new CodeLensCommands(log, () => chatViewProvider, () => chatViewProvider.getCurrentModelConfig());
   
   // Register for supported languages
   const supportedLanguages = [
     'typescript', 'javascript', 'typescriptreact', 'javascriptreact',
-    'python', 'java', 'kotlin', 'go', 'rust', 'csharp', 'cpp', 'c'
+    'python', 'java', 'kotlin', 'go', 'rust'
   ];
   
   context.subscriptions.push(

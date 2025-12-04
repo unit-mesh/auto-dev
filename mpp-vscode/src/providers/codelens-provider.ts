@@ -27,9 +27,10 @@ export class AutoDevCodeLensProvider implements vscode.CodeLensProvider {
   public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
 
   constructor(
-    private log: (message: string) => void
+    private log: (message: string) => void,
+    extensionPath?: string
   ) {
-    this.parser = new CodeElementParser(log);
+    this.parser = new CodeElementParser(log, extensionPath);
   }
 
   /**

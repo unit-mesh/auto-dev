@@ -213,8 +213,16 @@ export class CodeElementParser {
   private static ParserClass: any = null;
   private static languages: Map<string, Language> = new Map();
   private static initPromise: Promise<void> | null = null;
+  private static extensionPath: string | undefined;
 
-  constructor(private log: (message: string) => void) {}
+  constructor(
+    private log: (message: string) => void,
+    extensionPath?: string
+  ) {
+    if (extensionPath && !CodeElementParser.extensionPath) {
+      CodeElementParser.extensionPath = extensionPath;
+    }
+  }
 
   /**
    * Initialize tree-sitter parser
@@ -291,12 +299,25 @@ export class CodeElementParser {
       return null;
     }
 
-    // In VSCode extension context, we need to resolve the path
-    // This assumes WASM files are bundled in the extension
+    // Try multiple path resolution strategies
+    // 1. Try extension's dist/wasm folder (for packaged extension)
+    if (CodeElementParser.extensionPath) {
+      const path = require('path');
+      const wasmPath = path.join(CodeElementParser.extensionPath, 'dist', 'wasm', `${grammarName}.wasm`);
+      const fs = require('fs');
+      if (fs.existsSync(wasmPath)) {
+        this.log(`Using WASM from extension: ${wasmPath}`);
+        return wasmPath;
+      }
+    }
+
+    // 2. Try node_modules (for development)
     try {
-      return require.resolve(`@unit-mesh/treesitter-artifacts/wasm/${grammarName}.wasm`);
-    } catch {
-      this.log(`WASM file not found for ${langId}`);
+      const wasmPath = require.resolve(`@unit-mesh/treesitter-artifacts/wasm/${grammarName}.wasm`);
+      this.log(`Using WASM from node_modules: ${wasmPath}`);
+      return wasmPath;
+    } catch (error) {
+      this.log(`WASM file not found for ${langId}: ${error}`);
       return null;
     }
   }
