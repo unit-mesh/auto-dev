@@ -138,7 +138,7 @@
   "scripts": {
     "vscode:prepublish": "npm run build",
     "build": "npm run build:extension && npm run build:webview",
-    "build:extension": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "build:extension": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:ws --format=cjs --platform=node",
     "build:webview": "cd webview && npm install && npm run build",
     "watch": "npm run build:extension -- --watch",
     "package": "vsce package",

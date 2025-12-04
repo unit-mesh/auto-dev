@@ -11,9 +11,26 @@ import { ChatInput } from './components/ChatInput';
 import { ModelConfig } from './components/ModelSelector';
 import { SelectedFile } from './components/FileChip';
 import { CompletionItem } from './components/CompletionPopup';
+import { PlanData } from './components/plan';
 import { useVSCode, ExtensionMessage } from './hooks/useVSCode';
 import type { AgentState, ToolCallInfo, TerminalOutput, ToolCallTimelineItem } from './types/timeline';
 import './App.css';
+
+/**
+ * Type guard to validate PlanData structure from extension messages.
+ */
+function isPlanData(data: unknown): data is PlanData {
+  if (!data || typeof data !== 'object') return false;
+  const plan = data as Record<string, unknown>;
+  return (
+    typeof plan.planId === 'string' &&
+    typeof plan.title === 'string' &&
+    typeof plan.totalSteps === 'number' &&
+    typeof plan.completedSteps === 'number' &&
+    typeof plan.progressPercent === 'number' &&
+    Array.isArray(plan.tasks)
+  );
+}
 
 interface ConfigState {
   availableConfigs: ModelConfig[];
@@ -52,6 +69,9 @@ const App: React.FC = () => {
   // Completion state - from mpp-core
   const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
   const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
+
+  // Plan state - mirrors mpp-idea's IdeaPlanSummaryBar
+  const [currentPlan, setCurrentPlan] = useState<PlanData | null>(null);
 
   const { postMessage, onMessage, isVSCode } = useVSCode();
 
@@ -253,6 +273,20 @@ const App: React.FC = () => {
           });
         }
         break;
+
+      // Plan update from mpp-core PlanStateService
+      case 'planUpdate':
+        if (msg.data && isPlanData(msg.data)) {
+          setCurrentPlan(msg.data);
+        } else {
+          setCurrentPlan(null);
+        }
+        break;
+
+      // Plan cleared
+      case 'planCleared':
+        setCurrentPlan(null);
+        break;
     }
   }, []);
 
@@ -434,6 +468,7 @@ const App: React.FC = () => {
         currentConfigName={configState.currentConfigName}
         totalTokens={totalTokens}
         activeFile={activeFile}
+        currentPlan={currentPlan}
       />
     </div>
   );

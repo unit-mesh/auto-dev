@@ -85,6 +85,14 @@ class CodingAgent(
     private val policyEngine = DefaultPolicyEngine()
     private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer, mcpConfigService = mcpToolConfigService)
 
+    /**
+     * Get the PlanStateService for observing plan state changes.
+     * Returns null if no plan tool is registered.
+     */
+    fun getPlanStateService(): cc.unitmesh.agent.plan.PlanStateService? {
+        return toolOrchestrator.getPlanStateService()
+    }
+
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val analysisAgent = AnalysisAgent(llmService, contentThreshold = 15000)
     private val mcpToolsInitializer = McpToolsInitializer()

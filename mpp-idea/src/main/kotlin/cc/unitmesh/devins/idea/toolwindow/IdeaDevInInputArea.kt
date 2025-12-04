@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.plan.AgentPlan
 import cc.unitmesh.devins.idea.editor.*
 import cc.unitmesh.devins.idea.toolwindow.plan.IdeaPlanSummaryBar
+import cc.unitmesh.devins.idea.toolwindow.changes.IdeaFileChangeSummary
 import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -108,6 +109,12 @@ fun IdeaDevInInputArea(
         // Plan summary bar - shown above top toolbar when a plan is active
         IdeaPlanSummaryBar(
             plan = currentPlan,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // File change summary - shown when there are file changes
+        IdeaFileChangeSummary(
+            project = project,
             modifier = Modifier.fillMaxWidth()
         )
 

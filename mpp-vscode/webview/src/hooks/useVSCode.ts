@@ -48,6 +48,9 @@ export interface ExtensionMessage {
     // Completion events
     | 'completionsResult'
     | 'completionApplied'
+    // Plan events
+    | 'planUpdate'
+    | 'planCleared'
     // Error and control
     | 'error'
     | 'historyCleared';

@@ -43,6 +43,8 @@ import org.jetbrains.jewel.ui.icons.AllIconsKeys
  * Displays a collapsible summary of the current plan above the input box.
  * Uses Jewel theming and components for native IntelliJ look and feel.
  */
+private val planSummaryLogger = com.intellij.openapi.diagnostic.Logger.getInstance("IdeaPlanSummaryBar")
+
 @Composable
 fun IdeaPlanSummaryBar(
     plan: AgentPlan?,
@@ -50,8 +52,12 @@ fun IdeaPlanSummaryBar(
     onViewDetails: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null
 ) {
+    // Log for debugging
+    planSummaryLogger.info("IdeaPlanSummaryBar called: plan=${plan != null}, tasks=${plan?.tasks?.size ?: 0}")
+
     // Don't render if no plan
     if (plan == null || plan.tasks.isEmpty()) {
+        planSummaryLogger.info("IdeaPlanSummaryBar: not rendering (plan is null or empty)")
         return
     }
 

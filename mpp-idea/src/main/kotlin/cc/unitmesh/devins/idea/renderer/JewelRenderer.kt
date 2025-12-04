@@ -14,10 +14,13 @@ import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.llm.compression.TokenInfo
+import com.intellij.openapi.diagnostic.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+
+private val jewelRendererLogger = Logger.getInstance("JewelRenderer")
 
 /**
  * Jewel-compatible Renderer for IntelliJ IDEA plugin.
@@ -84,6 +87,15 @@ class JewelRenderer : BaseRenderer() {
     private val _currentPlan = MutableStateFlow<AgentPlan?>(null)
     val currentPlan: StateFlow<AgentPlan?> = _currentPlan.asStateFlow()
 
+    /**
+     * Set the current plan directly.
+     * Used to sync with PlanStateService from CodingAgent.
+     */
+    fun setPlan(plan: AgentPlan?) {
+        jewelRendererLogger.info("setPlan: plan=${plan != null}, tasks=${plan?.tasks?.size ?: 0}")
+        _currentPlan.value = plan
+    }
+
     // BaseRenderer implementation
 
     override fun renderIterationHeader(current: Int, max: Int) {
@@ -137,9 +149,13 @@ class JewelRenderer : BaseRenderer() {
     }
 
     override fun renderToolCall(toolName: String, paramsStr: String) {
+        jewelRendererLogger.info("renderToolCall: toolName=$toolName, paramsStr length=${paramsStr.length}")
+
         val toolInfo = formatToolCallDisplay(toolName, paramsStr)
         val params = parseParamsString(paramsStr)
         val toolType = toolName.toToolType()
+
+        jewelRendererLogger.info("renderToolCall: parsed params keys=${params.keys}")
 
         // Handle task-boundary tool - update task list
         if (toolName == "task-boundary") {
@@ -148,6 +164,7 @@ class JewelRenderer : BaseRenderer() {
 
         // Handle plan management tool - update plan state
         if (toolName == "plan") {
+            jewelRendererLogger.info("renderToolCall: detected plan tool, calling updatePlanFromToolCall")
             updatePlanFromToolCall(params)
             // Skip rendering plan tool to timeline - it's shown in PlanSummaryBar
             return
@@ -302,10 +319,18 @@ class JewelRenderer : BaseRenderer() {
      * Internal method to update plan state
      */
     private fun updatePlanState(action: String, planMarkdown: String, taskIndex: Int?, stepIndex: Int?) {
+        jewelRendererLogger.info("updatePlanState: action=$action, planMarkdown length=${planMarkdown.length}")
         when (action) {
             "CREATE", "UPDATE" -> {
                 if (planMarkdown.isNotBlank()) {
-                    _currentPlan.value = MarkdownPlanParser.parseToPlan(planMarkdown)
+                    try {
+                        val plan = MarkdownPlanParser.parseToPlan(planMarkdown)
+                        jewelRendererLogger.info("Parsed plan: ${plan.tasks.size} tasks")
+                        _currentPlan.value = plan
+                    } catch (e: Exception) {
+                        jewelRendererLogger.warn("Failed to parse plan markdown", e)
+                        // Keep previous valid plan on parse failure
+                    }
                 }
             }
             "COMPLETE_STEP" -> {
