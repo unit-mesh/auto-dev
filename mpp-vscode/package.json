@@ -1,30 +1,56 @@
 {
-  "name": "autodev-vscode",
-  "displayName": "AutoDev",
-  "description": "AI-powered coding assistant based on Kotlin Multiplatform",
-  "version": "0.1.0",
-  "publisher": "phodal",
+  "name": "autodev",
+  "displayName": "AutoDev - 🧙the AI-powered coding wizard (KMP Edition).",
+  "description": "🧙‍ AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, based on Kotlin Multiplatform. AutoDev provides CodeLens, Chat, and powerful agent features! 🚀",
+  "version": "0.5.3",
+  "publisher": "Phodal",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/phodal/auto-dev-sketch"
+    "url": "https://github.com/unit-mesh/auto-dev-vscode"
   },
+  "bugs": {
+    "url": "https://github.com/unit-mesh/auto-dev-vscode/issues"
+  },
+  "homepage": "https://vscode.unitmesh.cc",
+  "qna": "https://github.com/unit-mesh/auto-dev-vscode/issues/new/choose",
+  "pricing": "Free",
+  "icon": "media/pluginIcon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
+  "vsce": {
+    "dependencies": true,
+    "yarn": false
+  },
   "categories": [
     "Programming Languages",
+    "Education",
     "Machine Learning",
-    "Other"
+    "Snippets"
   ],
   "keywords": [
     "ai",
     "coding assistant",
     "llm",
-    "autodev"
+    "autodev",
+    "kotlin multiplatform",
+    "kmp"
   ],
   "activationEvents": [
+    "onLanguage:java",
+    "onLanguage:javascript",
+    "onLanguage:kotlin",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:python",
+    "onLanguage:rust",
+    "onLanguage:go",
     "onStartupFinished"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -227,7 +253,7 @@
     "vitest": "^1.0.0"
   },
   "dependencies": {
-    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
+    "@autodev/mpp-core": "0.3.4",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@unit-mesh/treesitter-artifacts": "^1.7.7",
     "cors": "^2.8.5",
