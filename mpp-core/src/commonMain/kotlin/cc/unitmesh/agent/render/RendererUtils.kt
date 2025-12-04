@@ -18,13 +18,13 @@ object RendererUtils {
 
         return when (toolType) {
             ToolType.ReadFile -> ToolCallDisplayInfo(
-                toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
+                toolName = toolType.displayName,
                 description = "file reader",
                 details = "Reading file: ${params["path"] ?: "unknown"}"
             )
 
             ToolType.WriteFile -> ToolCallDisplayInfo(
-                toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
+                toolName = toolType.displayName,
                 description = "file writer",
                 details = "Writing to file: ${params["path"] ?: "unknown"}"
             )
