@@ -22,9 +22,10 @@ function filterDevinTags(content: string): string {
   // Remove <devin>...</devin> blocks (including multiline)
   let filtered = content.replace(/<devin>[\s\S]*?<\/devin>/gi, '');
   // Remove unclosed <devin> tags at the end (streaming)
-  filtered = filtered.replace(/<devin>[\s\S]*$/gi, '');
-  // Remove standalone </devin> tags
-  filtered = filtered.replace(/<\/devin>/gi, '');
+  // Note: no 'g' flag needed as $ only matches end of string
+  filtered = filtered.replace(/<devin>[\s\S]*$/i, '');
+  // Remove standalone </devin> tags that appear on their own line
+  filtered = filtered.replace(/^\s*<\/devin>\s*$/gim, '');
   return filtered.trim();
 }
 

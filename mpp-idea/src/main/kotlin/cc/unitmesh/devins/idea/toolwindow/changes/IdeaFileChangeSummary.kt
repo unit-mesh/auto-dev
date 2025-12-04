@@ -217,48 +217,65 @@ private fun IdeaChangeSummaryHeader(
 }
 
 /**
- * Undo a file change by restoring the original content
+ * Undo a file change using IntelliJ's RollbackWorker for proper VCS integration.
+ * Falls back to manual revert if RollbackWorker fails.
  */
-private fun undoChange(project: Project, change: FileChange) {
+private fun undoChange(project: Project, fileChange: FileChange) {
     ApplicationManager.getApplication().invokeLater {
-        runWriteAction {
-            try {
-                when (change.changeType) {
-                    ChangeType.CREATE -> {
-                        // For created files, delete or clear the content
+        try {
+            // Convert FileChange to IntelliJ Change and use RollbackWorker
+            val change = FileChangeConverter.toChange(project, fileChange)
+            val rollbackWorker = com.intellij.openapi.vcs.changes.ui.RollbackWorker(project)
+            rollbackWorker.doRollback(listOf(change), false)
+        } catch (e: Exception) {
+            logger.warn("RollbackWorker failed, falling back to manual revert", e)
+            // Fallback to manual revert
+            performManualUndo(project, fileChange)
+        }
+    }
+}
+
+/**
+ * Manual undo fallback when RollbackWorker fails.
+ */
+private fun performManualUndo(project: Project, change: FileChange) {
+    runWriteAction {
+        try {
+            when (change.changeType) {
+                ChangeType.CREATE -> {
+                    // For created files, delete or clear the content
+                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(change.filePath)
+                    virtualFile?.let { vf ->
+                        val document = FileDocumentManager.getInstance().getDocument(vf)
+                        document?.setText("")
+                    }
+                }
+                ChangeType.EDIT, ChangeType.RENAME -> {
+                    // Restore original content
+                    change.originalContent?.let { original ->
                         val virtualFile = LocalFileSystem.getInstance().findFileByPath(change.filePath)
                         virtualFile?.let { vf ->
                             val document = FileDocumentManager.getInstance().getDocument(vf)
-                            document?.setText("")
-                        }
-                    }
-                    ChangeType.EDIT, ChangeType.RENAME -> {
-                        // Restore original content
-                        change.originalContent?.let { original ->
-                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(change.filePath)
-                            virtualFile?.let { vf ->
-                                val document = FileDocumentManager.getInstance().getDocument(vf)
-                                document?.setText(original)
-                            }
-                        }
-                    }
-                    ChangeType.DELETE -> {
-                        // For deleted files, we would need to recreate them
-                        change.originalContent?.let { original ->
-                            val parentPath = change.filePath.substringBeforeLast('/')
-                            val fileName = change.filePath.substringAfterLast('/')
-                            val parentDir = LocalFileSystem.getInstance().findFileByPath(parentPath)
-                            parentDir?.let { dir ->
-                                val newFile = dir.createChildData(project, fileName)
-                                val document = FileDocumentManager.getInstance().getDocument(newFile)
-                                document?.setText(original)
-                            }
+                            document?.setText(original)
                         }
                     }
                 }
-            } catch (e: Exception) {
-                logger.error("Failed to undo change for ${change.filePath}", e)
+                ChangeType.DELETE -> {
+                    // For deleted files, we would need to recreate them
+                    change.originalContent?.let { original ->
+                        val parentPath = change.filePath.substringBeforeLast('/')
+                        val fileName = change.filePath.substringAfterLast('/')
+                        val parentDir = LocalFileSystem.getInstance().findFileByPath(parentPath)
+                        parentDir?.let { dir ->
+                            val newFile = dir.createChildData(project, fileName)
+                            val document = FileDocumentManager.getInstance().getDocument(newFile)
+                            document?.setText(original)
+                        }
+                    }
+                }
             }
+        } catch (e: Exception) {
+            logger.error("Failed to undo change for ${change.filePath}", e)
         }
     }
 }

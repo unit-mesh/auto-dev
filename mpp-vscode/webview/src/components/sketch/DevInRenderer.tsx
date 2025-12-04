@@ -22,24 +22,28 @@ interface ParsedToolCall {
 /**
  * Parse DevIn content to extract tool calls
  * Handles format like: /command-name param1="value1" param2="value2"
+ *
+ * Note: This parser does not handle escaped quotes within quoted values.
+ * For example, key="value with \"quote\"" will not parse correctly.
  */
 function parseDevInContent(content: string): ParsedToolCall[] {
   const toolCalls: ParsedToolCall[] = [];
   const lines = content.trim().split('\n');
-  
+
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
-    
+
     // Match /command-name or command-name at start
     const commandMatch = trimmed.match(/^\/?([a-zA-Z][a-zA-Z0-9_-]*)/);
     if (!commandMatch) continue;
-    
+
     const toolName = commandMatch[1];
     const paramsStr = trimmed.slice(commandMatch[0].length).trim();
     const params: Record<string, string> = {};
-    
+
     // Parse key="value" or key=value patterns
+    // Note: Does not handle escaped quotes within quoted values
     const paramRegex = /([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))/g;
     let match;
     while ((match = paramRegex.exec(paramsStr)) !== null) {
@@ -47,15 +51,15 @@ function parseDevInContent(content: string): ParsedToolCall[] {
       const value = match[2] ?? match[3] ?? match[4] ?? '';
       params[key] = value;
     }
-    
+
     // If no key=value params, treat rest as single param
     if (Object.keys(params).length === 0 && paramsStr) {
       params['args'] = paramsStr;
     }
-    
+
     toolCalls.push({ toolName, params });
   }
-  
+
   return toolCalls;
 }
 
@@ -135,8 +139,8 @@ const DevInToolItem: React.FC<DevInToolItemProps> = ({
 
   return (
     <div className="devin-tool-item">
-      <div className="devin-tool-header">
-        <span className="devin-tool-icon">✅</span>
+      <div className={`devin-tool-header ${hasParams ? 'clickable' : ''}`} onClick={handleToggle}>
+        <span className="devin-tool-icon" role="img" aria-label="Completed">✅</span>
         <span className="devin-tool-name">{toolName}</span>
         {!isExpanded && details && (
           <span className="devin-tool-details">
@@ -148,18 +152,21 @@ const DevInToolItem: React.FC<DevInToolItemProps> = ({
             <button
               className="devin-action-btn"
               onClick={handleOpenFile}
+              aria-label="Open file in editor"
               title="Open file in editor"
             >
-              📂
+              <span role="img" aria-hidden="true">📂</span>
             </button>
           )}
           {hasParams && (
             <button
               className="devin-action-btn toggle"
               onClick={handleToggle}
+              aria-label={isExpanded ? 'Collapse parameters' : 'Expand parameters'}
               title={isExpanded ? 'Collapse' : 'Expand'}
+              aria-expanded={isExpanded}
             >
-              {isExpanded ? '▼' : '▶'}
+              <span aria-hidden="true">{isExpanded ? '▼' : '▶'}</span>
             </button>
           )}
         </div>

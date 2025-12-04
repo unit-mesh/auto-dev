@@ -17,12 +17,16 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  cursor: pointer;
   user-select: none;
   transition: background-color 0.2s;
 }
 
-.devin-tool-header:hover {
+/* Only show pointer cursor when header is clickable (has params) */
+.devin-tool-header.clickable {
+  cursor: pointer;
+}
+
+.devin-tool-header.clickable:hover {
   background-color: var(--vscode-list-hoverBackground);
 }
 
