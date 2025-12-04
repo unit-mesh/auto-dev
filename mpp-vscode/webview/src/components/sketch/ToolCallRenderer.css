@@ -102,8 +102,9 @@
   font-family: var(--vscode-editor-font-family, monospace);
   font-size: 11px;
   line-height: 1.4;
-  background-color: var(--vscode-terminal-background, #1e1e1e);
-  color: var(--vscode-terminal-foreground, #cccccc);
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+  border: 1px solid var(--vscode-panel-border);
   border-radius: 4px;
   white-space: pre-wrap;
   word-break: break-word;

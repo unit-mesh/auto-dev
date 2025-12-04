@@ -50,7 +50,7 @@ const App: React.FC = () => {
     currentStreamingContent: '',
     isProcessing: false,
     currentIteration: 0,
-    maxIterations: 10,
+    maxIterations: 100,
     tasks: [],
   });
 

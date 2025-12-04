@@ -1,7 +1,6 @@
 .sketch-renderer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .sketch-block {
