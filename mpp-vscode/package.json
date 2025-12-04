@@ -44,6 +44,30 @@
       {
         "command": "autodev.runAgent",
         "title": "AutoDev: Run Coding Agent"
+      },
+      {
+        "command": "autodev.codelens.quickChat",
+        "title": "AutoDev: Quick Chat"
+      },
+      {
+        "command": "autodev.codelens.explainCode",
+        "title": "AutoDev: Explain Code"
+      },
+      {
+        "command": "autodev.codelens.optimizeCode",
+        "title": "AutoDev: Optimize Code"
+      },
+      {
+        "command": "autodev.codelens.autoComment",
+        "title": "AutoDev: Auto Comment"
+      },
+      {
+        "command": "autodev.codelens.autoTest",
+        "title": "AutoDev: Auto Test"
+      },
+      {
+        "command": "autodev.codelens.autoMethod",
+        "title": "AutoDev: Auto Method"
       }
     ],
     "viewsContainers": {
@@ -99,6 +123,44 @@
           "type": "number",
           "default": 23120,
           "description": "Port for the IDE server (MCP protocol)"
+        },
+        "autodev.codelens.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens to show AI actions above functions and classes"
+        },
+        "autodev.codelens.displayMode": {
+          "type": "string",
+          "default": "expand",
+          "enum": [
+            "expand",
+            "collapse"
+          ],
+          "enumDescriptions": [
+            "Show all actions separately",
+            "Show a collapsed menu"
+          ],
+          "description": "CodeLens display mode"
+        },
+        "autodev.codelens.items": {
+          "type": "array",
+          "default": [
+            "quickChat",
+            "autoTest",
+            "autoComment"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "quickChat",
+              "explainCode",
+              "optimizeCode",
+              "autoComment",
+              "autoTest",
+              "autoMethod"
+            ]
+          },
+          "description": "CodeLens items to display"
         }
       }
     },
@@ -162,8 +224,10 @@
   "dependencies": {
     "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@unit-mesh/treesitter-artifacts": "^1.7.7",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "web-tree-sitter": "^0.25.10",
     "yaml": "^2.8.2",
     "zod": "^3.22.4"
   }

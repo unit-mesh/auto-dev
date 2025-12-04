@@ -63,9 +63,6 @@ const App: React.FC = () => {
   // Token usage state
   const [totalTokens, setTotalTokens] = useState<number | null>(null);
 
-  // Active file state (for auto-add current file feature)
-  const [activeFile, setActiveFile] = useState<SelectedFile | null>(null);
-
   // Completion state - from mpp-core
   const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
   const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
@@ -241,18 +238,6 @@ const App: React.FC = () => {
       case 'tokenUpdate':
         if (msg.data?.totalTokens != null) {
           setTotalTokens(msg.data.totalTokens as number);
-        }
-        break;
-
-      // Active file changed (for auto-add current file)
-      case 'activeFileChanged':
-        if (msg.data) {
-          setActiveFile({
-            path: msg.data.path as string,
-            name: msg.data.name as string,
-            relativePath: msg.data.path as string,
-            isDirectory: msg.data.isDirectory as boolean || false
-          });
         }
         break;
 
@@ -467,7 +452,6 @@ const App: React.FC = () => {
         availableConfigs={configState.availableConfigs}
         currentConfigName={configState.currentConfigName}
         totalTokens={totalTokens}
-        activeFile={activeFile}
         currentPlan={currentPlan}
       />
     </div>
