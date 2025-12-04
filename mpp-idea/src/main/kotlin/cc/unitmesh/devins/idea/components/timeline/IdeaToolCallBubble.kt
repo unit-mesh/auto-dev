@@ -13,8 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.render.TimelineItem
@@ -68,7 +70,7 @@ fun IdeaToolCallBubble(
             .padding(8.dp)
     ) {
         Column {
-            // Header row: Status + Tool name + Summary + Expand icon
+            // Header row: Status + Tool name + Output (dynamic) + Time + Expand icon
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -99,17 +101,17 @@ fun IdeaToolCallBubble(
                     }
                 )
 
-                // Tool name
+                // Tool name (fixed width, no shrink)
                 Text(
                     text = item.toolName,
                     style = JewelTheme.defaultTextStyle.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.weight(1f)
+                    maxLines = 1
                 )
 
-                // Summary (truncated params as summary)
-                if (hasParams && !expanded) {
+                // Output summary (dynamic width, fills remaining space)
+                if (hasOutput && !expanded) {
                     Text(
-                        text = "-> ${item.params.take(40)}${if (item.params.length > 40) "..." else ""}",
+                        text = "-> ${item.output?.replace("\n", " ")?.trim() ?: ""}",
                         style = JewelTheme.defaultTextStyle.copy(
                             fontSize = 12.sp,
                             color = when {
@@ -118,8 +120,32 @@ fun IdeaToolCallBubble(
                                 else -> JewelTheme.globalColors.text.info
                             }
                         ),
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clipToBounds()
                     )
+                } else if (!expanded) {
+                    // Show params as fallback when no output
+                    if (hasParams) {
+                        Text(
+                            text = "-> ${item.params.replace("\n", " ").trim()}",
+                            style = JewelTheme.defaultTextStyle.copy(
+                                fontSize = 12.sp,
+                                color = JewelTheme.globalColors.text.info
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clipToBounds()
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
 
                 // Execution time (if available)
@@ -376,14 +402,8 @@ private fun copyToClipboard(text: String) {
 
 /**
  * Format tool output for better readability.
- * Returns output as-is to avoid breaking valid JSON/table formats.
+ * Returns output as-is to preserve valid JSON/table formats.
+ * No fixed truncation - UI handles overflow dynamically.
  */
-private fun formatToolOutput(output: String): String {
-    return when {
-        output.contains("|") -> output // Table format
-        output.contains("\n") -> output // Already formatted
-        output.length > 100 -> "${output.take(100)}..." // Truncate long single-line output
-        else -> output
-    }
-}
+private fun formatToolOutput(output: String): String = output
 

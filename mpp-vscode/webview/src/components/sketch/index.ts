@@ -1,6 +1,6 @@
 /**
  * Sketch Renderer Components
- * 
+ *
  * Mirrors mpp-ui's SketchRenderer architecture for VSCode Webview
  * Provides specialized renderers for different content types:
  * - SketchRenderer: Main dispatcher
@@ -10,6 +10,7 @@
  * - ThinkingRenderer: Collapsible thinking blocks
  * - TerminalRenderer: Terminal commands and output
  * - ToolCallRenderer: Tool call information
+ * - DevInRenderer: DevIn tool call blocks
  */
 
 export { SketchRenderer } from './SketchRenderer';
@@ -19,4 +20,5 @@ export { DiffRenderer } from './DiffRenderer';
 export { ThinkingRenderer } from './ThinkingRenderer';
 export { TerminalRenderer } from './TerminalRenderer';
 export { ToolCallRenderer } from './ToolCallRenderer';
+export { DevInRenderer } from './DevInRenderer';
 

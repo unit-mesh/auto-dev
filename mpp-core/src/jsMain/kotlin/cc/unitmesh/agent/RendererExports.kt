@@ -1,8 +1,56 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.plan.PlanSummaryData
+import cc.unitmesh.agent.plan.StepSummary
+import cc.unitmesh.agent.plan.TaskSummary
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import kotlin.js.JsExport
+
+/**
+ * JS-friendly step summary data
+ */
+@JsExport
+data class JsStepSummary(
+    val id: String,
+    val description: String,
+    val status: String
+) {
+    companion object {
+        fun from(step: StepSummary): JsStepSummary {
+            return JsStepSummary(
+                id = step.id,
+                description = step.description,
+                status = step.status.name
+            )
+        }
+    }
+}
+
+/**
+ * JS-friendly task summary data
+ */
+@JsExport
+data class JsTaskSummary(
+    val id: String,
+    val title: String,
+    val status: String,
+    val completedSteps: Int,
+    val totalSteps: Int,
+    val steps: Array<JsStepSummary>
+) {
+    companion object {
+        fun from(task: TaskSummary): JsTaskSummary {
+            return JsTaskSummary(
+                id = task.id,
+                title = task.title,
+                status = task.status.name,
+                completedSteps = task.completedSteps,
+                totalSteps = task.totalSteps,
+                steps = task.steps.map { JsStepSummary.from(it) }.toTypedArray()
+            )
+        }
+    }
+}
 
 /**
  * JS-friendly plan summary data
@@ -16,7 +64,8 @@ data class JsPlanSummaryData(
     val failedSteps: Int,
     val progressPercent: Int,
     val status: String,
-    val currentStepDescription: String?
+    val currentStepDescription: String?,
+    val tasks: Array<JsTaskSummary>
 ) {
     companion object {
         fun from(summary: PlanSummaryData): JsPlanSummaryData {
@@ -28,7 +77,8 @@ data class JsPlanSummaryData(
                 failedSteps = summary.failedSteps,
                 progressPercent = summary.progressPercent,
                 status = summary.status.name,
-                currentStepDescription = summary.currentStepDescription
+                currentStepDescription = summary.currentStepDescription,
+                tasks = summary.tasks.map { JsTaskSummary.from(it) }.toTypedArray()
             )
         }
     }

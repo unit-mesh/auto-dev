@@ -4,6 +4,7 @@ import cc.unitmesh.agent.config.JsToolConfigFile
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.llm.JsMessage
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.promise
 import kotlin.js.Promise
 
@@ -181,6 +182,34 @@ class JsCodingAgent(
         return history.map { msg ->
             JsMessage(msg.role.name.lowercase(), msg.content)
         }.toTypedArray()
+    }
+
+    /**
+     * Observe plan state changes and call the callback with plan summary data.
+     * Returns a function to stop observing.
+     */
+    @JsName("observePlanState")
+    fun observePlanState(callback: (JsPlanSummaryData?) -> Unit): () -> Unit {
+        val planStateService = agent.getPlanStateService()
+        if (planStateService == null) {
+            return { }
+        }
+
+        var job: kotlinx.coroutines.Job? = null
+        job = GlobalScope.launch {
+            planStateService.currentPlan.collect { plan ->
+                if (plan != null) {
+                    val summary = cc.unitmesh.agent.plan.PlanSummaryData.from(plan)
+                    callback(JsPlanSummaryData.from(summary))
+                } else {
+                    callback(null)
+                }
+            }
+        }
+
+        return {
+            job.cancel()
+        }
     }
 }
 

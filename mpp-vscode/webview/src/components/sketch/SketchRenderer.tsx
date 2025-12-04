@@ -117,14 +117,9 @@ function renderBlock(
       );
 
     case 'devin':
-      // TODO: Implement DevInRenderer
-      return (
-        <CodeBlockRenderer
-          code={block.text}
-          language="devin"
-          isComplete={isComplete}
-        />
-      );
+      // DevIn blocks are handled by ToolCallRenderer in timeline
+      // Don't render them here to avoid duplication
+      return null;
 
     case 'plan':
       // TODO: Implement PlanRenderer

@@ -21,7 +21,7 @@ const KotlinCC = MppCore.cc.unitmesh;
 /**
  * Chat View Provider for the sidebar webview
  */
-export class ChatViewProvider implements vscode.WebviewViewProvider {
+export class ChatViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   private webviewView: vscode.WebviewView | undefined;
   private codingAgent: any = null;
   private llmService: any = null;
@@ -30,6 +30,18 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   private isExecuting = false;
   private messages: Array<{ role: string; content: string }> = [];
   private editorChangeDisposable: vscode.Disposable | undefined;
+  private planStateUnsubscribe: (() => void) | null = null;
+
+  /**
+   * Dispose of resources when the provider is no longer needed.
+   */
+  dispose(): void {
+    if (this.planStateUnsubscribe) {
+      this.planStateUnsubscribe();
+      this.planStateUnsubscribe = null;
+    }
+    this.editorChangeDisposable?.dispose();
+  }
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -217,6 +229,39 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   }
 
   /**
+   * Send code context to the chat (for CodeLens integration)
+   */
+  sendCodeContext(context: {
+    filepath: string;
+    language: string;
+    element: {
+      type: string;
+      name: string;
+      code: string;
+      range: {
+        start: { line: number; character: number };
+        end: { line: number; character: number };
+      };
+    };
+  }) {
+    // Format code context message
+    const codeBlock = `\`\`\`${context.language}\n${context.element.code}\n\`\`\``;
+    const message = `**${context.element.type}: ${context.element.name}**\n\nFile: \`${context.filepath}\`\n\n${codeBlock}`;
+    
+    // Show the view if not visible
+    if (this.webviewView) {
+      this.webviewView.show(true);
+    }
+
+    // Send the formatted message to webview
+    this.postMessage({
+      type: 'addCodeContext',
+      content: message,
+      context: context
+    });
+  }
+
+  /**
    * Post a message to the webview
    */
   postMessage(message: any): void {
@@ -329,7 +374,44 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     );
 
     this.log(`CodingAgent initialized for workspace: ${workspacePath}`);
+
+    // Start observing plan state changes
+    this.startPlanStateObserver();
+
     return this.codingAgent;
+  }
+
+  /**
+   * Start observing plan state changes from CodingAgent
+   * Mirrors IdeaAgentViewModel.startPlanStateObserver()
+   */
+  private startPlanStateObserver(): void {
+    // Cancel any existing observer
+    if (this.planStateUnsubscribe) {
+      this.planStateUnsubscribe();
+      this.planStateUnsubscribe = null;
+    }
+
+    if (!this.codingAgent) {
+      return;
+    }
+
+    try {
+      // Use the observePlanState method from JsCodingAgent
+      this.planStateUnsubscribe = this.codingAgent.observePlanState((planSummary: any) => {
+        if (planSummary) {
+          this.postMessage({
+            type: 'planUpdate',
+            data: this.convertPlanSummary(planSummary)
+          });
+        } else {
+          this.postMessage({ type: 'planCleared' });
+        }
+      });
+      this.log('Plan state observer started');
+    } catch (error) {
+      this.log(`Failed to start plan state observer: ${error}`);
+    }
   }
 
   /**
@@ -392,7 +474,44 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       addLiveTerminal: () => {},
       forceStop: () => {
         self.postMessage({ type: 'taskComplete', data: { success: false, message: 'Stopped' } });
+      },
+      // Plan summary rendering - sends plan data to webview
+      renderPlanSummary: (summary: any) => {
+        self.postMessage({
+          type: 'planUpdate',
+          data: self.convertPlanSummary(summary)
+        });
       }
+    };
+  }
+
+  /**
+   * Convert JsPlanSummaryData to webview-compatible format
+   */
+  private convertPlanSummary(summary: any): any {
+    if (!summary) return null;
+
+    return {
+      planId: summary.planId,
+      title: summary.title,
+      totalSteps: summary.totalSteps,
+      completedSteps: summary.completedSteps,
+      failedSteps: summary.failedSteps,
+      progressPercent: summary.progressPercent,
+      status: summary.status,
+      currentStepDescription: summary.currentStepDescription,
+      tasks: Array.from(summary.tasks || []).map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        status: task.status,
+        completedSteps: task.completedSteps,
+        totalSteps: task.totalSteps,
+        steps: Array.from(task.steps || []).map((step: any) => ({
+          id: step.id,
+          description: step.description,
+          status: step.status
+        }))
+      }))
     };
   }
 
@@ -964,5 +1083,23 @@ User's original prompt:`;
 </body>
 </html>`;
   }
-}
 
+  /**
+   * Get current model config for CodeLens actions
+   */
+  getCurrentModelConfig(): { provider: string; model: string; apiKey: string; temperature?: number; maxTokens?: number; baseUrl?: string } | undefined {
+    if (!this.configWrapper) return undefined;
+    
+    const activeConfig = this.configWrapper.getActiveConfig();
+    if (!activeConfig) return undefined;
+    
+    return {
+      provider: activeConfig.provider,
+      model: activeConfig.model,
+      apiKey: activeConfig.apiKey || '',
+      temperature: activeConfig.temperature,
+      maxTokens: activeConfig.maxTokens,
+      baseUrl: activeConfig.baseUrl
+    };
+  }
+}

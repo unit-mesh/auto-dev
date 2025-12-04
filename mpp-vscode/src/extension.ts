@@ -10,6 +10,8 @@ import { DiffManager, DiffContentProvider } from './services/diff-manager';
 import { ChatViewProvider } from './providers/chat-view';
 import { StatusBarManager } from './services/status-bar';
 import { registerDevInsCompletionProvider } from './providers/devins-completion';
+import { AutoDevCodeLensProvider } from './providers/codelens-provider';
+import { CodeLensCommands } from './commands/codelens-commands';
 import { createLogger } from './utils/logger';
 
 export const DIFF_SCHEME = 'autodev-diff';
@@ -123,6 +125,34 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register DevIns language completion provider
   context.subscriptions.push(registerDevInsCompletionProvider(context));
   log('DevIns language support registered');
+
+  // Register CodeLens Provider
+  const codeLensProvider = new AutoDevCodeLensProvider(log, context.extensionPath);
+  const codeLensCommands = new CodeLensCommands(log, () => chatViewProvider, () => chatViewProvider.getCurrentModelConfig());
+  
+  // Register for supported languages
+  const supportedLanguages = [
+    'typescript', 'javascript', 'typescriptreact', 'javascriptreact',
+    'python', 'java', 'kotlin', 'go', 'rust'
+  ];
+  
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      supportedLanguages.map(lang => ({ language: lang })),
+      codeLensProvider
+    ),
+    ...codeLensCommands.register(context)
+  );
+  log('CodeLens Provider registered');
+
+  // Configuration change listener - refresh CodeLens
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('autodev.codelens')) {
+        codeLensProvider.refresh();
+      }
+    })
+  );
 
   // Show welcome message on first install
   const welcomeShownKey = 'autodev.welcomeShown';

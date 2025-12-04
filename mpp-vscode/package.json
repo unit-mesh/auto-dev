@@ -1,30 +1,56 @@
 {
-  "name": "autodev-vscode",
-  "displayName": "AutoDev",
-  "description": "AI-powered coding assistant based on Kotlin Multiplatform",
-  "version": "0.1.0",
-  "publisher": "phodal",
+  "name": "autodev",
+  "displayName": "AutoDev - 🧙the AI-powered coding wizard (KMP Edition).",
+  "description": "🧙‍ AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, based on Kotlin Multiplatform. AutoDev provides CodeLens, Chat, and powerful agent features! 🚀",
+  "version": "0.5.3",
+  "publisher": "Phodal",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/phodal/auto-dev-sketch"
+    "url": "https://github.com/unit-mesh/auto-dev-vscode"
   },
+  "bugs": {
+    "url": "https://github.com/unit-mesh/auto-dev-vscode/issues"
+  },
+  "homepage": "https://vscode.unitmesh.cc",
+  "qna": "https://github.com/unit-mesh/auto-dev-vscode/issues/new/choose",
+  "pricing": "Free",
+  "icon": "media/pluginIcon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
+  "vsce": {
+    "dependencies": true,
+    "yarn": false
+  },
   "categories": [
     "Programming Languages",
+    "Education",
     "Machine Learning",
-    "Other"
+    "Snippets"
   ],
   "keywords": [
     "ai",
     "coding assistant",
     "llm",
-    "autodev"
+    "autodev",
+    "kotlin multiplatform",
+    "kmp"
   ],
   "activationEvents": [
+    "onLanguage:java",
+    "onLanguage:javascript",
+    "onLanguage:kotlin",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:python",
+    "onLanguage:rust",
+    "onLanguage:go",
     "onStartupFinished"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -44,6 +70,34 @@
       {
         "command": "autodev.runAgent",
         "title": "AutoDev: Run Coding Agent"
+      },
+      {
+        "command": "autodev.codelens.quickChat",
+        "title": "AutoDev: Quick Chat"
+      },
+      {
+        "command": "autodev.codelens.explainCode",
+        "title": "AutoDev: Explain Code"
+      },
+      {
+        "command": "autodev.codelens.optimizeCode",
+        "title": "AutoDev: Optimize Code"
+      },
+      {
+        "command": "autodev.codelens.autoComment",
+        "title": "AutoDev: Auto Comment"
+      },
+      {
+        "command": "autodev.codelens.autoTest",
+        "title": "AutoDev: Auto Test"
+      },
+      {
+        "command": "autodev.codelens.autoMethod",
+        "title": "AutoDev: Auto Method"
+      },
+      {
+        "command": "autodev.codelens.showMenu",
+        "title": "AutoDev: Show CodeLens Menu"
       }
     ],
     "viewsContainers": {
@@ -99,6 +153,44 @@
           "type": "number",
           "default": 23120,
           "description": "Port for the IDE server (MCP protocol)"
+        },
+        "autodev.codelens.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens to show AI actions above functions and classes"
+        },
+        "autodev.codelens.displayMode": {
+          "type": "string",
+          "default": "expand",
+          "enum": [
+            "expand",
+            "collapse"
+          ],
+          "enumDescriptions": [
+            "Show all actions separately",
+            "Show a collapsed menu"
+          ],
+          "description": "CodeLens display mode"
+        },
+        "autodev.codelens.items": {
+          "type": "array",
+          "default": [
+            "quickChat",
+            "autoTest",
+            "autoComment"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "quickChat",
+              "explainCode",
+              "optimizeCode",
+              "autoComment",
+              "autoTest",
+              "autoMethod"
+            ]
+          },
+          "description": "CodeLens items to display"
         }
       }
     },
@@ -137,9 +229,10 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "npm run build:extension && npm run build:webview",
-    "build:extension": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "build": "npm run build:extension && npm run build:webview && npm run copy:wasm",
+    "build:extension": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:ws --external:web-tree-sitter --format=cjs --platform=node",
     "build:webview": "cd webview && npm install && npm run build",
+    "copy:wasm": "node scripts/copy-wasm.js",
     "watch": "npm run build:extension -- --watch",
     "package": "vsce package",
     "lint": "eslint src --ext ts",
@@ -160,10 +253,12 @@
     "vitest": "^1.0.0"
   },
   "dependencies": {
-    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
+    "@autodev/mpp-core": "0.3.4",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@unit-mesh/treesitter-artifacts": "^1.7.7",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "web-tree-sitter": "^0.25.10",
     "yaml": "^2.8.2",
     "zod": "^3.22.4"
   }

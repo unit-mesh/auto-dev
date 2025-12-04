@@ -11,9 +11,26 @@ import { ChatInput } from './components/ChatInput';
 import { ModelConfig } from './components/ModelSelector';
 import { SelectedFile } from './components/FileChip';
 import { CompletionItem } from './components/CompletionPopup';
+import { PlanData } from './components/plan';
 import { useVSCode, ExtensionMessage } from './hooks/useVSCode';
 import type { AgentState, ToolCallInfo, TerminalOutput, ToolCallTimelineItem } from './types/timeline';
 import './App.css';
+
+/**
+ * Type guard to validate PlanData structure from extension messages.
+ */
+function isPlanData(data: unknown): data is PlanData {
+  if (!data || typeof data !== 'object') return false;
+  const plan = data as Record<string, unknown>;
+  return (
+    typeof plan.planId === 'string' &&
+    typeof plan.title === 'string' &&
+    typeof plan.totalSteps === 'number' &&
+    typeof plan.completedSteps === 'number' &&
+    typeof plan.progressPercent === 'number' &&
+    Array.isArray(plan.tasks)
+  );
+}
 
 interface ConfigState {
   availableConfigs: ModelConfig[];
@@ -33,7 +50,7 @@ const App: React.FC = () => {
     currentStreamingContent: '',
     isProcessing: false,
     currentIteration: 0,
-    maxIterations: 10,
+    maxIterations: 100,
     tasks: [],
   });
 
@@ -46,12 +63,12 @@ const App: React.FC = () => {
   // Token usage state
   const [totalTokens, setTotalTokens] = useState<number | null>(null);
 
-  // Active file state (for auto-add current file feature)
-  const [activeFile, setActiveFile] = useState<SelectedFile | null>(null);
-
   // Completion state - from mpp-core
   const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
   const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
+
+  // Plan state - mirrors mpp-idea's IdeaPlanSummaryBar
+  const [currentPlan, setCurrentPlan] = useState<PlanData | null>(null);
 
   const { postMessage, onMessage, isVSCode } = useVSCode();
 
@@ -224,18 +241,6 @@ const App: React.FC = () => {
         }
         break;
 
-      // Active file changed (for auto-add current file)
-      case 'activeFileChanged':
-        if (msg.data) {
-          setActiveFile({
-            path: msg.data.path as string,
-            name: msg.data.name as string,
-            relativePath: msg.data.path as string,
-            isDirectory: msg.data.isDirectory as boolean || false
-          });
-        }
-        break;
-
       // Completion results from mpp-core
       case 'completionsResult':
         if (msg.data?.items) {
@@ -252,6 +257,20 @@ const App: React.FC = () => {
             shouldTriggerNextCompletion: msg.data.shouldTriggerNextCompletion as boolean
           });
         }
+        break;
+
+      // Plan update from mpp-core PlanStateService
+      case 'planUpdate':
+        if (msg.data && isPlanData(msg.data)) {
+          setCurrentPlan(msg.data);
+        } else {
+          setCurrentPlan(null);
+        }
+        break;
+
+      // Plan cleared
+      case 'planCleared':
+        setCurrentPlan(null);
         break;
     }
   }, []);
@@ -433,7 +452,7 @@ const App: React.FC = () => {
         availableConfigs={configState.availableConfigs}
         currentConfigName={configState.currentConfigName}
         totalTokens={totalTokens}
-        activeFile={activeFile}
+        currentPlan={currentPlan}
       />
     </div>
   );

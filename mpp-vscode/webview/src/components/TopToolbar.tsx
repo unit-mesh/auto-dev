@@ -15,30 +15,14 @@ interface TopToolbarProps {
   onAddFile: (file: SelectedFile) => void;
   onRemoveFile: (file: SelectedFile) => void;
   onClearFiles: () => void;
-  autoAddCurrentFile?: boolean;
-  onToggleAutoAdd?: () => void;
 }
 
 export const TopToolbar: React.FC<TopToolbarProps> = ({
-  selectedFiles, onAddFile, onRemoveFile, onClearFiles, autoAddCurrentFile = true, onToggleAutoAdd
+  selectedFiles, onAddFile, onRemoveFile, onClearFiles
 }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const addButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Context indicator component
-  const ContextIndicator = () => (
-    <button
-      className={`context-indicator ${autoAddCurrentFile ? 'active' : ''}`}
-      onClick={onToggleAutoAdd}
-      title={autoAddCurrentFile ? 'Auto-add current file: ON' : 'Auto-add current file: OFF'}
-    >
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
-      </svg>
-      <span className="indicator-dot" />
-    </button>
-  );
 
   if (selectedFiles.length === 0 && !isSearchOpen) {
     return (
@@ -49,7 +33,6 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </svg>
           <span>Add context</span>
         </button>
-        <ContextIndicator />
         <FileSearchPopup isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)}
           onSelectFile={onAddFile} selectedFiles={selectedFiles} />
       </div>
@@ -80,7 +63,6 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         )}
         
         <div className="toolbar-actions">
-          <ContextIndicator />
           {selectedFiles.length > 1 && (
             <button className="expand-button" onClick={() => setIsExpanded(!isExpanded)}
               title={isExpanded ? 'Collapse' : 'Expand'}>

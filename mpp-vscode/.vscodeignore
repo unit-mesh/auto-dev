@@ -1,0 +1,34 @@
+# VSCode extension ignore file
+# Exclude source files and build artifacts not needed in the packaged extension
+
+# Source files
+src/
+webview/src/
+webview/node_modules/
+
+# Build artifacts
+*.map
+tsconfig.json
+.eslintrc.json
+
+# Development files
+.vscode/
+node_modules/
+.gitignore
+.git/
+
+# Test files
+**/__tests__/**
+**/*.test.*
+**/*.spec.*
+
+# Documentation (keep README.md)
+CHANGELOG.md
+
+# Exclude parent directories
+../
+
+# Keep dist and wasm folders
+!dist/
+!wasm/
+

@@ -25,7 +25,6 @@ interface ChatInputProps {
   availableConfigs?: ModelConfig[];
   currentConfigName?: string | null;
   totalTokens?: number | null;
-  activeFile?: SelectedFile | null;
   currentPlan?: PlanData | null;
 }
 
@@ -47,7 +46,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   availableConfigs = [],
   currentConfigName = null,
   totalTokens = null,
-  activeFile = null,
   currentPlan = null
 }) => {
   const [input, setInput] = useState('');
@@ -55,22 +53,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
   const [selectedCompletionIndex, setSelectedCompletionIndex] = useState(0);
-  const [autoAddCurrentFile, setAutoAddCurrentFile] = useState(true);
   const inputRef = useRef<HTMLDivElement>(null);
   const cursorPositionRef = useRef(0);
 
   // Use external completion items if provided
   const completionItems = externalCompletionItems || [];
-
-  // Auto-add active file when it changes
-  useEffect(() => {
-    if (autoAddCurrentFile && activeFile) {
-      setSelectedFiles(prev => {
-        if (prev.some(f => f.path === activeFile.path)) return prev;
-        return [...prev, activeFile];
-      });
-    }
-  }, [activeFile, autoAddCurrentFile]);
 
   // Handle completion result from mpp-core
   useEffect(() => {
@@ -178,8 +165,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         onAddFile={handleAddFile}
         onRemoveFile={handleRemoveFile}
         onClearFiles={handleClearFiles}
-        autoAddCurrentFile={autoAddCurrentFile}
-        onToggleAutoAdd={() => setAutoAddCurrentFile(prev => !prev)}
       />
 
       {/* Input Area with DevIn highlighting */}

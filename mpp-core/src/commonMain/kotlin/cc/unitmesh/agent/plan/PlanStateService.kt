@@ -94,18 +94,22 @@ class PlanStateService {
         val plan = _currentPlan.value ?: return
         val task = plan.getTask(taskId) ?: return
         task.updateStatus(status)
+        // Trigger StateFlow update by reassigning the plan object
+        _currentPlan.value = plan
         notifyTaskUpdated(task)
     }
-    
+
     /**
      * Complete a step within a task.
      */
     fun completeStep(taskId: String, stepId: String) {
         val plan = _currentPlan.value ?: return
         plan.completeStep(taskId, stepId)
+        // Trigger StateFlow update by reassigning the plan object
+        _currentPlan.value = plan
         notifyStepCompleted(taskId, stepId)
     }
-    
+
     /**
      * Update a step's status.
      */
@@ -113,6 +117,8 @@ class PlanStateService {
         val plan = _currentPlan.value ?: return
         val task = plan.getTask(taskId) ?: return
         task.updateStepStatus(stepId, status)
+        // Trigger StateFlow update by reassigning the plan object
+        _currentPlan.value = plan
         notifyTaskUpdated(task)
     }
     
