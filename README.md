@@ -17,11 +17,58 @@
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
-## AutoDev 3.0 - Multiplatform Plane (Doing)
+## AutoDev 3.0 - Multiplatform Revolution 🚀
 
-- Multiplatform Agent: Android/iOS, Web, Desktop, IDEs/VSCode,CLI/TUI
-- Web: https://unit-mesh.github.io/auto-dev/
-- Built-in Coding Agent
+Rebuilt with Kotlin Multiplatform (KMP) to deliver a truly cross-platform AI Coding Agent ecosystem.
+
+**Current Versions**: 
+- IntelliJ Plugin: `v2.4.6`
+- New Intellij Plugin: https://plugins.jetbrains.com/plugin/29223-autodev-experiment
+- MPP Modules (Core/UI/Server): `v0.3.4`
+- VSCode Extension: `v0.5.x`
+
+### 📦 Core Modules
+
+| Module | Platform Support | Description |
+|--------|------------------|-------------|
+| **mpp-core** | JVM, JS, WASM, Android, iOS | AI Agent engine, DevIns compiler, tool system, LLM integration, MCP protocol |
+| **mpp-codegraph** | JVM, JS | TreeSitter-based code parsing & graph building (8+ languages) |
+
+### 🖥️ Client Applications
+
+| Module | Platform | Status | Description |
+|--------|----------|--------|-------------|
+| **mpp-idea** | IntelliJ IDEA | ✅ Production | Jewel UI, Agent toolwindow, code review, remote agent |
+| **mpp-vscode** | VSCode | ✅ Production | CodeLens, auto test/doc, MCP protocol, Tree-sitter |
+| **mpp-ui** (Desktop) | macOS/Windows/Linux | ✅ Production | Compose Multiplatform desktop app |
+| **mpp-ui** (CLI) | Terminal (Node.js) | ✅ Production | Terminal UI (React/Ink), local/server mode |
+| **mpp-ui** (Android) | Android | 🚧 In Progress | Native Android app |
+| **mpp-web** (Web) | Web | 🚧 In Progress | Web app |
+| **mpp-ios** | iOS | 🚧 In Progress | Native iOS app (SwiftUI + Compose) |
+
+### ⚙️ Server & Tools
+
+| Module | Platform | Features |
+|--------|----------|----------|
+| **mpp-server** | JVM (Ktor) | HTTP API, SSE streaming, remote project management |
+| **mpp-viewer** | Multiplatform | Universal viewer API (code, Markdown, images, PDF, etc.) |
+| **mpp-viewer-web** | JVM, Android, iOS | WebView implementation, Monaco Editor integration |
+
+### 🌟 Key Features
+
+- **Unified Codebase**: Core logic shared across all platforms - write once, run everywhere
+- **Native Performance**: Compiled natively for each platform with zero overhead
+- **Full AI Agent**: Built-in Coding Agent, tool system, multi-LLM support (OpenAI, Anthropic, Google, DeepSeek, Ollama, etc.)
+- **DevIns Language**: Executable AI Agent scripting language
+- **MCP Protocol**: Model Context Protocol support for extensible tool ecosystem
+- **Code Understanding**: TreeSitter-based multi-language parsing (Java, Kotlin, Python, JS, TS, Go, Rust, C#)
+- **Internationalization**: Chinese/English UI support
+
+### 🔗 Links
+
+- **Web Demo**: https://unit-mesh.github.io/auto-dev/
+- **VSCode Extension**: [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Phodal.autodev)
+- **CLI Tool**: `npm install -g @autodev/cli`
 
 ## AutoDev 2.0 - the Cursor Composer in Intellij IDEA
 
