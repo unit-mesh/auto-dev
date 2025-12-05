@@ -2,7 +2,6 @@ package cc.unitmesh.devins.idea.renderer
 
 import cc.unitmesh.agent.plan.AgentPlan
 import cc.unitmesh.agent.plan.MarkdownPlanParser
-import cc.unitmesh.agent.plan.TaskStatus as PlanTaskStatus
 import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.RendererUtils
@@ -12,6 +11,7 @@ import cc.unitmesh.agent.render.ToolCallDisplayInfo
 import cc.unitmesh.agent.render.ToolCallInfo
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
+import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.llm.compression.TokenInfo
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.coroutines.flow.MutableStateFlow

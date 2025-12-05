@@ -198,6 +198,7 @@ project(":") {
 
     repositories {
         mavenCentral()
+        mavenLocal()  // For locally published mpp-ui and mpp-core artifacts
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 
         intellijPlatform {
@@ -317,9 +318,36 @@ project(":") {
         implementation(project(":mpp-idea-exts:ext-terminal"))
         implementation(project(":mpp-idea-exts:devins-lang"))
 
-        // mpp-core dependency for root project - allow Compose dependencies for compilation
-        // Runtime will use IntelliJ's bundled Compose via bundledModule
+        implementation("io.ktor:ktor-client-core:3.2.2")
+        implementation("io.ktor:ktor-client-cio:3.2.2")
+        implementation("io.ktor:ktor-client-content-negotiation:3.2.2")
+        implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
+        implementation("io.ktor:ktor-client-logging:3.2.2")
+
+        // mpp-core dependency for root project - use published artifact
         implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+
+        // mpp-ui dependency - use Maven coordinates (requires publishToMavenLocal first)
+        // Exclude all Compose/androidx to use IntelliJ's bundled versions
+        implementation("cc.unitmesh:mpp-ui:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.compose.ui")
+            exclude(group = "org.jetbrains.compose.foundation")
+            exclude(group = "org.jetbrains.compose.material")
+            exclude(group = "org.jetbrains.compose.material3")
+            exclude(group = "org.jetbrains.compose.runtime")
+            exclude(group = "org.jetbrains.compose.animation")
+            exclude(group = "org.jetbrains.compose.components")
+            exclude(group = "org.jetbrains.compose.desktop")
+            exclude(group = "org.jetbrains.androidx.lifecycle")
+            exclude(group = "androidx.lifecycle")
+            exclude(group = "androidx.annotation")
+            exclude(group = "androidx.collection")
+            exclude(group = "androidx.activity")
+            exclude(group = "androidx.core")
+            exclude(group = "androidx.appcompat")
+            exclude(group = "org.jetbrains.skiko")
+            exclude(group = "org.jetbrains.skia")
+        }
     }
 
     tasks {

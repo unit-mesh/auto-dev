@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.util.ui.JBUI
 import cc.unitmesh.llm.ModelConfig
-import org.jetbrains.jewel.bridge.compose
+import org.jetbrains.jewel.bridge.JewelComposePanel
 import java.awt.Dimension
 import javax.swing.JComponent
 
@@ -29,7 +29,7 @@ class IdeaModelConfigDialogWrapper(
     override fun createSouthPanel(): JComponent? = null
 
     override fun createCenterPanel(): JComponent {
-        val dialogPanel = compose {
+        val dialogPanel = JewelComposePanel {
             IdeaModelConfigDialogContent(
                 currentConfig = currentConfig,
                 currentConfigName = currentConfigName,

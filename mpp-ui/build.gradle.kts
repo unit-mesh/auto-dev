@@ -16,6 +16,7 @@ plugins {
     id("app.cash.sqldelight") version "2.1.0"
     id("de.comahe.i18n4k") version "0.11.1"
     alias(libs.plugins.ktlint)
+    `maven-publish`
 }
 
 repositories {
@@ -40,6 +41,7 @@ i18n4k {
     sourceCodeLocales = listOf("en", "zh")
 }
 
+group = "cc.unitmesh"
 version = project.findProperty("mppVersion") as String? ?: "0.1.5"
 
 kotlin {

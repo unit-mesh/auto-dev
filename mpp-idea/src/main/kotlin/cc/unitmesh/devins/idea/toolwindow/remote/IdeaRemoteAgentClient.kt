@@ -2,7 +2,6 @@ package cc.unitmesh.devins.idea.toolwindow.remote
 
 import cc.unitmesh.agent.RemoteAgentEvent
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.sse.*
@@ -26,7 +25,7 @@ class IdeaRemoteAgentClient(
     private val httpClient: HttpClient = HttpClient(CIO) {
         install(SSE) {
             reconnectionTime = 30.seconds
-            maxReconnectionAttempts = 3
+//            maxReconnectionAttempts = 3
         }
 
         // We handle HTTP errors manually to provide better error messages

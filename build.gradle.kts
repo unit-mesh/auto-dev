@@ -22,3 +22,22 @@ allprojects {
         mavenCentral()
     }
 }
+
+// Convenience task to publish mpp-core and mpp-ui to mavenLocal for mpp-idea composite build
+// Only publishes JVM and multiplatform metadata publications (skips WASM/JS/iOS)
+tasks.register("publishDepsForIdea") {
+    group = "publishing"
+    description = "Publish mpp-core and mpp-ui JVM artifacts to mavenLocal for mpp-idea"
+    
+    dependsOn(
+        ":mpp-core:publishJvmPublicationToMavenLocal",
+        ":mpp-core:publishKotlinMultiplatformPublicationToMavenLocal",
+        ":mpp-ui:publishJvmPublicationToMavenLocal",
+        ":mpp-ui:publishKotlinMultiplatformPublicationToMavenLocal"
+    )
+    
+    doLast {
+        println("✅ Published mpp-core and mpp-ui JVM artifacts to mavenLocal")
+        println("Now you can build mpp-idea with: ./gradlew :mpp-idea:build")
+    }
+}

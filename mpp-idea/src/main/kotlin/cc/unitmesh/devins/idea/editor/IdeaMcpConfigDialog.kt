@@ -34,7 +34,7 @@ import com.intellij.util.ui.JBUI
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.jetbrains.jewel.bridge.compose
+import org.jetbrains.jewel.bridge.JewelComposePanel
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
 import org.jetbrains.jewel.ui.component.Text
@@ -108,7 +108,7 @@ class IdeaMcpConfigDialogWrapper(
     override fun createSouthPanel(): JComponent? = null
 
     override fun createCenterPanel(): JComponent {
-        val dialogPanel = compose {
+        val dialogPanel = JewelComposePanel {
             IdeaMcpConfigDialogContent(
                 project = project,
                 onDismiss = { close(CANCEL_EXIT_CODE) }

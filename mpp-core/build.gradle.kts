@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.android.library")
+    `maven-publish`
 
     // Temporarily disabled: npm publish plugin doesn't support wasmJs targets
     // TODO: Re-enable once plugin supports wasmJs or split into separate modules
