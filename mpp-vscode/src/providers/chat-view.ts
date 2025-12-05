@@ -449,8 +449,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider, vscode.Disp
           data: { toolName, success, output, fullOutput }
         });
       },
-      renderTaskComplete: () => {
-        self.postMessage({ type: 'taskComplete', data: { success: true, message: 'Task completed' } });
+      renderTaskComplete: (executionTimeMs?: number, toolsUsedCount?: number) => {
+        const parts: string[] = [];
+
+        if (executionTimeMs && executionTimeMs > 0) {
+          const seconds = (executionTimeMs / 1000).toFixed(2);
+          parts.push(`${seconds}s`);
+        }
+
+        if (toolsUsedCount && toolsUsedCount > 0) {
+          parts.push(`${toolsUsedCount} tools`);
+        }
+
+        const info = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+        const message = `Task completed${info}`;
+        self.postMessage({ type: 'taskComplete', data: { success: true, message } });
       },
       renderFinalResult: (success: boolean, message: string, iterations: number) => {
         self.postMessage({

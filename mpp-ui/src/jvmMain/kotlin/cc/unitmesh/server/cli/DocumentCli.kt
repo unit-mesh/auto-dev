@@ -74,7 +74,7 @@ object DocumentCli {
             }
         }
         println()
-        
+
         runBlocking {
             try {
                 // Initialize platform parsers
@@ -82,18 +82,18 @@ object DocumentCli {
                 DocumentRegistry.initializePlatformParsers()
                 println("✅ Parsers initialized")
                 println()
-                
+
                 // Scan and register documents
                 val projectDir = File(projectPath).absoluteFile
                 if (!projectDir.exists()) {
                     System.err.println("❌ Project path does not exist: $projectPath")
                     return@runBlocking
                 }
-                
+
                 val startTime = System.currentTimeMillis()
                 val documents = scanDocuments(projectDir)
                 val scanTime = System.currentTimeMillis() - startTime
-                
+
                 println("📖 Found ${documents.size} documents (${scanTime}ms)")
                 documents.take(10).forEach { doc ->
                     val relativePath = doc.relativeTo(projectDir).path
@@ -104,29 +104,29 @@ object DocumentCli {
                     println("   ... and ${documents.size - 10} more")
                 }
                 println()
-                
+
                 if (documents.isEmpty()) {
                     println("⚠️  No documents found in: $projectPath")
                     return@runBlocking
                 }
-                
+
                 // Initialize DocumentIndexRepository
                 val indexRepository = DocumentIndexDatabaseRepository.getInstance()
                 println("📚 Using document index: ~/.autodev/autodev.db")
                 println()
-                
+
                 // Register documents with caching
                 println("📝 Registering documents...")
                 var registeredCount = 0
                 var cachedCount = 0
                 val registerStartTime = System.currentTimeMillis()
-                
+
                 for (doc in documents) {
                     val relativePath = doc.relativeTo(projectDir).path
                     val formatType = DocumentParserFactory.detectFormat(doc.name)
-                    
+
                     val result = registerDocumentWithCache(doc, relativePath, indexRepository)
-                    
+
                     val typeSymbol = when (formatType) {
                         DocumentFormatType.MARKDOWN -> "📝"
                         DocumentFormatType.PDF -> "📕"
@@ -135,7 +135,7 @@ object DocumentCli {
                         DocumentFormatType.SOURCE_CODE -> "💻"
                         else -> "📄"
                     }
-                    
+
                     when (result) {
                         is RegisterResult.Success -> {
                             println("  $typeSymbol $relativePath")
@@ -151,19 +151,19 @@ object DocumentCli {
                         }
                     }
                 }
-                
+
                 val registerTime = System.currentTimeMillis() - registerStartTime
                 println("✅ Registered $registeredCount/${documents.size} documents (${registerTime}ms)")
                 if (cachedCount > 0) {
                     println("   📦 $cachedCount from cache, ${registeredCount - cachedCount} newly parsed")
                 }
                 println()
-                
+
                 // Show registered documents summary
                 val registeredPaths = DocumentRegistry.getRegisteredPaths()
                 println("📚 Document Registry Summary:")
                 println("   Total registered: ${registeredPaths.size}")
-                
+
                 // Count by type
                 val byType = registeredPaths.groupBy { path ->
                     val ext = File(path).extension.lowercase()
@@ -185,17 +185,17 @@ object DocumentCli {
                     println("   - $type: ${paths.size}")
                 }
                 println()
-                
+
                 // Register index provider to bridge DocumentRegistry with DocumentIndexService
                 println("🔗 Registering document index provider...")
                 val provider = cc.unitmesh.devins.service.DocumentIndexServiceProvider(indexRepository)
                 DocumentRegistry.setIndexProvider(provider)
                 println("✅ Index provider registered")
                 println()
-                
+
                 // Create DocumentAgent
                 println("🧠 Creating DocumentAgent...")
-                
+
                 // Load configuration from ~/.autodev/config.yaml
                 val configFile = File(System.getProperty("user.home"), ".autodev/config.yaml")
                 if (!configFile.exists()) {
@@ -203,22 +203,22 @@ object DocumentCli {
                     System.err.println("   Please create ~/.autodev/config.yaml with your LLM configuration")
                     return@runBlocking
                 }
-                
+
                 val yamlContent = configFile.readText()
                 val yaml = Yaml(configuration = com.charleskorn.kaml.YamlConfiguration(strictMode = false))
                 val config = yaml.decodeFromString(AutoDevConfig.serializer(), yamlContent)
-                
+
                 val activeName = config.active
                 val activeConfig = config.configs.find { it.name == activeName }
-                
+
                 if (activeConfig == null) {
                     System.err.println("❌ Active configuration '$activeName' not found in config.yaml")
                     System.err.println("   Available configs: ${config.configs.map { it.name }.joinToString(", ")}")
                     return@runBlocking
                 }
-                
+
                 println("📝 Using config: ${activeConfig.name} (${activeConfig.provider}/${activeConfig.model})")
-                
+
                 // Convert provider string to LLMProviderType
                 val providerType = when (activeConfig.provider.lowercase()) {
                     "openai" -> LLMProviderType.OPENAI
@@ -232,7 +232,7 @@ object DocumentCli {
                     "kimi" -> LLMProviderType.KIMI
                     else -> LLMProviderType.CUSTOM_OPENAI_BASE
                 }
-                
+
                 val llmService = KoogLLMService(
                     ModelConfig(
                         provider = providerType,
@@ -243,11 +243,11 @@ object DocumentCli {
                         baseUrl = activeConfig.baseUrl ?: ""
                     )
                 )
-                
+
                 val renderer = ConsoleRenderer()
                 val mcpConfigService = McpToolConfigService(ToolConfigFile())
                 val dummyParser = DocumentParserFactory.createParserForFile("dummy.md")!!
-                
+
                 val agent = DocumentAgent(
                     llmService = llmService,
                     parserService = dummyParser,
@@ -257,10 +257,10 @@ object DocumentCli {
                     mcpToolConfigService = mcpConfigService,
                     enableLLMStreaming = true
                 )
-                
+
                 println("✅ Agent created")
                 println()
-                
+
                 // Execute query
                 if (isFeatureTreeMode) {
                     println("🌳 Generating product feature tree...")
@@ -280,16 +280,16 @@ object DocumentCli {
                     ),
                     onProgress = { }
                 )
-                
+
                 val queryTime = System.currentTimeMillis() - queryStartTime
-                
+
                 println()
                 println("=".repeat(80))
                 println("📊 Result:")
                 println("=".repeat(80))
                 println(result.content)
                 println()
-                
+
                 if (result.success) {
                     println("✅ Query completed successfully")
                     println("⏱️  Query time: ${queryTime}ms")
@@ -297,19 +297,19 @@ object DocumentCli {
                 } else {
                     println("❌ Query failed")
                 }
-                
+
             } catch (e: Exception) {
                 System.err.println("❌ Error: ${e.message}")
                 e.printStackTrace()
             }
         }
     }
-    
+
     /**
      * Scan directory for documents
      */
     private fun scanDocuments(
-        dir: File, 
+        dir: File,
         extensions: List<String> = listOf(
             ".md", ".pdf", ".docx", ".pptx", ".txt",  // Documents
             ".java", ".kt", ".kts",                   // JVM source code
@@ -319,10 +319,10 @@ object DocumentCli {
     ): List<File> {
         val documents = mutableListOf<File>()
         val skipDirs = setOf("node_modules", ".git", "build", "dist", "target", ".gradle", "bin", ".idea", "out", "libs", "generated")
-        
+
         fun scanRecursive(current: File) {
             if (!current.canRead()) return
-            
+
             if (current.isDirectory) {
                 if (skipDirs.contains(current.name) || current.name.startsWith(".")) {
                     return
@@ -335,11 +335,11 @@ object DocumentCli {
                 }
             }
         }
-        
+
         scanRecursive(dir)
         return documents
     }
-    
+
     /**
      * Register result types
      */
@@ -348,62 +348,62 @@ object DocumentCli {
         data class FromCache(val record: DocumentIndexRecord) : RegisterResult()
         data class Failed(val reason: String) : RegisterResult()
     }
-    
+
     /**
      * Register a document with caching support
      */
     private suspend fun registerDocumentWithCache(
-        file: File, 
+        file: File,
         relativePath: String,
         indexRepository: DocumentIndexRepository
     ): RegisterResult {
         return try {
             // Get parser for this file type
-            val parser = DocumentParserFactory.createParserForFile(file.name) 
+            val parser = DocumentParserFactory.createParserForFile(file.name)
                 ?: return RegisterResult.Failed("no parser")
-            
+
             // Calculate file hash
             val fileHash = calculateFileHash(file)
             val lastModified = file.lastModified()
-            
+
             // Check cache - if hash matches and content exists, use cached content
             val cachedRecord = indexRepository.get(relativePath)
-            if (cachedRecord != null && 
-                cachedRecord.hash == fileHash && 
+            if (cachedRecord != null &&
+                cachedRecord.hash == fileHash &&
                 cachedRecord.status == "success" &&
                 cachedRecord.content != null) {
-                
+
                 // File unchanged - restore from cached extracted content
                 // This avoids re-parsing large binary files (PPTX, PDF)
                 val formatType = DocumentParserFactory.detectFormat(file.name) ?: DocumentFormatType.PLAIN_TEXT
-                
+
                 val metadata = DocumentMetadata(
                     lastModified = lastModified,
                     fileSize = file.length(),
                     formatType = formatType
                 )
-                
+
                 val documentFile = DocumentFile(
                     name = file.name,
                     path = relativePath,
                     metadata = metadata
                 )
-                
+
                 // Parse from cached extracted content (not original binary!)
                 val parsedDoc = parser.parse(documentFile, cachedRecord.content)
                 DocumentRegistry.registerDocument(relativePath, parsedDoc, parser)
-                
+
                 // Return FromCache - file unchanged, restored from DB
                 return RegisterResult.FromCache(cachedRecord)
             }
-            
+
             // Not in cache or outdated, parse fresh
             val formatType = DocumentParserFactory.detectFormat(file.name) ?: DocumentFormatType.PLAIN_TEXT
-            
+
             // Read file content
             val content = when (formatType) {
-                DocumentFormatType.MARKDOWN, 
-                DocumentFormatType.PLAIN_TEXT, 
+                DocumentFormatType.MARKDOWN,
+                DocumentFormatType.PLAIN_TEXT,
                 DocumentFormatType.SOURCE_CODE -> {
                     file.readText()
                 }
@@ -413,31 +413,31 @@ object DocumentCli {
                     String(bytes, Charsets.ISO_8859_1)
                 }
             }
-            
+
             // Create DocumentFile
             val metadata = DocumentMetadata(
                 lastModified = lastModified,
                 fileSize = file.length(),
                 formatType = formatType
             )
-            
+
             val documentFile = DocumentFile(
                 name = file.name,
                 path = relativePath,
                 metadata = metadata
             )
-            
+
             // Parse document
             val parsedDoc = parser.parse(documentFile, content)
-            
+
             // Register in registry
             DocumentRegistry.registerDocument(relativePath, parsedDoc, parser)
-            
+
             // Save to cache: store extracted text (not original binary)
             // For PDF/PPTX: Tika extracts ~50KB text from 10MB binary
             // For Markdown: store original text
             val extractedContent = parser.getDocumentContent() ?: content
-            
+
             val indexRecord = DocumentIndexRecord(
                 path = relativePath,
                 hash = fileHash,
@@ -448,7 +448,7 @@ object DocumentCli {
                 indexedAt = System.currentTimeMillis()
             )
             indexRepository.save(indexRecord)
-            
+
             RegisterResult.Success(fromCache = false)
         } catch (e: Exception) {
             // Save error to cache (to avoid re-parsing failed files)
@@ -467,11 +467,11 @@ object DocumentCli {
             } catch (cacheError: Exception) {
                 // Ignore cache errors
             }
-            
+
             RegisterResult.Failed(e.message ?: "unknown error")
         }
     }
-    
+
     /**
      * Calculate SHA-256 hash of file
      */
@@ -510,20 +510,20 @@ class ConsoleRenderer : CodingAgentRenderer {
     override fun renderIterationHeader(current: Int, max: Int) {
         println("\n━━━ Iteration $current/$max ━━━")
     }
-    
+
     override fun renderLLMResponseStart() {
         println("💭 ")
     }
-    
+
     override fun renderLLMResponseChunk(chunk: String) {
         print(chunk)
         System.out.flush()
     }
-    
+
     override fun renderLLMResponseEnd() {
         println("\n")
     }
-    
+
     override fun renderToolCall(toolName: String, paramsStr: String) {
         println("● $toolName")
         if (paramsStr.isNotEmpty()) {
@@ -534,28 +534,28 @@ class ConsoleRenderer : CodingAgentRenderer {
             }
         }
     }
-    
+
     private fun formatCliParameters(params: String): String {
         val trimmed = params.trim()
-        
+
         // Handle JSON format
         if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
             val lines = mutableListOf<String>()
             val jsonPattern = Regex(""""(\w+)"\s*:\s*("([^"]*)"|(\d+)|true|false|null)""")
             jsonPattern.findAll(trimmed).forEach { match ->
                 val key = match.groups[1]?.value ?: ""
-                val value = match.groups[3]?.value 
-                    ?: match.groups[4]?.value 
-                    ?: match.groups[2]?.value?.removeSurrounding("\"") 
+                val value = match.groups[3]?.value
+                    ?: match.groups[4]?.value
+                    ?: match.groups[2]?.value?.removeSurrounding("\"")
                     ?: ""
                 lines.add("$key = $value")
             }
             return if (lines.isNotEmpty()) lines.joinToString(", ") else params
         }
-        
+
         return params
     }
-    
+
     override fun renderToolResult(
         toolName: String,
         success: Boolean,
@@ -567,33 +567,46 @@ class ConsoleRenderer : CodingAgentRenderer {
         val preview = (output ?: fullOutput ?: "").lines().take(3).joinToString(" ").take(100)
         println("  $statusSymbol ${if (preview.length < (output ?: fullOutput ?: "").length) "$preview..." else preview}")
     }
-    
-    override fun renderTaskComplete() {
-        println("\n✓ Task marked as complete")
+
+    override fun renderTaskComplete(executionTimeMs: Long, toolsUsedCount: Int) {
+        val parts = mutableListOf<String>()
+
+        if (executionTimeMs > 0) {
+            val seconds = executionTimeMs / 1000.0
+            val rounded = (seconds * 100).toLong() / 100.0
+            parts.add("${rounded}s")
+        }
+
+        if (toolsUsedCount > 0) {
+            parts.add("$toolsUsedCount tools")
+        }
+
+        val info = if (parts.isNotEmpty()) " (${parts.joinToString(", ")})" else ""
+        println("\n✓ Task marked as complete$info")
     }
-    
+
     override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {
         val symbol = if (success) "✅" else "❌"
         println("\n$symbol Final result after $iterations iterations:")
         println(message)
     }
-    
+
     override fun renderError(message: String) {
         System.err.println("❌ Error: $message")
     }
-    
+
     override fun renderRepeatWarning(toolName: String, count: Int) {
         println("⚠️  Warning: Tool '$toolName' called $count times")
     }
-    
+
     override fun renderRecoveryAdvice(recoveryAdvice: String) {
         println("💡 Recovery advice: $recoveryAdvice")
     }
-    
+
     override fun updateTokenInfo(tokenInfo: TokenInfo) {
         // Skip token info in CLI
     }
-    
+
     override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
         println("❓ Confirmation required for: $toolName")
         println("   Params: $params")

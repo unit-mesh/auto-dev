@@ -115,7 +115,7 @@ export abstract class BaseRenderer implements JsCodingAgentRenderer {
   abstract renderLLMResponseEnd(): void;
   abstract renderToolCall(toolName: string, paramsStr: string): void;
   abstract renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput?: string | null, metadata?: Record<string, string>): void;
-  abstract renderTaskComplete(): void;
+  abstract renderTaskComplete(executionTimeMs?: number, toolsUsedCount?: number): void;
   abstract renderFinalResult(success: boolean, message: string, iterations: number): void;
   abstract renderError(message: string): void;
   abstract renderRepeatWarning(toolName: string, count: number): void;

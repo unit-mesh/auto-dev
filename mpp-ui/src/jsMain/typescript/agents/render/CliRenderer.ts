@@ -524,8 +524,20 @@ export class CliRenderer extends BaseRenderer {
     return null;
   }
 
-  renderTaskComplete(): void {
-    console.log(semanticChalk.successBold('\n✓ Task marked as complete\n'));
+  renderTaskComplete(executionTimeMs: number = 0, toolsUsedCount: number = 0): void {
+    const parts: string[] = [];
+
+    if (executionTimeMs > 0) {
+      const seconds = (executionTimeMs / 1000).toFixed(2);
+      parts.push(`${seconds}s`);
+    }
+
+    if (toolsUsedCount > 0) {
+      parts.push(`${toolsUsedCount} tools`);
+    }
+
+    const info = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+    console.log(semanticChalk.successBold(`\n✓ Task marked as complete${info}\n`));
   }
 
   renderFinalResult(success: boolean, message: string, iterations: number): void {

@@ -134,8 +134,20 @@ export class TuiRenderer extends BaseRenderer {
   /**
    * 渲染任务完成
    */
-  renderTaskComplete(): void {
-    const message = '✅ **Task completed**';
+  renderTaskComplete(executionTimeMs: number = 0, toolsUsedCount: number = 0): void {
+    const parts: string[] = [];
+
+    if (executionTimeMs > 0) {
+      const seconds = (executionTimeMs / 1000).toFixed(2);
+      parts.push(`${seconds}s`);
+    }
+
+    if (toolsUsedCount > 0) {
+      parts.push(`${toolsUsedCount} tools`);
+    }
+
+    const info = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+    const message = `✅ **Task completed**${info}`;
     this.renderSystemMessage(message);
   }
 
