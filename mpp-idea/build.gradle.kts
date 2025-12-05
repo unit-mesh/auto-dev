@@ -174,23 +174,6 @@ project(":") {
         }
     }
 
-    // Enable root project source compilation for toolwindow classes
-    // Temporarily disable root project source compilation due to Compose dependency conflicts
-    // All functionality is in sub-modules which compile successfully
-    sourceSets {
-        main {
-            java {
-                // srcDirs("src/main/java")
-            }
-            kotlin {
-                // srcDirs("src/main/kotlin")
-            }
-            resources {
-                srcDirs("src/main/resources")
-            }
-        }
-    }
-
     // Handle duplicate resources from dependencies
     tasks.named<Copy>("processResources") {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -287,20 +270,6 @@ project(":") {
                 "intellij.platform.compose"
             )
 
-            pluginModule(implementation(project(":mpp-idea-core")))
-            pluginModule(implementation(project(":mpp-idea-lang:java")))
-            pluginModule(implementation(project(":mpp-idea-lang:kotlin")))
-            pluginModule(implementation(project(":mpp-idea-lang:pycharm")))
-            pluginModule(implementation(project(":mpp-idea-lang:javascript")))
-            pluginModule(implementation(project(":mpp-idea-lang:goland")))
-            pluginModule(implementation(project(":mpp-idea-lang:rust")))
-
-            pluginModule(implementation(project(":mpp-idea-exts:ext-database")))
-            pluginModule(implementation(project(":mpp-idea-exts:ext-git")))
-            pluginModule(implementation(project(":mpp-idea-exts:ext-terminal")))
-            pluginModule(implementation(project(":mpp-idea-exts:devins-lang")))
-            pluginModule(implementation(project(":mpp-idea-exts:devins-lang")))
-
             testFramework(TestFrameworkType.Bundled)
             testFramework(TestFrameworkType.Platform)
         }
@@ -318,14 +287,37 @@ project(":") {
         implementation(project(":mpp-idea-exts:ext-terminal"))
         implementation(project(":mpp-idea-exts:devins-lang"))
 
-        implementation("io.ktor:ktor-client-core:3.2.2")
-        implementation("io.ktor:ktor-client-cio:3.2.2")
-        implementation("io.ktor:ktor-client-content-negotiation:3.2.2")
-        implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
-        implementation("io.ktor:ktor-client-logging:3.2.2")
+        // Ktor dependencies - exclude coroutines to use IntelliJ's bundled version
+        implementation("io.ktor:ktor-client-core:3.2.2") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
+        implementation("io.ktor:ktor-client-cio:3.2.2") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
+        implementation("io.ktor:ktor-client-content-negotiation:3.2.2") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
+        implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
+        implementation("io.ktor:ktor-client-logging:3.2.2") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
+
+        // Use compileOnly for coroutines - IntelliJ provides these at runtime
+        // This ensures we compile against the same API but use IntelliJ's ClassLoader at runtime
+        compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
         // mpp-core dependency for root project - use published artifact
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
 
         // mpp-ui dependency - use Maven coordinates (requires publishToMavenLocal first)
         // Exclude all Compose/androidx to use IntelliJ's bundled versions
@@ -347,6 +339,10 @@ project(":") {
             exclude(group = "androidx.appcompat")
             exclude(group = "org.jetbrains.skiko")
             exclude(group = "org.jetbrains.skia")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+            exclude(group = "cc.unitmesh.viewer.web", module = "mpp-viewer-web")
+            exclude(group = "cc.unitmesh", module = "mpp-viewer-web")
         }
     }
 
@@ -414,7 +410,10 @@ project(":mpp-idea-core") {
     }
 
     dependencies {
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
 
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -581,7 +580,10 @@ project(":mpp-idea-exts:ext-database") {
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
 
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
         implementation(project(":mpp-idea-core"))
         implementation(project(":mpp-idea-exts:devins-lang"))
     }
@@ -594,7 +596,10 @@ project(":mpp-idea-exts:ext-git") {
             intellijPlugins(ideaPlugins + "Git4Idea")
         }
 
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
         implementation(project(":mpp-idea-core"))
         implementation(project(":mpp-idea-exts:devins-lang"))
 
@@ -636,7 +641,10 @@ project(":mpp-idea-exts:devins-lang") {
         implementation("com.jayway.jsonpath:json-path:2.9.0")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
         implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
         implementation(project(":mpp-idea-core"))
     }
 

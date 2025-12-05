@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.TOCItem
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import org.jetbrains.jewel.foundation.theme.JewelTheme
@@ -39,7 +40,7 @@ fun IdeaStructuredInfoPane(
     var entitiesExpanded by remember { mutableStateOf(false) }
 
     // Reset expansion state when content changes
-    LaunchedEffect(toc, entities) {
+    IdeaLaunchedEffect(toc, entities) {
         tocExpanded = true
         entitiesExpanded = false
     }

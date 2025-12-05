@@ -1,11 +1,11 @@
 package cc.unitmesh.devins.idea.toolwindow.codereview
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.components.IdeaResizableSplitPane
+import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewState
 import com.intellij.openapi.Disposable
 
 /**
@@ -16,13 +16,21 @@ import com.intellij.openapi.Disposable
  * - Left: Commit history list
  * - Center: Diff viewer with file tabs
  * - Right: AI Analysis with Plan, User Input, and Fix generation sections
+ *
+ * Note: Uses IdeaLaunchedEffect-based manual collection instead of collectAsState()
+ * to avoid ClassLoader conflicts between plugin's coroutines and IntelliJ's
+ * bundled Compose runtime.
  */
 @Composable
 fun IdeaCodeReviewContent(
     viewModel: IdeaCodeReviewViewModel,
     parentDisposable: Disposable
 ) {
-    val state by viewModel.state.collectAsState()
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
+    var state by remember { mutableStateOf(CodeReviewState()) }
+    IdeaLaunchedEffect(viewModel) {
+        viewModel.state.collect { state = it }
+    }
 
     IdeaResizableSplitPane(
         modifier = Modifier.fillMaxSize(),

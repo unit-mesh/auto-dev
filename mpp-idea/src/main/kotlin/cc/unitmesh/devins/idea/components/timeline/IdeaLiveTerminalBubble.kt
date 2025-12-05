@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.agent.tool.shell.ShellSessionManager
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
+import cc.unitmesh.devins.idea.compose.rememberIdeaCoroutineScope
 import cc.unitmesh.devins.idea.renderer.terminal.IdeaAnsiTerminalRenderer
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.project.Project
@@ -163,15 +165,21 @@ fun IdeaLiveTerminalBubble(
         process?.let { ProcessOutputCollector(it, sessionId = item.sessionId) }
     }
 
-    val outputState by collector?.state?.collectAsState()
-        ?: remember { mutableStateOf(ProcessOutputState(
-            output = "[No process handle available]",
-            isRunning = false
-        )) }
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
+    var outputState by remember {
+        mutableStateOf(ProcessOutputState(
+            output = if (collector == null) "[No process handle available]" else "",
+            isRunning = collector != null
+        ))
+    }
+
+    IdeaLaunchedEffect(collector) {
+        collector?.state?.collect { outputState = it }
+    }
 
     // Start collector when process is available
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(collector) {
+    val scope = rememberIdeaCoroutineScope()
+    IdeaLaunchedEffect(collector) {
         collector?.start(scope)
     }
 

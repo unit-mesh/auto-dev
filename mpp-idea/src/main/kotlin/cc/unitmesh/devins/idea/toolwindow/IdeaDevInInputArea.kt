@@ -12,6 +12,8 @@ import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.plan.AgentPlan
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
+import cc.unitmesh.devins.idea.compose.rememberIdeaCoroutineScope
 import cc.unitmesh.devins.idea.editor.*
 import cc.unitmesh.devins.idea.toolwindow.plan.IdeaPlanSummaryBar
 import cc.unitmesh.devins.idea.toolwindow.changes.IdeaFileChangeSummary
@@ -89,9 +91,13 @@ fun IdeaDevInInputArea(
 
     // Use a ref to track current processing state for the SwingPanel listener
     val isProcessingRef = remember { mutableStateOf(isProcessing) }
-    LaunchedEffect(isProcessing) { isProcessingRef.value = isProcessing }
+    // Use DisposableEffect instead of LaunchedEffect to avoid ClassLoader conflicts
+    DisposableEffect(isProcessing) {
+        isProcessingRef.value = isProcessing
+        onDispose { }
+    }
 
-    val scope = rememberCoroutineScope()
+    val scope = rememberIdeaCoroutineScope(project)
     val borderShape = RoundedCornerShape(8.dp)
 
     // Outer container with unified border

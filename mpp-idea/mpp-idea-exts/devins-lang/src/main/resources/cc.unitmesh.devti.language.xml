@@ -1,10 +1,5 @@
-<idea-plugin package="cc.unitmesh.devti.language">
+<idea-plugin>
     <resource-bundle>messages.DevInBundle</resource-bundle>
-
-    <dependencies>
-        <plugin id="org.intellij.plugins.markdown"/>
-        <plugin id="com.jetbrains.sh"/>
-    </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
         <backgroundPostStartupActivity implementation="cc.unitmesh.devti.language.startup.ShireActionStartupActivity"/>

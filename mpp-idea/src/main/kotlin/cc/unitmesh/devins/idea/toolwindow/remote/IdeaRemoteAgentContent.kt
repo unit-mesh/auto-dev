@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.components.timeline.IdeaTimelineContent
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -26,6 +27,10 @@ import org.jetbrains.jewel.ui.component.*
  * - Server configuration inputs (URL, project/git URL)
  * - Connection status indicator
  * - Timeline content from remote agent execution
+ *
+ * Note: Uses LaunchedEffect-based manual collection instead of collectAsState()
+ * to avoid ClassLoader conflicts between plugin's coroutines and IntelliJ's
+ * bundled Compose runtime.
  */
 @Composable
 fun IdeaRemoteAgentContent(
@@ -35,18 +40,35 @@ fun IdeaRemoteAgentContent(
     onGitUrlChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val timeline by viewModel.renderer.timeline.collectAsState()
-    val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
-    val isConnected by viewModel.isConnected.collectAsState()
-    val connectionError by viewModel.connectionError.collectAsState()
-    val availableProjects by viewModel.availableProjects.collectAsState()
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
+    var timeline by remember { mutableStateOf<List<cc.unitmesh.agent.render.TimelineItem>>(emptyList()) }
+    var streamingOutput by remember { mutableStateOf("") }
+    var isConnected by remember { mutableStateOf(false) }
+    var connectionError by remember { mutableStateOf<String?>(null) }
+    var availableProjects by remember { mutableStateOf<List<ProjectInfo>>(emptyList()) }
+
+    IdeaLaunchedEffect(viewModel.renderer) {
+        viewModel.renderer.timeline.collect { timeline = it }
+    }
+    IdeaLaunchedEffect(viewModel.renderer) {
+        viewModel.renderer.currentStreamingOutput.collect { streamingOutput = it }
+    }
+    IdeaLaunchedEffect(viewModel) {
+        viewModel.isConnected.collect { isConnected = it }
+    }
+    IdeaLaunchedEffect(viewModel) {
+        viewModel.connectionError.collect { connectionError = it }
+    }
+    IdeaLaunchedEffect(viewModel) {
+        viewModel.availableProjects.collect { availableProjects = it }
+    }
 
     var serverUrl by remember { mutableStateOf(viewModel.serverUrl) }
     var projectId by remember { mutableStateOf("") }
     var gitUrl by remember { mutableStateOf("") }
 
     // Check connection on initial load and when server URL changes
-    LaunchedEffect(serverUrl) {
+    IdeaLaunchedEffect(serverUrl) {
         if (serverUrl.isNotBlank()) {
             viewModel.updateServerUrl(serverUrl)
             viewModel.checkConnection()
@@ -54,10 +76,10 @@ fun IdeaRemoteAgentContent(
     }
 
     // Propagate changes to parent
-    LaunchedEffect(projectId) {
+    IdeaLaunchedEffect(projectId) {
         onProjectIdChange(projectId)
     }
-    LaunchedEffect(gitUrl) {
+    IdeaLaunchedEffect(gitUrl) {
         onGitUrlChange(gitUrl)
     }
 
@@ -119,38 +141,38 @@ private fun RemoteConfigPanel(
     val gitUrlState = rememberTextFieldState(gitUrl)
 
     // Sync server URL state to callback
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit) {
         snapshotFlow { serverUrlState.text.toString() }
             .distinctUntilChanged()
             .collect { onServerUrlChange(it) }
     }
 
     // Sync project ID state to callback
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit) {
         snapshotFlow { projectIdState.text.toString() }
             .distinctUntilChanged()
             .collect { onProjectIdChange(it) }
     }
 
     // Sync git URL state to callback
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit) {
         snapshotFlow { gitUrlState.text.toString() }
             .distinctUntilChanged()
             .collect { onGitUrlChange(it) }
     }
 
     // Sync external changes to text field states
-    LaunchedEffect(serverUrl) {
+    IdeaLaunchedEffect(serverUrl) {
         if (serverUrlState.text.toString() != serverUrl) {
             serverUrlState.setTextAndPlaceCursorAtEnd(serverUrl)
         }
     }
-    LaunchedEffect(projectId) {
+    IdeaLaunchedEffect(projectId) {
         if (projectIdState.text.toString() != projectId) {
             projectIdState.setTextAndPlaceCursorAtEnd(projectId)
         }
     }
-    LaunchedEffect(gitUrl) {
+    IdeaLaunchedEffect(gitUrl) {
         if (gitUrlState.text.toString() != gitUrl) {
             gitUrlState.setTextAndPlaceCursorAtEnd(gitUrl)
         }

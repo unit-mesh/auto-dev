@@ -7,6 +7,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.AgentType
+import cc.unitmesh.agent.plan.AgentPlan
+import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.editor.IdeaModelConfigDialogWrapper
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewContent
 import cc.unitmesh.devins.idea.toolwindow.codereview.IdeaCodeReviewViewModel
@@ -20,6 +23,7 @@ import cc.unitmesh.devins.idea.toolwindow.remote.getEffectiveProjectId
 import cc.unitmesh.devins.idea.components.status.IdeaToolLoadingStatusBar
 import cc.unitmesh.devins.idea.components.timeline.IdeaEmptyStateMessage
 import cc.unitmesh.devins.idea.components.timeline.IdeaTimelineContent
+import cc.unitmesh.devins.ui.config.AutoDevConfigWrapper
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.NamedModelConfig
@@ -40,6 +44,12 @@ import org.jetbrains.jewel.ui.component.Divider
  * - Tool loading status bar
  *
  * Aligned with AgentChatInterface from mpp-ui for feature parity.
+ *
+ * Note: Uses LaunchedEffect-based manual collection instead of collectAsState()
+ * to avoid ClassLoader conflicts between plugin's coroutines and IntelliJ's
+ * bundled Compose runtime. The StateFlow from kotlinx-coroutines in mpp-core
+ * is loaded by a different ClassLoader than the one expected by Compose's
+ * collectAsState() extension function.
  */
 @Composable
 fun IdeaAgentApp(
@@ -47,16 +57,47 @@ fun IdeaAgentApp(
     project: Project,
     coroutineScope: CoroutineScope
 ) {
-    val currentAgentType by viewModel.currentAgentType.collectAsState()
-    val timeline by viewModel.renderer.timeline.collectAsState()
-    val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
-    val isExecuting by viewModel.isExecuting.collectAsState()
-    val currentPlan by viewModel.renderer.currentPlan.collectAsState()
-    val showConfigDialog by viewModel.showConfigDialog.collectAsState()
-    val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
-    val configWrapper by viewModel.configWrapper.collectAsState()
-    val currentModelConfig by viewModel.currentModelConfig.collectAsState()
+    // Use mutableStateOf with LaunchedEffect for manual collection
+    // to avoid ClassLoader conflicts with collectAsState()
+    var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
+    var timeline by remember { mutableStateOf<List<TimelineItem>>(emptyList()) }
+    var streamingOutput by remember { mutableStateOf("") }
+    var isExecuting by remember { mutableStateOf(false) }
+    var currentPlan by remember { mutableStateOf<AgentPlan?>(null) }
+    var showConfigDialog by remember { mutableStateOf(false) }
+    var mcpPreloadingMessage by remember { mutableStateOf("") }
+    var configWrapper by remember { mutableStateOf<AutoDevConfigWrapper?>(null) }
+    var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     val listState = rememberLazyListState()
+
+    // Collect StateFlows manually using IdeaLaunchedEffect to avoid ClassLoader conflicts
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.currentAgentType.collect { currentAgentType = it }
+    }
+    IdeaLaunchedEffect(viewModel.renderer, project = project) {
+        viewModel.renderer.timeline.collect { timeline = it }
+    }
+    IdeaLaunchedEffect(viewModel.renderer, project = project) {
+        viewModel.renderer.currentStreamingOutput.collect { streamingOutput = it }
+    }
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.isExecuting.collect { isExecuting = it }
+    }
+    IdeaLaunchedEffect(viewModel.renderer, project = project) {
+        viewModel.renderer.currentPlan.collect { currentPlan = it }
+    }
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.showConfigDialog.collect { showConfigDialog = it }
+    }
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.mcpPreloadingMessage.collect { mcpPreloadingMessage = it }
+    }
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.configWrapper.collect { configWrapper = it }
+    }
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.currentModelConfig.collect { currentModelConfig = it }
+    }
 
     // Get available configs and current config name
     val availableConfigs = remember(configWrapper) {
@@ -80,7 +121,7 @@ fun IdeaAgentApp(
     var remoteGitUrl by remember { mutableStateOf("") }
 
     // Auto-scroll to bottom when new items arrive
-    LaunchedEffect(timeline.size, streamingOutput) {
+    IdeaLaunchedEffect(timeline.size, streamingOutput, project = project) {
         if (timeline.isNotEmpty() || streamingOutput.isNotEmpty()) {
             val targetIndex = if (streamingOutput.isNotEmpty()) timeline.size else timeline.lastIndex.coerceAtLeast(0)
             if (targetIndex >= 0) {
@@ -90,7 +131,7 @@ fun IdeaAgentApp(
     }
 
     // Create ViewModels when switching tabs
-    LaunchedEffect(currentAgentType) {
+    IdeaLaunchedEffect(currentAgentType, project = project) {
         if (currentAgentType == AgentType.CODE_REVIEW && codeReviewViewModel == null) {
             codeReviewViewModel = IdeaCodeReviewViewModel(project, coroutineScope)
         }
@@ -181,8 +222,12 @@ fun IdeaAgentApp(
             }
             AgentType.REMOTE -> {
                 remoteAgentViewModel?.let { remoteVm ->
-                    val remoteIsExecuting by remoteVm.isExecuting.collectAsState()
-                    val remoteIsConnected by remoteVm.isConnected.collectAsState()
+                    // Use manual state collection for remote agent states
+                    var remoteIsExecuting by remember { mutableStateOf(false) }
+
+                    IdeaLaunchedEffect(remoteVm, project = project) {
+                        remoteVm.isExecuting.collect { remoteIsExecuting = it }
+                    }
 
                     IdeaVerticalResizableSplitPane(
                         modifier = Modifier.fillMaxWidth().weight(1f),
@@ -253,7 +298,7 @@ fun IdeaAgentApp(
     }
 
     // Model Configuration Dialog using DialogWrapper for proper z-index handling
-    LaunchedEffect(showConfigDialog) {
+    IdeaLaunchedEffect(showConfigDialog, project = project) {
         if (showConfigDialog) {
             val dialogConfig = currentModelConfig ?: ModelConfig()
             IdeaModelConfigDialogWrapper.show(

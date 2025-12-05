@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.renderer.MermaidRenderer
 import cc.unitmesh.devins.idea.renderer.sketch.actions.IdeaDiagramActions
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
@@ -57,7 +58,7 @@ fun IdeaMermaidRenderer(
         }
     }
 
-    LaunchedEffect(mermaidCode, isDarkTheme) {
+    IdeaLaunchedEffect(mermaidCode, isDarkTheme) {
         isLoading = true
         errorMessage = null
         renderer.renderMermaid(mermaidCode, isDarkTheme)

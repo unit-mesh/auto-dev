@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import cc.unitmesh.devins.ui.compose.terminal.AnsiParser
 import cc.unitmesh.devins.ui.compose.terminal.TerminalCell
@@ -50,7 +51,7 @@ fun IdeaAnsiTerminalRenderer(
     val parser = remember { AnsiParser() }
 
     // Parse the ANSI text when it changes
-    LaunchedEffect(ansiText) {
+    IdeaLaunchedEffect(ansiText) {
         terminalState.clearScreen()
         parser.parse(ansiText, terminalState)
     }

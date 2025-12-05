@@ -1,8 +1,8 @@
 <!-- Plugin Configuration File for mpp-idea Compose UI module -->
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <id>cc.unitmesh.devins.idea</id>
-    <name>AutoDev Experiment</name>
-    <vendor email="h@phodal.com" url="https://github.com/unit-mesh">UnitMesh</vendor>
+    <name>Xiuper</name>
+    <vendor email="h@phodal.com" url="https://github.com/phodal">Phodal</vendor>
 
     <description><![CDATA[
     AutoDev Idea - Provides Compose-based UI components for IntelliJ IDEA 2025.2+.
@@ -64,5 +64,8 @@
                     secondary="false"
                     icon="cc.unitmesh.devins.idea.AutoDevIcons.ToolWindow"/>
     </extensions>
+
+    <!-- Include DevIn language extensions -->
+    <xi:include href="/cc.unitmesh.devti.language.xml" xpointer="xpointer(/idea-plugin/*)"/>
 </idea-plugin>
 

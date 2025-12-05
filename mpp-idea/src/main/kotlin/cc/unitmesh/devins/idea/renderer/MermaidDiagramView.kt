@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.Disposable
 import com.intellij.ui.jcef.JBCefApp
@@ -49,7 +50,7 @@ fun MermaidDiagramView(
         }
     }
 
-    LaunchedEffect(mermaidCode, isDarkTheme) {
+    IdeaLaunchedEffect(mermaidCode, isDarkTheme) {
         isLoading = true
         errorMessage = null
         renderer.renderMermaid(mermaidCode, isDarkTheme)

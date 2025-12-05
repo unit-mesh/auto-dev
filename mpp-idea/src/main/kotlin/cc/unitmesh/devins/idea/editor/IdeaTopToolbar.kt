@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -55,13 +56,21 @@ fun IdeaTopToolbar(
     var isExpanded by remember { mutableStateOf(false) }
 
     // Get context manager state if project is available
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
     val contextManager = remember(project) { project?.let { IdeaContextManager.getInstance(it) } }
-    val hasDefaultContext by contextManager?.defaultContextFiles?.collectAsState()
-        ?: remember { mutableStateOf(emptyList<VirtualFile>()) }
-    val rules by contextManager?.rules?.collectAsState()
-        ?: remember { mutableStateOf(emptyList<ContextRule>()) }
-    val relatedFiles by contextManager?.relatedFiles?.collectAsState()
-        ?: remember { mutableStateOf(emptyList<VirtualFile>()) }
+    var hasDefaultContext by remember { mutableStateOf<List<VirtualFile>>(emptyList()) }
+    var rules by remember { mutableStateOf<List<ContextRule>>(emptyList()) }
+    var relatedFiles by remember { mutableStateOf<List<VirtualFile>>(emptyList()) }
+
+    IdeaLaunchedEffect(contextManager) {
+        contextManager?.defaultContextFiles?.collect { hasDefaultContext = it }
+    }
+    IdeaLaunchedEffect(contextManager) {
+        contextManager?.rules?.collect { rules = it }
+    }
+    IdeaLaunchedEffect(contextManager) {
+        contextManager?.relatedFiles?.collect { relatedFiles = it }
+    }
 
     Column(
         modifier = modifier

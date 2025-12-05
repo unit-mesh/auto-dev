@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.config.*
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
+import cc.unitmesh.devins.idea.compose.rememberIdeaCoroutineScope
 import cc.unitmesh.devins.idea.services.IdeaToolConfigService
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
@@ -151,7 +153,7 @@ fun IdeaMcpConfigDialogContent(
     var hasUnsavedChanges by remember { mutableStateOf(false) }
     var autoSaveJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
-    val scope = rememberCoroutineScope()
+    val scope = rememberIdeaCoroutineScope(project)
 
     // Get tool config service for notifying state changes
     val toolConfigService = remember(project) {
@@ -194,7 +196,7 @@ fun IdeaMcpConfigDialogContent(
     }
 
     // Load configuration on startup
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit, project = project) {
         scope.launch {
             try {
                 toolConfig = ConfigManager.loadToolConfig()
@@ -806,7 +808,7 @@ private fun McpServersTab(
     val textFieldState = rememberTextFieldState(mcpConfigJson)
 
     // Sync text field state to callback
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit) {
         snapshotFlow { textFieldState.text.toString() }
             .distinctUntilChanged()
             .collect { newText ->
@@ -817,7 +819,7 @@ private fun McpServersTab(
     }
 
     // Update text field when external value changes
-    LaunchedEffect(mcpConfigJson) {
+    IdeaLaunchedEffect(mcpConfigJson) {
         if (textFieldState.text.toString() != mcpConfigJson) {
             textFieldState.setTextAndPlaceCursorAtEnd(mcpConfigJson)
         }

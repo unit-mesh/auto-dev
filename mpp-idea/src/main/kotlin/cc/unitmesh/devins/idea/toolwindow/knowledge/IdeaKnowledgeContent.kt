@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.TimelineItem
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.toolwindow.IdeaComposeIcons
 import cc.unitmesh.devins.idea.components.IdeaResizableSplitPane
 import cc.unitmesh.devins.idea.components.IdeaVerticalResizableSplitPane
@@ -33,15 +34,30 @@ import org.jetbrains.jewel.ui.component.*
  * - Left: Document list with search (resizable)
  * - Center: Document content viewer + Structured info pane (vertical split)
  * - Right: AI Chat interface (resizable)
+ *
+ * Note: Uses LaunchedEffect-based manual collection instead of collectAsState()
+ * to avoid ClassLoader conflicts between plugin's coroutines and IntelliJ's
+ * bundled Compose runtime.
  */
 @Composable
 fun IdeaKnowledgeContent(
     viewModel: IdeaKnowledgeViewModel,
     modifier: Modifier = Modifier
 ) {
-    val state by viewModel.state.collectAsState()
-    val timeline by viewModel.renderer.timeline.collectAsState()
-    val streamingOutput by viewModel.renderer.currentStreamingOutput.collectAsState()
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
+    var state by remember { mutableStateOf(IdeaKnowledgeState()) }
+    var timeline by remember { mutableStateOf<List<TimelineItem>>(emptyList()) }
+    var streamingOutput by remember { mutableStateOf("") }
+
+    IdeaLaunchedEffect(viewModel) {
+        viewModel.state.collect { state = it }
+    }
+    IdeaLaunchedEffect(viewModel.renderer) {
+        viewModel.renderer.timeline.collect { timeline = it }
+    }
+    IdeaLaunchedEffect(viewModel.renderer) {
+        viewModel.renderer.currentStreamingOutput.collect { streamingOutput = it }
+    }
 
     // Left panel + (Center + Right) split
     IdeaResizableSplitPane(
@@ -132,14 +148,14 @@ private fun DocumentListPanel(
     val searchTextFieldState = rememberTextFieldState(searchQuery)
 
     // Sync text field state changes to callback
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit) {
         snapshotFlow { searchTextFieldState.text.toString() }
             .distinctUntilChanged()
             .collect { onSearchQueryChange(it) }
     }
 
     // Sync external searchQuery changes to text field state
-    LaunchedEffect(searchQuery) {
+    IdeaLaunchedEffect(searchQuery) {
         if (searchTextFieldState.text.toString() != searchQuery) {
             searchTextFieldState.setTextAndPlaceCursorAtEnd(searchQuery)
         }
@@ -376,7 +392,7 @@ private fun DocumentContentPanel(
                 val lines = remember(content) { content.lines() }
 
                 // Auto-scroll to target line
-                LaunchedEffect(targetLineNumber) {
+                IdeaLaunchedEffect(targetLineNumber) {
                     targetLineNumber?.let { lineNum ->
                         if (lineNum > 0 && lineNum <= lines.size) {
                             listState.animateScrollToItem(lineNum - 1)
@@ -457,14 +473,14 @@ private fun AIChatPanel(
     val listState = rememberLazyListState()
 
     // Sync text field state to inputText
-    LaunchedEffect(Unit) {
+    IdeaLaunchedEffect(Unit) {
         snapshotFlow { inputTextFieldState.text.toString() }
             .distinctUntilChanged()
             .collect { inputText = it }
     }
 
     // Auto-scroll to bottom when new messages arrive
-    LaunchedEffect(timeline.size, streamingOutput) {
+    IdeaLaunchedEffect(timeline.size, streamingOutput) {
         if (timeline.isNotEmpty() || streamingOutput.isNotEmpty()) {
             val targetIndex = if (streamingOutput.isNotEmpty()) timeline.size else timeline.lastIndex.coerceAtLeast(0)
             if (targetIndex >= 0) {

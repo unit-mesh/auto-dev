@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
@@ -32,7 +33,7 @@ fun IdeaThinkingBlockRenderer(
     var userHasScrolled by remember { mutableStateOf(false) }
 
     // Track if user manually scrolled away from bottom
-    LaunchedEffect(scrollState.value, scrollState.maxValue) {
+    IdeaLaunchedEffect(scrollState.value, scrollState.maxValue) {
         if (scrollState.maxValue > 0) {
             val isAtBottom = scrollState.value >= scrollState.maxValue - 10
             if (!isAtBottom && scrollState.isScrollInProgress) {
@@ -44,7 +45,7 @@ fun IdeaThinkingBlockRenderer(
     }
 
     // Auto-scroll to bottom during streaming
-    LaunchedEffect(thinkingContent) {
+    IdeaLaunchedEffect(thinkingContent) {
         if (!isComplete && isExpanded && !userHasScrolled && thinkingContent.isNotBlank()) {
             kotlinx.coroutines.delay(16)
             val targetScroll = scrollState.maxValue

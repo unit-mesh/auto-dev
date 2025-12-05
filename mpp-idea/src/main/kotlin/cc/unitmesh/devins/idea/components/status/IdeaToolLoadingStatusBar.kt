@@ -3,15 +3,14 @@ package cc.unitmesh.devins.idea.components.status
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.agent.config.PreloadingStatus
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.services.IdeaToolConfigService
 import cc.unitmesh.devins.idea.toolwindow.IdeaAgentViewModel
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
@@ -21,6 +20,10 @@ import org.jetbrains.jewel.ui.component.Text
 
 /**
  * Tool loading status bar for displaying MCP tools and SubAgents status.
+ *
+ * Note: Uses LaunchedEffect-based manual collection instead of collectAsState()
+ * to avoid ClassLoader conflicts between plugin's coroutines and IntelliJ's
+ * bundled Compose runtime.
  */
 @Composable
 fun IdeaToolLoadingStatusBar(
@@ -28,12 +31,23 @@ fun IdeaToolLoadingStatusBar(
     project: Project,
     modifier: Modifier = Modifier
 ) {
-    val mcpPreloadingMessage by viewModel.mcpPreloadingMessage.collectAsState()
-    val mcpPreloadingStatus by viewModel.mcpPreloadingStatus.collectAsState()
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
+    var mcpPreloadingMessage by remember { mutableStateOf("") }
+    var mcpPreloadingStatus by remember { mutableStateOf(PreloadingStatus(false, emptyList(), 0)) }
+    var configVersion by remember { mutableStateOf(0L) }
+
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.mcpPreloadingMessage.collect { mcpPreloadingMessage = it }
+    }
+    IdeaLaunchedEffect(viewModel, project = project) {
+        viewModel.mcpPreloadingStatus.collect { mcpPreloadingStatus = it }
+    }
 
     // Observe tool config service for configuration changes
     val toolConfigService = remember { IdeaToolConfigService.getInstance(project) }
-    val configVersion by toolConfigService.configVersion.collectAsState()
+    IdeaLaunchedEffect(toolConfigService, project = project) {
+        toolConfigService.configVersion.collect { configVersion = it }
+    }
 
     // Recompute when preloading status OR config version changes
     val toolStatus = remember(mcpPreloadingStatus, configVersion) { viewModel.getToolLoadingStatus() }

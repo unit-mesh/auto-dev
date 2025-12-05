@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.diff.ChangeType
 import cc.unitmesh.agent.diff.FileChange
 import cc.unitmesh.agent.diff.FileChangeTracker
+import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
@@ -46,7 +47,11 @@ fun IdeaFileChangeSummary(
     project: Project,
     modifier: Modifier = Modifier
 ) {
-    val changes by FileChangeTracker.changes.collectAsState()
+    // Use manual state collection to avoid ClassLoader conflicts with collectAsState()
+    var changes by remember { mutableStateOf(emptyList<FileChange>()) }
+    IdeaLaunchedEffect(Unit) {
+        FileChangeTracker.changes.collect { changes = it }
+    }
     var isExpanded by remember { mutableStateOf(false) }
     var selectedChange by remember { mutableStateOf<FileChange?>(null) }
 
@@ -56,7 +61,7 @@ fun IdeaFileChangeSummary(
     }
 
     // Handle diff dialog display when a file is selected
-    LaunchedEffect(selectedChange) {
+    IdeaLaunchedEffect(selectedChange) {
         selectedChange?.let { change ->
             ApplicationManager.getApplication().invokeLater {
                 IdeaFileChangeDiffDialogWrapper.show(
