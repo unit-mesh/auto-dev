@@ -363,12 +363,20 @@ export class VSCodeRenderer {
     });
   }
 
-  renderTaskComplete(executionTimeMs: number = 0): void {
-    let message = 'Task completed';
+  renderTaskComplete(executionTimeMs: number = 0, toolsUsedCount: number = 0): void {
+    const parts: string[] = [];
+
     if (executionTimeMs > 0) {
       const seconds = (executionTimeMs / 1000).toFixed(2);
-      message = `Task completed (${seconds}s)`;
+      parts.push(`${seconds}s`);
     }
+
+    if (toolsUsedCount > 0) {
+      parts.push(`${toolsUsedCount} tools`);
+    }
+
+    const info = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+    const message = `Task completed${info}`;
     this.chatProvider.postMessage({
       type: 'taskComplete',
       data: { success: true, message }
@@ -479,7 +487,7 @@ export class CodingAgent {
       renderToolCall: (name: string, params: string) => renderer.renderToolCall(name, params),
       renderToolResult: (name: string, success: boolean, output: string | null, full: string | null) =>
         renderer.renderToolResult(name, success, output, full),
-      renderTaskComplete: (executionTimeMs?: number) => renderer.renderTaskComplete(executionTimeMs),
+      renderTaskComplete: (executionTimeMs?: number, toolsUsedCount?: number) => renderer.renderTaskComplete(executionTimeMs, toolsUsedCount),
       renderFinalResult: (success: boolean, msg: string, iters: number) =>
         renderer.renderFinalResult(success, msg, iters),
       renderError: (msg: string) => renderer.renderError(msg),

@@ -31,6 +31,14 @@ Rest:
 - For WASM platform, we should not use emoji and utf8 in code.
 - Use ./gradlew :mpp-ui:generateI18n4kFiles for i18n
 
+## CodingAgentRenderer Implementations
+
+When modifying `CodingAgentRenderer` interface, **ALL** renderer implementations must be updated:
+- **Kotlin**: `DefaultCodingAgentRenderer`, `ComposeRenderer`, `JewelRenderer`, `ServerSideRenderer`, `JsRendererAdapter`
+- **TypeScript**: `BaseRenderer.ts`, `CliRenderer.ts`, `ServerRenderer.ts`, `TuiRenderer.ts`
+- **VSCode**: `mpp-vscode/src/bridge/mpp-core.ts` (VSCodeRenderer), `mpp-vscode/src/providers/chat-view.ts`
+- **JVM CLI**: `CodingCliRenderer` (mpp-ui/src/jvmMain/.../CodingCli.kt), `ConsoleRenderer` (mpp-ui/src/jvmMain/.../DocumentCli.kt)
+
 ## Design System \(Color & Theme\)
 
 - **CLI/TUI (TypeScript)**: Use `mpp-ui/src/jsMain/typescript/design-system/` → Import `semanticInk` / `semanticChalk`

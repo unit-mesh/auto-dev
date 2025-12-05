@@ -488,8 +488,21 @@ class CodingCliRenderer : CodingAgentRenderer {
         println("  $statusSymbol ${if (preview.length < (output ?: fullOutput ?: "").length) "$preview..." else preview}")
     }
 
-    override fun renderTaskComplete() {
-        println("\n✓ Task marked as complete")
+    override fun renderTaskComplete(executionTimeMs: Long, toolsUsedCount: Int) {
+        val parts = mutableListOf<String>()
+
+        if (executionTimeMs > 0) {
+            val seconds = executionTimeMs / 1000.0
+            val rounded = (seconds * 100).toLong() / 100.0
+            parts.add("${rounded}s")
+        }
+
+        if (toolsUsedCount > 0) {
+            parts.add("$toolsUsedCount tools")
+        }
+
+        val info = if (parts.isNotEmpty()) " (${parts.joinToString(", ")})" else ""
+        println("\n✓ Task marked as complete$info")
     }
 
     override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {

@@ -102,7 +102,7 @@ interface JsCodingAgentRenderer {
     fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?)
 
     // Status and completion methods
-    fun renderTaskComplete(executionTimeMs: Double = 0.0)
+    fun renderTaskComplete(executionTimeMs: Double = 0.0, toolsUsedCount: Int = 0)
     fun renderFinalResult(success: Boolean, message: String, iterations: Int)
     fun renderError(message: String)
     fun renderRepeatWarning(toolName: String, count: Int)
@@ -155,8 +155,8 @@ class JsRendererAdapter(private val jsRenderer: JsCodingAgentRenderer) : CodingA
         jsRenderer.renderToolResult(toolName, success, output, fullOutput)
     }
 
-    override fun renderTaskComplete(executionTimeMs: Long) {
-        jsRenderer.renderTaskComplete(executionTimeMs.toDouble())
+    override fun renderTaskComplete(executionTimeMs: Long, toolsUsedCount: Int) {
+        jsRenderer.renderTaskComplete(executionTimeMs.toDouble(), toolsUsedCount)
     }
 
     override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {

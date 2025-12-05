@@ -68,14 +68,21 @@ export class ServerRenderer extends BaseRenderer {
     }
   }
 
-  renderTaskComplete(executionTimeMs: number = 0): void {
+  renderTaskComplete(executionTimeMs: number = 0, toolsUsedCount: number = 0): void {
     console.log('');
+    const parts: string[] = [];
+
     if (executionTimeMs > 0) {
       const seconds = (executionTimeMs / 1000).toFixed(2);
-      console.log(semanticChalk.success(`✅ Task marked as complete (${seconds}s)`));
-    } else {
-      console.log(semanticChalk.success('✅ Task marked as complete'));
+      parts.push(`${seconds}s`);
     }
+
+    if (toolsUsedCount > 0) {
+      parts.push(`${toolsUsedCount} tools`);
+    }
+
+    const info = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+    console.log(semanticChalk.success(`✅ Task marked as complete${info}`));
   }
 
   renderRepeatWarning(toolName: string, count: number): void {

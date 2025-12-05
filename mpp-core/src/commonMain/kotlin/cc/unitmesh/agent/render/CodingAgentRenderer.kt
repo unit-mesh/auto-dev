@@ -36,11 +36,12 @@ interface CodingAgentRenderer {
     )
 
     /**
-     * Render task completion message with execution time.
+     * Render task completion message with execution time and tool usage statistics.
      *
      * @param executionTimeMs Total execution time in milliseconds from task start to completion
+     * @param toolsUsedCount Number of tools used during execution
      */
-    fun renderTaskComplete(executionTimeMs: Long = 0L)
+    fun renderTaskComplete(executionTimeMs: Long = 0L, toolsUsedCount: Int = 0)
     fun renderFinalResult(success: Boolean, message: String, iterations: Int)
     fun renderError(message: String)
     fun renderRepeatWarning(toolName: String, count: Int)

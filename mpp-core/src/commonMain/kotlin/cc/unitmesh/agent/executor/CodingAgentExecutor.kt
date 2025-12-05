@@ -131,7 +131,8 @@ class CodingAgentExecutor(
 
             if (isTaskComplete(llmResponse.toString())) {
                 val executionTimeMs = Platform.getCurrentTimestamp() - taskStartTime
-                renderer.renderTaskComplete(executionTimeMs)
+                val toolsUsedCount = steps.size
+                renderer.renderTaskComplete(executionTimeMs, toolsUsedCount)
                 break
             }
 
