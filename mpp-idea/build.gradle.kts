@@ -1,5 +1,4 @@
 import groovy.xml.XmlParser
-import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaUltimate
@@ -58,11 +57,30 @@ changelog {
 }
 
 repositories {
+    mavenLocal()  // For locally published mpp-ui and mpp-core artifacts
     mavenCentral()
+    google()
+    // Required for mpp-ui's webview dependencies (jogamp)
+    maven("https://jogamp.org/deployment/maven")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/")
 
     intellijPlatform {
         defaultRepositories()
         jetbrainsRuntime()
+    }
+}
+
+
+kotlin {
+    jvmToolchain(17)
+
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            listOf(
+                "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+            )
+        )
     }
 }
 
@@ -96,8 +114,8 @@ configure(subprojects) {
     }
 
     configure<JavaPluginExtension> {
-        sourceCompatibility = VERSION_17
-        targetCompatibility = VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     tasks.withType<KotlinCompile> {
@@ -156,28 +174,32 @@ project(":") {
         }
     }
 
-    // Exclude root project source compilation temporarily
-    // Root project Compose code requires additional configuration
+    // Enable root project source compilation for toolwindow classes
+    // Temporarily disable root project source compilation due to Compose dependency conflicts
+    // All functionality is in sub-modules which compile successfully
     sourceSets {
         main {
             java {
-                setSrcDirs(emptyList<String>())
+                // srcDirs("src/main/java")
             }
             kotlin {
-                setSrcDirs(emptyList<String>())
+                // srcDirs("src/main/kotlin")
             }
-        }
-        test {
-            java {
-                setSrcDirs(emptyList<String>())
-            }
-            kotlin {
-                setSrcDirs(emptyList<String>())
+            resources {
+                srcDirs("src/main/resources")
             }
         }
     }
 
+    // Handle duplicate resources from dependencies
+    tasks.named<Copy>("processResources") {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
     repositories {
+        mavenCentral()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+
         intellijPlatform {
             defaultRepositories()
             jetbrainsRuntime()
@@ -227,7 +249,12 @@ project(":") {
                 jetbrainsRuntime()
             }
 
-            val pluginList: MutableList<String> = mutableListOf("Git4Idea")
+            val pluginList: MutableList<String> = mutableListOf(
+                "Git4Idea",
+                "org.jetbrains.plugins.terminal",
+                "org.intellij.plugins.markdown",
+                "com.jetbrains.sh"
+            )
             when (lang) {
                 "idea" -> {
                     pluginList += javaPlugins
@@ -246,6 +273,18 @@ project(":") {
                 }
             }
             intellijPlugins(pluginList)
+
+            // Compose support dependencies (bundled in IDEA 252+)
+            // Note: Jewel modules are not available in IU-252, only use platform.compose
+            // Compose support dependencies (bundled in IDEA 252+)
+            bundledModules(
+                "intellij.libraries.skiko",
+                "intellij.libraries.compose.foundation.desktop",
+                "intellij.platform.jewel.foundation",
+                "intellij.platform.jewel.ui",
+                "intellij.platform.jewel.ideLafBridge",
+                "intellij.platform.compose"
+            )
 
             pluginModule(implementation(project(":mpp-idea-core")))
             pluginModule(implementation(project(":mpp-idea-lang:java")))
@@ -278,24 +317,9 @@ project(":") {
         implementation(project(":mpp-idea-exts:ext-terminal"))
         implementation(project(":mpp-idea-exts:devins-lang"))
 
-        // mpp-core dependency for root project source code
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
-            // Exclude Compose dependencies - IntelliJ provides its own via bundledModules
-            exclude(group = "org.jetbrains.compose")
-            exclude(group = "org.jetbrains.compose.runtime")
-            exclude(group = "org.jetbrains.compose.foundation")
-            exclude(group = "org.jetbrains.compose.material3")
-            exclude(group = "org.jetbrains.compose.material")
-            exclude(group = "org.jetbrains.compose.ui")
-            exclude(group = "org.jetbrains.skiko")
-            // Exclude kotlinx libraries - IntelliJ provides its own
-            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
-            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
-            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
-            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
-            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
-        }
+        // mpp-core dependency for root project - allow Compose dependencies for compilation
+        // Runtime will use IntelliJ's bundled Compose via bundledModule
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
     }
 
     tasks {
