@@ -16,6 +16,27 @@ pluginManagement {
     }
 }
 
+// Include all IDEA plugin modules
+include("mpp-idea-core")
+
+// Language support modules (parent dir doesn't need to be included separately)
+include(
+    "mpp-idea-lang:pycharm",
+    "mpp-idea-lang:java",
+    "mpp-idea-lang:kotlin",
+    "mpp-idea-lang:javascript",
+    "mpp-idea-lang:goland",
+    "mpp-idea-lang:rust",
+)
+
+// Extension modules (parent dir doesn't need to be included separately)
+include(
+    "mpp-idea-exts:ext-terminal",
+    "mpp-idea-exts:ext-git",
+    "mpp-idea-exts:ext-database",
+    "mpp-idea-exts:devins-lang"
+)
+
 // Include mpp-ui from parent project for shared UI components and ConfigManager
 // For KMP projects, we substitute the Maven coordinates with local project dependencies
 // Note: The group IDs must match what's defined in the respective build.gradle.kts files:

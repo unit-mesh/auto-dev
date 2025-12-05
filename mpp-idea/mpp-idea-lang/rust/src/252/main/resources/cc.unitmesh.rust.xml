@@ -1,0 +1,28 @@
+<idea-plugin package="cc.unitmesh.rust">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.modules.rust-capable"/>
+        <plugin id="com.jetbrains.rust"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <fileContextBuilder language="Rust"
+                            implementationClass="cc.unitmesh.rust.context.RustFileContextBuilder"/>
+        <classContextBuilder language="Rust"
+                             implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
+        <methodContextBuilder language="Rust"
+                              implementationClass="cc.unitmesh.rust.context.RustMethodContextBuilder"/>
+        <variableContextBuilder language="Rust"
+                                implementationClass="cc.unitmesh.rust.context.RustVariableContextBuilder"/>
+
+        <chatContextProvider implementation="cc.unitmesh.rust.provider.RustVersionContextProvider"/>
+
+        <livingDocumentation language="Rust"
+                             implementationClass="cc.unitmesh.rust.provider.RustLivingDocumentation"/>
+
+        <testContextProvider language="Rust" implementation="cc.unitmesh.rust.provider.RustTestService"/>
+        <codeModifier language="Rust" implementationClass="cc.unitmesh.rust.provider.RustCodeModifier"/>
+
+        <langDictProvider implementation="cc.unitmesh.rust.indexer.provider.RustLangDictProvider"/>
+    </extensions>
+</idea-plugin>

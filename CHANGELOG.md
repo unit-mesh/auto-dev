@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changes
+- Module architecture refactoring: moved IDEA plugin modules into mpp-idea composite build
+
 ## [2.4.6](https://github.com/unit-mesh/auto-dev/compare/v2.4.5...v[2.4.6]) (2025-10-28)
 
 ### Bug Fixes

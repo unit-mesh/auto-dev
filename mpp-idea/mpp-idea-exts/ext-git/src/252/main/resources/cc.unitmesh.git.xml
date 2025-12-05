@@ -1,0 +1,57 @@
+<idea-plugin package="cc.unitmesh.git">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.modules.vcs"/>
+        <plugin id="Git4Idea"/>
+    </dependencies>
+
+    <actions>
+        <action id="autodev.Vcs.CommitMessage"
+                class="cc.unitmesh.git.actions.vcs.CommitMessageSuggestionAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI generate commit message">
+
+            <add-to-group group-id="Vcs.MessageActionGroup"/>
+        </action>
+
+        <action id="autodev.Vcs.PrepushReview"
+                class="cc.unitmesh.git.actions.vcs.PrepushReviewAction" text="Prepush Review (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
+
+        </action>
+
+        <action id="autodev.Vcs.LLMChangelog"
+                class="cc.unitmesh.git.actions.vcs.ReleaseNoteSuggestionAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Generate Release Note (AutoDev)"
+                description="Ask AI generate release note">
+
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+        </action>
+
+        <action id="autodev.Vcs.CodeReview"
+                class="cc.unitmesh.git.actions.vcs.CodeReviewAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Code Review (AutoDev)"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
+                          anchor="after"/>
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <revisionProvider implementation="cc.unitmesh.git.actions.vcs.GitRevisionProvider"/>
+
+        <mcpTool implementation="cc.unitmesh.git.mcp.FindCommitByTextTool"/>
+        <mcpTool implementation="cc.unitmesh.git.mcp.GetVcsStatusTool"/>
+
+        <shireActionLocationEditor implementation="cc.unitmesh.git.provider.GitActionLocationEditor"/>
+        <shireToolchainVariableProvider implementation="cc.unitmesh.git.provider.GitToolchainVariableProvider"/>
+    </extensions>
+</idea-plugin>

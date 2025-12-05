@@ -5,7 +5,9 @@ plugins {
     kotlin("plugin.serialization")
     id("com.android.library")
 
-    id("dev.petuska.npm.publish") version "3.5.3"
+    // Temporarily disabled: npm publish plugin doesn't support wasmJs targets
+    // TODO: Re-enable once plugin supports wasmJs or split into separate modules
+    // id("dev.petuska.npm.publish") version "3.5.3"
 }
 
 repositories {
@@ -256,53 +258,32 @@ kotlin {
     }
 }
 
-npmPublish {
-    organization.set("autodev")
-
-    packages {
-        named("js") {
-            packageJson {
-                name = "@autodev/mpp-core"
-                version = project.version.toString()
-                main = "autodev-mpp-core.js"
-                types = "autodev-mpp-core.d.ts"
-                description.set("AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
-                author {
-                    name.set("Unit Mesh")
-                    email.set("h@phodal.com")
-                }
-                license.set("MIT")
-                private.set(false)
-                repository {
-                    type.set("git")
-                    url.set("https://github.com/unit-mesh/auto-dev.git")
-                }
-                keywords.set(listOf("kotlin", "multiplatform", "ai", "llm", "devins"))
-            }
-        }
-
-        named("wasmJs") {
-            packageJson {
-                name = "@autodev/mpp-core-wasm"
-                version = project.version.toString()
-                main = "autodev-mpp-core-wasm.mjs"
-                types = "autodev-mpp-core-wasm.d.ts"
-                description.set("AutoDev Multiplatform Core - WebAssembly Build")
-                author {
-                    name.set("Unit Mesh")
-                    email.set("h@phodal.com")
-                }
-                license.set("MIT")
-                private.set(false)
-                repository {
-                    type.set("git")
-                    url.set("https://github.com/unit-mesh/auto-dev.git")
-                }
-                keywords.set(listOf("kotlin", "multiplatform", "wasm", "webassembly", "ai", "llm", "devins"))
-            }
-        }
-    }
-}
+// npmPublish {
+//     organization.set("autodev")
+//
+//     packages {
+//         named("js") {
+//             packageJson {
+//                 name = "@autodev/mpp-core"
+//                 version = project.version.toString()
+//                 main = "autodev-mpp-core.js"
+//                 types = "autodev-mpp-core.d.ts"
+//                 description.set("AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
+//                 author {
+//                     name.set("Unit Mesh")
+//                     email.set("h@phodal.com")
+//                 }
+//                 license.set("MIT")
+//                 private.set(false)
+//                 repository {
+//                     type.set("git")
+//                     url.set("https://github.com/unit-mesh/auto-dev.git")
+//                 }
+//                 keywords.set(listOf("kotlin", "multiplatform", "ai", "llm", "devins"))
+//             }
+//         }
+//     }
+// }
 
 // Disable wasmJs browser tests due to webpack compatibility issues
 // See: https://github.com/webpack/webpack/issues/XXX
