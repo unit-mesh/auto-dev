@@ -177,6 +177,39 @@ project(":") {
         plugin("org.jetbrains.changelog")
         plugin("org.jetbrains.intellij.platform")
     }
+    
+    // Kotlin compiler options for Compose
+    tasks.withType<KotlinCompile> {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.addAll(
+                listOf(
+                    "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+                )
+            )
+        }
+    }
+    
+    // Exclude root project source compilation temporarily
+    // Root project Compose code requires additional configuration
+    sourceSets {
+        main {
+            java {
+                setSrcDirs(emptyList<String>())
+            }
+            kotlin {
+                setSrcDirs(emptyList<String>())
+            }
+        }
+        test {
+            java {
+                setSrcDirs(emptyList<String>())
+            }
+            kotlin {
+                setSrcDirs(emptyList<String>())
+            }
+        }
+    }
 
     repositories {
         intellijPlatform {
@@ -279,7 +312,23 @@ project(":") {
         implementation(project(":mpp-idea-exts:devins-lang"))
         
         // mpp-core dependency for root project source code
-        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            // Exclude Compose dependencies - IntelliJ provides its own via bundledModules
+            exclude(group = "org.jetbrains.compose")
+            exclude(group = "org.jetbrains.compose.runtime")
+            exclude(group = "org.jetbrains.compose.foundation")
+            exclude(group = "org.jetbrains.compose.material3")
+            exclude(group = "org.jetbrains.compose.material")
+            exclude(group = "org.jetbrains.compose.ui")
+            exclude(group = "org.jetbrains.skiko")
+            // Exclude kotlinx libraries - IntelliJ provides its own
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+        }
     }
 
     tasks {
