@@ -14,7 +14,8 @@ class ParseCommentProcessor : PostProcessor {
 
     override fun isApplicable(context: PostProcessorContext): Boolean = true
 
-    fun preHandleDoc(newDoc: String): @NonNls String {
+    @NonNls
+    fun preHandleDoc(newDoc: String): String {
         val newDocWithoutCodeBlock = newDoc.removePrefix("```java")
             .removePrefix("```")
             .removeSuffix("```")

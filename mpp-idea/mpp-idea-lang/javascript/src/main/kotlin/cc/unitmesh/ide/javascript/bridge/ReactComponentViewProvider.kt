@@ -4,8 +4,7 @@ import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import cc.unitmesh.devti.bridge.provider.ComponentViewMode
 import cc.unitmesh.ide.javascript.flow.ReactAutoPage
 import cc.unitmesh.ide.javascript.util.ReactPsiUtil
-import com.intellij.lang.javascript.JavaScriptFileType
-import com.intellij.lang.javascript.TypeScriptJSXFileType
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.lang.javascript.dialects.ECMA6LanguageDialect
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
@@ -22,9 +21,17 @@ class ReactComponentViewProvider : FrameworkComponentViewProvider("React") {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        val virtualFiles =
-            FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope) +
-                    FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope)
+        val fileTypeManager = FileTypeManager.getInstance()
+        val jsFileType = fileTypeManager.findFileTypeByName("JavaScript")
+        val tsxFileType = fileTypeManager.findFileTypeByName("TypeScript JSX")
+        
+        val virtualFiles = mutableListOf<com.intellij.openapi.vfs.VirtualFile>()
+        if (jsFileType != null) {
+            virtualFiles.addAll(FileTypeIndex.getFiles(jsFileType, searchScope))
+        }
+        if (tsxFileType != null) {
+            virtualFiles.addAll(FileTypeIndex.getFiles(tsxFileType, searchScope))
+        }
 
         val components = mutableListOf<UiComponent>()
         virtualFiles.forEach { file ->

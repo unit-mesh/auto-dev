@@ -125,7 +125,8 @@ class JavaLivingDocumentation : LivingDocumentation {
     }
 
     companion object {
-        fun preHandleDoc(newDoc: String): @NonNls String {
+        @NonNls
+        fun preHandleDoc(newDoc: String): String {
             // 1. remove ```java and ``` from the newDoc if it exists
             val newDocWithoutCodeBlock = newDoc.removePrefix("```java")
                 .removePrefix("```")

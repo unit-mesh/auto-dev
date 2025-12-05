@@ -60,7 +60,8 @@ class DevInsRunFileAction : DumbAwareAction() {
     }
 
     companion object {
-        val ID: @NonNls String = "runDevInsFileAction"
+        @NonNls
+        val ID: String = "runDevInsFileAction"
 
         fun createRunConfig(e: AnActionEvent): RunnerAndConfigurationSettings? {
             val context = ConfigurationContext.getFromContext(e.dataContext, e.place)

@@ -277,6 +277,9 @@ project(":") {
         implementation(project(":mpp-idea-exts:ext-git"))
         implementation(project(":mpp-idea-exts:ext-terminal"))
         implementation(project(":mpp-idea-exts:devins-lang"))
+        
+        // mpp-core dependency for root project source code
+        implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}")
     }
 
     tasks {

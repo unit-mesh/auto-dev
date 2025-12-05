@@ -64,9 +64,9 @@ class IssueWorker(private val project: Project) : AgentProcessor {
         // GitRepository API changed in platform 252
         val remoteUrl: String? = null // TODO: Restore when API stabilizes
         
-        if (remoteUrl.contains("github.com")) {
+        if (remoteUrl?.contains("github.com") == true) {
             processGitHubIssues(remoteUrl)
-        } else if (remoteUrl.contains("gitlab")) {
+        } else if (remoteUrl?.contains("gitlab") == true) {
             // GitLab implementation would go here
             log.debug("GitLab integration not yet implemented")
         }
@@ -129,13 +129,8 @@ class IssueWorker(private val project: Project) : AgentProcessor {
     }
 
     private fun getGitRepositories(): List<Any> { // GitRepository API changed in platform 252
-        val vcsManager = ProjectLevelVcsManager.getInstance(project)
-        val roots: Array<VcsRoot> = vcsManager.allVcsRoots
-        val repositoryManager = VcsRepositoryManager.getInstance(project)
-
-        return roots.mapNotNull { root ->
-            val repo = repositoryManager.getRepositoryForRoot(root.path)
-            if (repo is GitRepository) repo else null
-        }
+        // GitRepository type check removed in platform 252
+        // Return empty list until API stabilizes
+        return emptyList()
     }
 }

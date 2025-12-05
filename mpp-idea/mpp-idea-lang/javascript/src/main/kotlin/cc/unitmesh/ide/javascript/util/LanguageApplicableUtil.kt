@@ -9,8 +9,12 @@ import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.psi.PsiFile
 
 object LanguageApplicableUtil {
-    fun isJavaScriptApplicable(language: Language) =
-        language.isKindOf(JavascriptLanguage.INSTANCE) || language.isKindOf(HTMLLanguage.INSTANCE)
+    fun isJavaScriptApplicable(language: Language): Boolean {
+        val jsLanguage = Language.findLanguageByID("JavaScript")
+        val htmlLanguage = Language.findLanguageByID("HTML")
+        return (jsLanguage != null && language.isKindOf(jsLanguage)) || 
+               (htmlLanguage != null && language.isKindOf(htmlLanguage))
+    }
 
     fun isPreferTypeScript(creationContext: ChatCreationContext): Boolean {
         val sourceFile = creationContext.sourceFile ?: return false

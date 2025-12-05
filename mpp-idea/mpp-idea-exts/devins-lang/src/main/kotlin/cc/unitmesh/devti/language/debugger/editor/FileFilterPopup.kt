@@ -63,8 +63,9 @@ class FileFilterPopup(project: Project, onSelect: (VirtualFile) -> Unit) {
 
         textField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(e: DocumentEvent) {
-                if (e.oldLength > e.newLength && textField.editor != null) {
-                    AutoPopupController.getInstance(project).autoPopupMemberLookup(textField.editor) { true }
+                val editor = textField.editor
+                if (e.oldLength > e.newLength && editor != null) {
+                    AutoPopupController.getInstance(project).autoPopupMemberLookup(editor) { true }
                 }
             }
         })

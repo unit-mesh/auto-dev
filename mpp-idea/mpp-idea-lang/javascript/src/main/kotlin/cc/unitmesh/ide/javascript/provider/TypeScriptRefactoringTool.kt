@@ -3,7 +3,7 @@ package cc.unitmesh.ide.javascript.provider
 import cc.unitmesh.devti.provider.RefactorInstElement
 import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
-import com.intellij.lang.javascript.JavaScriptFileType
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSFunction
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
@@ -24,12 +24,21 @@ class TypeScriptRefactoringTool : RefactoringTool {
         if (project == null) return null
 
         val searchScope = ProjectScope.getProjectScope(project)
+        val jsFileType = FileTypeManager.getInstance().findFileTypeByName("JavaScript")
+        
+        val jsFiles = if (jsFileType != null) {
+            FileTypeIndex.getFiles(jsFileType, searchScope)
+                .mapNotNull { PsiManager.getInstance(project).findFile(it) as? JSFile }
+        } else {
+            emptyList()
+        }
 
-        val jsFiles = FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope)
-            .mapNotNull { PsiManager.getInstance(project).findFile(it) as? JSFile }
-
-        val tsFiles = FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope)
-            .mapNotNull { PsiManager.getInstance(project).findFile(it) as? JSFile }
+        val tsFiles = if (jsFileType != null) {
+            FileTypeIndex.getFiles(jsFileType, searchScope)
+                .mapNotNull { PsiManager.getInstance(project).findFile(it) as? JSFile }
+        } else {
+            emptyList()
+        }
 
         val files = jsFiles + tsFiles
 
