@@ -52,9 +52,6 @@
                         dynamic="true"/>
     </extensionPoints>
 
-    <!-- Include DevIn language support (completion, syntax highlighting, etc.) -->
-    <xi:include href="/cc.unitmesh.devti.language.xml" xpointer="xpointer(/idea-plugin/*)"/>
-
     <extensions defaultExtensionNs="com.intellij">
         <!-- Project-level service for coroutine scope management -->
         <projectService serviceImplementation="cc.unitmesh.devins.idea.services.CoroutineScopeHolder"/>

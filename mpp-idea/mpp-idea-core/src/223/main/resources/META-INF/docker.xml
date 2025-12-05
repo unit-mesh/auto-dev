@@ -1,7 +1,0 @@
-<!-- Defines IDEA IDE-specific contributions and implementations. -->
-<idea-plugin>
-    <extensions defaultExtensionNs="cc.unitmesh">
-<!--        <runService implementation="cc.unitmesh.container.RunDockerfileService"/>-->
-<!--        <chatContextProvider implementation="cc.unitmesh.container.provider.DockerContextProvider"/>-->
-    </extensions>
-</idea-plugin>

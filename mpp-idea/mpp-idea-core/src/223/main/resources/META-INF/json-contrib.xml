@@ -1,6 +1,0 @@
-<!-- Defines IDEA IDE-specific contributions and implementations. -->
-<idea-plugin>
-    <extensions defaultExtensionNs="cc.unitmesh">
-        <jsonTextProvider implementation="cc.unitmesh.devti.provider.local.LocalJsonTextProvider"/>
-    </extensions>
-</idea-plugin>

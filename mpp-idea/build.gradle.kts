@@ -1,4 +1,3 @@
-import groovy.util.Node
 import groovy.xml.XmlParser
 import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
@@ -10,8 +9,6 @@ import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformTesting
 import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 import org.jetbrains.intellij.platform.gradle.utils.extensionProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.*
-import kotlin.collections.plus
 
 // The same as `--stacktrace` param
 gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
@@ -115,35 +112,9 @@ configure(subprojects) {
 
     val testOutput = configurations.create("testOutput")
 
-    if (this.name != "ext-database" && this.name != "ext-terminal" && this.name != "mpp-idea") {
-        sourceSets {
-            main {
-                java.srcDirs("src/gen")
-                if (platformVersion == 241 || platformVersion == 243) {
-                    resources.srcDirs("src/233/main/resources")
-                }
-                resources.srcDirs("src/$platformVersion/main/resources")
-            }
-            test {
-                resources.srcDirs("src/$platformVersion/test/resources")
-            }
-        }
-        kotlin {
-            sourceSets {
-                main {
-                    // share 233 code to 241
-                    if (platformVersion == 241 || platformVersion == 243) {
-                        kotlin.srcDirs("src/233/main/kotlin")
-                    }
-                    kotlin.srcDirs("src/$platformVersion/main/kotlin")
-                }
-                test {
-                    if (platformVersion == 241 || platformVersion == 243) {
-                        kotlin.srcDirs("src/233/test/kotlin")
-                    }
-                    kotlin.srcDirs("src/$platformVersion/test/kotlin")
-                }
-            }
+    sourceSets {
+        main {
+            java.srcDirs("src/gen")
         }
     }
 
@@ -152,11 +123,6 @@ configure(subprojects) {
         implementation("com.knuddels:jtokkit:1.1.0")
 
         testOutput(sourceSets.test.get().output.classesDirs)
-
-        if (platformVersion == 223) {
-            // https://mvnrepository.com/artifact/org.jetbrains/annotations
-            implementation("org.jetbrains:annotations:26.0.1")
-        }
 
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
@@ -177,7 +143,7 @@ project(":") {
         plugin("org.jetbrains.changelog")
         plugin("org.jetbrains.intellij.platform")
     }
-    
+
     // Kotlin compiler options for Compose
     tasks.withType<KotlinCompile> {
         compilerOptions {
@@ -189,7 +155,7 @@ project(":") {
             )
         }
     }
-    
+
     // Exclude root project source compilation temporarily
     // Root project Compose code requires additional configuration
     sourceSets {
@@ -238,11 +204,11 @@ project(":") {
         pluginVerification {
             freeArgs = listOf("-mute", "TemplateWordInPluginId,ForbiddenPluginIdPrefix")
             ides {
-                ide(IntellijIdeaUltimate, "2024.1")
+                ide(IntellijIdeaUltimate, "2025.2")
                 select {
                     types = listOf(IntellijIdeaUltimate)
-                    sinceBuild = "241"
-                    untilBuild = "241"
+                    sinceBuild = "252"
+                    untilBuild = "252"
                 }
             }
         }
@@ -254,7 +220,7 @@ project(":") {
     dependencies {
         intellijPlatform {
             pluginVerifier()
-            intellijIde(prop("ideaRunVersion", prop("ideaVersion")))
+            intellijIde(prop("ideaVersion"))
             if (hasProp("jbrVersion")) {
                 jetbrainsRuntime(prop("jbrVersion"))
             } else {
@@ -293,6 +259,7 @@ project(":") {
             pluginModule(implementation(project(":mpp-idea-exts:ext-git")))
             pluginModule(implementation(project(":mpp-idea-exts:ext-terminal")))
             pluginModule(implementation(project(":mpp-idea-exts:devins-lang")))
+            pluginModule(implementation(project(":mpp-idea-exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
             testFramework(TestFrameworkType.Platform)
@@ -310,7 +277,7 @@ project(":") {
         implementation(project(":mpp-idea-exts:ext-git"))
         implementation(project(":mpp-idea-exts:ext-terminal"))
         implementation(project(":mpp-idea-exts:devins-lang"))
-        
+
         // mpp-core dependency for root project source code
         implementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
             // Exclude Compose dependencies - IntelliJ provides its own via bundledModules
@@ -385,39 +352,6 @@ project(":") {
             channels.set(properties("pluginVersion").map {
                 listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
             })
-        }
-
-        intellijPlatformTesting {
-            // Generates event scheme for JetBrains Academy plugin FUS events to `build/eventScheme.json`
-            runIde.register("buildEventsScheme") {
-                task {
-                    args(
-                        "buildEventsScheme",
-                        "--outputFile=${buildDir()}/eventScheme.json",
-                        "--pluginId=com.jetbrains.edu"
-                    )
-                    // Force headless mode to be able to run command on CI
-                    systemProperty("java.awt.headless", "true")
-                    // BACKCOMPAT: 2024.1. Update value to 242 and this comment
-                    // `IDEA_BUILD_NUMBER` variable is used by `buildEventsScheme` task to write `buildNumber` to output json.
-                    // It will be used by TeamCity automation to set minimal IDE version for new events
-                    environment("IDEA_BUILD_NUMBER", "241")
-                }
-            }
-
-            runIde.register("runInSplitMode") {
-                splitMode = true
-
-                // Specify custom sandbox directory to have a stable path to log file
-                sandboxDirectory =
-                    intellijPlatform.sandboxContainer.dir("split-mode-sandbox-${prop("platformVersion")}")
-
-                plugins {
-                    plugins(ideaPlugins)
-                }
-            }
-
-            customRunIdeTask(IntellijIdeaUltimate, prop("ideaVersion"), baseTaskName = "Idea")
         }
     }
 }
@@ -599,25 +533,6 @@ project(":mpp-idea-exts:ext-database") {
         implementation(project(":mpp-idea-core"))
         implementation(project(":mpp-idea-exts:devins-lang"))
     }
-
-    sourceSets {
-        main {
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
-            }
-            test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-            }
-        }
-    }
 }
 
 project(":mpp-idea-exts:ext-git") {
@@ -649,25 +564,6 @@ project(":mpp-idea-exts:ext-terminal") {
         }
 
         implementation(project(":mpp-idea-core"))
-    }
-
-    sourceSets {
-        main {
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
-            }
-            test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-            }
-        }
     }
 }
 
@@ -807,15 +703,15 @@ fun prop(name: String, fallbackResult: String? = null): String {
     // Try local properties first
     val localProp = extra.properties[name] as? String
     if (localProp != null) return localProp
-    
+
     // Try parent project properties
     val parentProp = rootProject.parent?.extra?.properties?.get(name) as? String
     if (parentProp != null) return parentProp
-    
+
     // Try gradle.properties from parent
     val parentGradleProp = rootProject.parent?.findProperty(name) as? String
     if (parentGradleProp != null) return parentGradleProp
-    
+
     return fallbackResult ?: error("Property `$name` is not defined in gradle.properties")
 }
 
