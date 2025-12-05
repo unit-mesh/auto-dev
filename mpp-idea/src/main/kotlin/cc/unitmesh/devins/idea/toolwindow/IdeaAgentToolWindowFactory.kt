@@ -30,7 +30,8 @@ class IdeaAgentToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         // Enable custom popup rendering to use JBPopup instead of default Compose implementation
         // This fixes z-index issues when Compose Popup is used with SwingPanel (e.g., EditorTextField)
-//        JewelFlags.useCustomPopupRenderer = true
+        // See: JewelFlags.useCustomPopupRenderer in Jewel foundation
+        System.setProperty("jewel.customPopupRender", "true")
         createAgentPanel(project, toolWindow)
     }
 
