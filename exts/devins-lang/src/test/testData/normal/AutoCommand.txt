@@ -1,8 +1,0 @@
-DevInFile
-  DevInUsedImpl(USED)
-    DevInCommandStartImpl(COMMAND_START)
-      PsiElement(COMMAND_START)('/')
-    DevInCommandIdImpl(COMMAND_ID)
-      PsiElement(DevInTokenType.IDENTIFIER)('write')
-    PsiElement(DevInTokenType.COLON)(':')
-    PsiElement(DevInTokenType.COMMAND_PROP)('Sample.file#L1-L12')

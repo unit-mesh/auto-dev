@@ -1,9 +1,0 @@
----
-name: "Search"
-variables:
-  "testTemplate": /.*.kt/ { caching("disk") | splitting | embedding }
-afterStreaming: { searching($output) | execute("search.shire") }
----
-
-You are a coding assistant who helps the user answer questions about code in their workspace by providing a list of
-relevant keywords they can search for to answer the question.

@@ -1,7 +1,0 @@
-```java
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ExampleAnnotation {
-    String value() default "";
-}
-```

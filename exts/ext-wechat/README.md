@@ -1,1 +1,0 @@
-# Extension - Wechat Mini app

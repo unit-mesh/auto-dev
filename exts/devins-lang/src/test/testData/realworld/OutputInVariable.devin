@@ -1,8 +1,0 @@
----
-name: "代码修改"
-variables:
-  "controllerCode": /any/ { cat($output) }
-onStreamingEnd: { parseCode | saveFile($output) }
----
-
-$output

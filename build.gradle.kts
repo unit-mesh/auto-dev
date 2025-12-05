@@ -85,10 +85,7 @@ repositories {
     }
 }
 
-// mpp-linter, mpp-core, mpp-ui, and mpp-codegraph are configured in their own build.gradle.kts files
-
 configure(subprojects - project(":exts")
-//        - project(":mpp-linter")
         - project(":mpp-core")
         - project(":mpp-ui")
         - project(":mpp-codegraph")
@@ -142,7 +139,7 @@ configure(subprojects - project(":exts")
 
     val testOutput = configurations.create("testOutput")
 
-    if (this.name != "ext-terminal" && this.name != "ext-database" && this.name != "ext-container") {
+    if (this.name != "ext-database") {
         sourceSets {
             main {
                 java.srcDirs("src/gen")
@@ -175,8 +172,6 @@ configure(subprojects - project(":exts")
     }
 
     dependencies {
-//        compileOnly(kotlin("stdlib-jdk8"))
-//        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
         implementation("com.knuddels:jtokkit:1.1.0")
 
@@ -290,15 +285,7 @@ project(":") {
 
             pluginModule(implementation(project(":exts:ext-database")))
             pluginModule(implementation(project(":exts:ext-git")))
-            pluginModule(implementation(project(":exts:ext-http-client")))
             pluginModule(implementation(project(":exts:ext-terminal")))
-            pluginModule(implementation(project(":exts:ext-mermaid")))
-            pluginModule(implementation(project(":exts:ext-vue")))
-            pluginModule(implementation(project(":exts:ext-dependencies")))
-            pluginModule(implementation(project(":exts:ext-endpoints")))
-            pluginModule(implementation(project(":exts:ext-plantuml")))
-            pluginModule(implementation(project(":exts:ext-container")))
-            pluginModule(implementation(project(":exts:ext-diagram")))
             pluginModule(implementation(project(":exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
@@ -316,15 +303,7 @@ project(":") {
 
         implementation(project(":exts:ext-database"))
         implementation(project(":exts:ext-git"))
-        implementation(project(":exts:ext-http-client"))
         implementation(project(":exts:ext-terminal"))
-        implementation(project(":exts:ext-mermaid"))
-        implementation(project(":exts:ext-vue"))
-        implementation(project(":exts:ext-dependencies"))
-        implementation(project(":exts:ext-plantuml"))
-        implementation(project(":exts:ext-endpoints"))
-        implementation(project(":exts:ext-container"))
-        implementation(project(":exts:ext-diagram"))
         implementation(project(":exts:devins-lang"))
 
         kover(project(":core"))
@@ -668,119 +647,6 @@ project(":exts:ext-git") {
     }
 }
 
-project(":exts:ext-http-client") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + "com.jetbrains.restClient")
-        }
-
-        implementation("com.jayway.jsonpath:json-path:2.9.0")
-        implementation("com.squareup.okhttp3:okhttp:4.12.0")
-        implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
-        // open ai deps
-        implementation("io.reactivex.rxjava3:rxjava:3.1.10")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
-        implementation("com.fasterxml.jackson.core:jackson-databind:2.18.1")
-
-        implementation(project(":core"))
-        implementation(project(":exts:devins-lang"))
-    }
-}
-
-project(":exts:ext-mermaid") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("mermaidPlugin"))
-        }
-
-        implementation(project(":core"))
-    }
-}
-
-project(":exts:ext-vue") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("vuePlugin"))
-            bundledPlugin("org.jetbrains.plugins.vue")
-        }
-
-        implementation(project(":core"))
-    }
-}
-
-project(":exts:ext-dependencies") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins)
-            bundledPlugin("org.jetbrains.security.package-checker")
-        }
-
-        implementation(project(":core"))
-    }
-}
-
-project(":exts:ext-plantuml") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("plantUmlPlugin"))
-        }
-
-        implementation(project(":core"))
-    }
-}
-
-project(":exts:ext-container") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("devContainerPlugin") + "Docker" + "com.jetbrains.gateway")
-        }
-
-        implementation(project(":core"))
-    }
-
-    sourceSets {
-        main {
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
-            }
-            test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-            }
-        }
-    }
-}
-
-project(":exts:ext-endpoints") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("endpointsPlugin") + prop("swaggerPlugin"))
-            intellijPlugins(
-                listOf(
-                    "com.intellij.spring", "com.intellij.spring.mvc",
-//                    "com.intellij.micronaut"
-                )
-            )
-        }
-
-        implementation(project(":core"))
-    }
-}
-
 project(":exts:ext-terminal") {
     dependencies {
         intellijPlatform {
@@ -808,85 +674,6 @@ project(":exts:ext-terminal") {
                 kotlin.srcDirs("src/$platformVersion/test/kotlin")
             }
         }
-    }
-}
-
-project(":exts:ext-openrewrite") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("openWritePlugin"))
-        }
-
-        implementation(project(":core"))
-    }
-
-    sourceSets {
-        main {
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
-            }
-            test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-            }
-        }
-    }
-}
-
-
-project(":exts:ext-wechat") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("wechatPlugin"))
-        }
-
-        implementation(project(":core"))
-    }
-
-    sourceSets {
-        main {
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
-            }
-            test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-            }
-        }
-    }
-}
-
-project(":exts:ext-diagram") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins("com.intellij.diagram")
-        }
-
-        implementation(project(":core"))
-
-        // Graphviz DOT parser library
-        implementation("guru.nidi:graphviz-java:0.18.1")
-
-        // Test dependencies
-        testImplementation(kotlin("test"))
-        testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     }
 }
 

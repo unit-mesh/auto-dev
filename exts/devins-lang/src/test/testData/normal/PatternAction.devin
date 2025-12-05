@@ -1,7 +1,0 @@
----
-variables:
-  "var1": "value2"
-  "var2": /.*.java/ { grep("error.log") | sort | xargs("rm")}
----
-
-$var1

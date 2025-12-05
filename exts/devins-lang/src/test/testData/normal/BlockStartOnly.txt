@@ -1,5 +1,0 @@
-DevInFile
-  CodeBlockElement(CODE)
-    PsiElement(DevInTokenType.CODE_BLOCK_START)('```')
-    ASTWrapperPsiElement(CODE_CONTENTS)
-      <empty list>
