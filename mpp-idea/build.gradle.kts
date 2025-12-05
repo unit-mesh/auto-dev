@@ -23,6 +23,61 @@ kotlin {
     }
 }
 
+// Include source directories from mpp-idea-core, mpp-idea-exts, and mpp-idea-lang
+sourceSets {
+    main {
+        java {
+            // Core module sources
+            srcDir("../mpp-idea-core/src/main/kotlin")
+            srcDir("../mpp-idea-core/src/main/java")
+            
+            // Extension modules sources
+            srcDir("../mpp-idea-exts/devins-lang/src/main/kotlin")
+            srcDir("../mpp-idea-exts/devins-lang/src/main/java")
+            srcDir("../mpp-idea-exts/devins-lang/src/gen")
+            srcDir("../mpp-idea-exts/ext-database/src/main/kotlin")
+            srcDir("../mpp-idea-exts/ext-git/src/main/kotlin")
+            srcDir("../mpp-idea-exts/ext-terminal/src/main/kotlin")
+            
+            // Language modules sources
+            srcDir("../mpp-idea-lang/java/src/main/kotlin")
+            srcDir("../mpp-idea-lang/kotlin/src/main/kotlin")
+            srcDir("../mpp-idea-lang/pycharm/src/main/kotlin")
+            srcDir("../mpp-idea-lang/javascript/src/main/kotlin")
+            srcDir("../mpp-idea-lang/goland/src/main/kotlin")
+            srcDir("../mpp-idea-lang/rust/src/main/kotlin")
+        }
+        resources {
+            // Core resources
+            srcDir("../mpp-idea-core/src/main/resources")
+            
+            // Extension resources
+            srcDir("../mpp-idea-exts/devins-lang/src/main/resources")
+            srcDir("../mpp-idea-exts/ext-database/src/main/resources")
+            srcDir("../mpp-idea-exts/ext-git/src/main/resources")
+            srcDir("../mpp-idea-exts/ext-terminal/src/main/resources")
+            
+            // Language resources
+            srcDir("../mpp-idea-lang/java/src/main/resources")
+            srcDir("../mpp-idea-lang/kotlin/src/main/resources")
+            srcDir("../mpp-idea-lang/pycharm/src/main/resources")
+            srcDir("../mpp-idea-lang/javascript/src/main/resources")
+            srcDir("../mpp-idea-lang/goland/src/main/resources")
+            srcDir("../mpp-idea-lang/rust/src/main/resources")
+        }
+    }
+    test {
+        java {
+            srcDir("../mpp-idea-core/src/test/kotlin")
+            srcDir("../mpp-idea-exts/devins-lang/src/test/kotlin")
+        }
+        resources {
+            srcDir("../mpp-idea-core/src/test/resources")
+            srcDir("../mpp-idea-exts/devins-lang/src/test/resources")
+        }
+    }
+}
+
 repositories {
     mavenLocal()  // For locally published mpp-ui and mpp-core artifacts
     mavenCentral()
@@ -68,7 +123,7 @@ dependencies {
     // IMPORTANT: Exclude ALL transitive dependencies that conflict with IntelliJ's bundled libraries
     // Note: For KMP projects, the module is published as "group:artifact-jvm" but the project
     // dependency substitution should map "group:artifact" to the project ":artifact"
-    implementation("AutoDev-Intellij:mpp-ui:$mppVersion") {
+    implementation("Xiiu:mpp-ui:$mppVersion") {
         // Exclude all Compose dependencies - IntelliJ provides its own via bundledModules
         exclude(group = "org.jetbrains.compose")
         exclude(group = "org.jetbrains.compose.runtime")
@@ -138,37 +193,83 @@ dependencies {
     // SQLite JDBC driver for SQLDelight (required at runtime)
     implementation("org.xerial:sqlite-jdbc:3.49.1.0")
 
-    // DevIn language support for @ and / completion
-    // These provide the DevIn language parser, completion contributors, and core functionality
-    implementation("AutoDev-Intellij:exts-devins-lang:$mppVersion") {
-        // Exclude kotlinx libraries - IntelliJ provides its own
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-swing")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+    // ======== Dependencies from old core module ========
+    
+    // Xodus embedded database
+    implementation("org.jetbrains.xodus:xodus-openAPI:2.0.1")
+    implementation("org.jetbrains.xodus:xodus-environment:2.0.1")
+    implementation("org.jetbrains.xodus:xodus-entity-store:2.0.1")
+    implementation("org.jetbrains.xodus:xodus-vfs:2.0.1")
+    
+    // MCP (Model Context Protocol)
+    implementation("io.modelcontextprotocol:kotlin-sdk:0.7.2")
+    
+    // Ktor (implementation, not compileOnly, for SSE)
+    implementation("io.ktor:ktor-client-cio:3.2.3")
+    implementation("io.ktor:ktor-server-sse:3.2.3")
+    
+    // A2A SDK
+    implementation("io.github.a2asdk:a2a-java-sdk-client:0.3.0.Beta1")
+    
+    // RxJava
+    implementation("io.reactivex.rxjava3:rxjava:3.1.10")
+    
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+    
+    // Retrofit
+    implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    
+    // Jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.1")
+    
+    // Commonmark for Markdown
+    implementation("org.commonmark:commonmark:0.21.0")
+    implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
+    
+    // JSON Path
+    implementation("com.jayway.jsonpath:json-path:2.9.0")
+    
+    // CSV
+    implementation("com.jsoizo:kotlin-csv-jvm:1.10.0")
+    
+    // Kanban integrations
+    implementation("org.kohsuke:github-api:1.326")
+    implementation("org.gitlab4j:gitlab4j-api:5.8.0")
+    
+    // Template engine
+    implementation("org.apache.velocity:velocity-engine-core:2.4.1")
+    
+    // Token count
+    implementation("com.knuddels:jtokkit:1.1.0")
+    
+    // Gitignore parsing
+    implementation("nl.basjes.gitignore:gitignore-reader:1.6.0")
+    
+    // Reflections
+    implementation("org.reflections:reflections:0.10.2") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
     }
-    implementation("AutoDev-Intellij:core:$mppVersion") {
-        // Exclude kotlinx libraries - IntelliJ provides its own
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-swing")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
-    }
+    
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+    
+    // ======== Dependencies from old exts modules ========
+    
+    // Git commit message
+    implementation("cc.unitmesh:git-commit-message:0.4.6")
 
     // Ktor HTTP Client for LLM API calls - use compileOnly for libraries that may conflict
     compileOnly("io.ktor:ktor-client-core:3.2.2")
-    compileOnly("io.ktor:ktor-client-cio:3.2.2")
     compileOnly("io.ktor:ktor-client-content-negotiation:3.2.2")
     compileOnly("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
     compileOnly("io.ktor:ktor-client-logging:3.2.2")
 
-    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
     // JUnit 4 is required by IntelliJ Platform test infrastructure (JUnit5TestEnvironmentInitializer)
@@ -178,7 +279,17 @@ dependencies {
         // Target IntelliJ IDEA 2025.2+ for Compose support
         create("IC", "2025.2.1")
 
-        bundledPlugins("com.intellij.java", "org.intellij.plugins.markdown", "com.jetbrains.sh", "Git4Idea")
+        // Only specify core bundled plugins
+        // Other plugins (JavaScript, Terminal, etc.) are dynamic dependencies handled by IntelliJ at runtime
+        bundledPlugins(
+            "com.intellij.java",
+            "org.intellij.plugins.markdown",
+            "com.jetbrains.sh",
+            "Git4Idea",
+            "org.jetbrains.kotlin",
+            "org.jetbrains.plugins.gradle",
+            "com.intellij.modules.json"
+        )
 
         // Compose support dependencies (bundled in IDEA 252+)
         bundledModules(

@@ -85,7 +85,8 @@ repositories {
     }
 }
 
-configure(subprojects - project(":exts")
+configure(subprojects
+//        - project(":mpp-idea-exts")
         - project(":mpp-core")
         - project(":mpp-ui")
         - project(":mpp-codegraph")
@@ -275,47 +276,47 @@ project(":") {
             intellijPlugins(pluginList)
 
             pluginModule(implementation(project(":mpp-core")))
-            pluginModule(implementation(project(":core")))
-            pluginModule(implementation(project(":java")))
-            pluginModule(implementation(project(":kotlin")))
-            pluginModule(implementation(project(":pycharm")))
-            pluginModule(implementation(project(":javascript")))
-            pluginModule(implementation(project(":goland")))
-            pluginModule(implementation(project(":rust")))
+            pluginModule(implementation(project(":mpp-idea-core")))
+            pluginModule(implementation(project(":mpp-idea-lang:java")))
+            pluginModule(implementation(project(":mpp-idea-lang:kotlin")))
+            pluginModule(implementation(project(":mpp-idea-lang:pycharm")))
+            pluginModule(implementation(project(":mpp-idea-lang:javascript")))
+            pluginModule(implementation(project(":mpp-idea-lang:goland")))
+            pluginModule(implementation(project(":mpp-idea-lang:rust")))
 
-            pluginModule(implementation(project(":exts:ext-database")))
-            pluginModule(implementation(project(":exts:ext-git")))
-            pluginModule(implementation(project(":exts:ext-terminal")))
-            pluginModule(implementation(project(":exts:devins-lang")))
+            pluginModule(implementation(project(":mpp-idea-exts:ext-database")))
+            pluginModule(implementation(project(":mpp-idea-exts:ext-git")))
+            pluginModule(implementation(project(":mpp-idea-exts:ext-terminal")))
+            pluginModule(implementation(project(":mpp-idea-exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
             testFramework(TestFrameworkType.Platform)
         }
 
         implementation(project(":mpp-core"))
-        implementation(project(":core"))
-        implementation(project(":java"))
-        implementation(project(":kotlin"))
-        implementation(project(":pycharm"))
-        implementation(project(":javascript"))
-        implementation(project(":goland"))
-        implementation(project(":rust"))
+        implementation(project(":mpp-idea-core"))
+        implementation(project(":mpp-idea-lang:java"))
+        implementation(project(":mpp-idea-lang::kotlin"))
+        implementation(project(":mpp-idea-lang:pycharm"))
+        implementation(project(":mpp-idea-lang:javascript"))
+        implementation(project(":mpp-idea-lang:goland"))
+        implementation(project(":mpp-idea-lang:rust"))
 
-        implementation(project(":exts:ext-database"))
-        implementation(project(":exts:ext-git"))
-        implementation(project(":exts:ext-terminal"))
-        implementation(project(":exts:devins-lang"))
+        implementation(project(":mpp-idea-exts:ext-database"))
+        implementation(project(":mpp-idea-exts:ext-git"))
+        implementation(project(":mpp-idea-exts:ext-terminal"))
+        implementation(project(":mpp-idea-exts:devins-lang"))
 
-        kover(project(":core"))
-        kover(project(":goland"))
-        kover(project(":java"))
-        kover(project(":javascript"))
-        kover(project(":kotlin"))
-        kover(project(":pycharm"))
-        kover(project(":rust"))
+        kover(project(":mpp-idea-core"))
+        kover(project(":mpp-idea-lang:goland"))
+        kover(project(":mpp-idea-lang:java"))
+        kover(project(":mpp-idea-lang:javascript"))
+        kover(project(":mpp-idea-lang:kotlin"))
+        kover(project(":mpp-idea-lang:pycharm"))
+        kover(project(":mpp-idea-lang:rust"))
 
-        kover(project(":exts:ext-database"))
-        kover(project(":exts:devins-lang"))
+        kover(project(":mpp-idea-exts:ext-database"))
+        kover(project(":mpp-idea-exts:devins-lang"))
     }
 
     tasks {
@@ -409,7 +410,7 @@ project(":") {
     }
 }
 
-project(":core") {
+project(":mpp-idea-core") {
     apply {
         plugin("org.jetbrains.kotlin.plugin.serialization")
     }
@@ -507,19 +508,19 @@ project(":core") {
     }
 }
 
-project(":pycharm") {
+project(":mpp-idea-lang:pycharm") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + pycharmPlugins + prop("jupyterPlugin"))
+            intellijPlugins(ideaPlugins + pycharmPlugins)
         }
 
-        implementation(project(":core"))
+        implementation(project(":mpp-idea-core"))
     }
 }
 
 
-project(":java") {
+project(":mpp-idea-lang:java") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -527,8 +528,8 @@ project(":java") {
             testFramework(TestFrameworkType.Plugin.Java)
         }
 
-        implementation(project(":core"))
-        implementation(project(":exts:devins-lang"))
+        implementation(project(":mpp-idea-core"))
+        implementation(project(":mpp-idea-exts:devins-lang"))
     }
 }
 
@@ -544,7 +545,7 @@ val cssPlugins = listOf(
     //"com.jetbrains.plugins.Jade:$targetVersion",
 )
 
-project(":javascript") {
+project(":mpp-idea-lang:javascript") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -555,11 +556,11 @@ project(":javascript") {
             testFramework(TestFrameworkType.Plugin.JavaScript)
         }
 
-        implementation(project(":core"))
+        implementation(project(":mpp-idea-core"))
     }
 }
 
-project(":kotlin") {
+project(":mpp-idea-lang:kotlin") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -567,34 +568,34 @@ project(":kotlin") {
             testFramework(TestFrameworkType.Plugin.Java)
         }
 
-        implementation(project(":core"))
-        implementation(project(":java"))
+        implementation(project(":mpp-idea-core"))
+        implementation(project(":mpp-idea-lang:java"))
     }
 }
 
-project(":rust") {
+project(":mpp-idea-lang:rust") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + rustPlugins)
         }
 
-        implementation(project(":core"))
+        implementation(project(":mpp-idea-core"))
     }
 }
 
-project(":goland") {
+project(":mpp-idea-lang:goland") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
         }
 
-        implementation(project(":core"))
+        implementation(project(":mpp-idea-core"))
     }
 }
 
-project(":exts:ext-database") {
+project(":mpp-idea-exts:ext-database") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -602,8 +603,8 @@ project(":exts:ext-database") {
         }
 
         implementation(project(":mpp-core"))
-        implementation(project(":core"))
-        implementation(project(":exts:devins-lang"))
+        implementation(project(":mpp-idea-core"))
+        implementation(project(":mpp-idea-exts:devins-lang"))
     }
 
     sourceSets {
@@ -626,7 +627,7 @@ project(":exts:ext-database") {
     }
 }
 
-project(":exts:ext-git") {
+project(":mpp-idea-exts:ext-git") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -634,8 +635,8 @@ project(":exts:ext-git") {
         }
 
         implementation(project(":mpp-core"))
-        implementation(project(":core"))
-        implementation(project(":exts:devins-lang"))
+        implementation(project(":mpp-idea-core"))
+        implementation(project(":mpp-idea-exts:devins-lang"))
 
         // kanban
         implementation("org.kohsuke:github-api:1.326")
@@ -647,14 +648,14 @@ project(":exts:ext-git") {
     }
 }
 
-project(":exts:ext-terminal") {
+project(":mpp-idea-exts:ext-terminal") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "org.jetbrains.plugins.terminal")
         }
 
-        implementation(project(":core"))
+        implementation(project(":mpp-idea-core"))
     }
 
     sourceSets {
@@ -677,7 +678,7 @@ project(":exts:ext-terminal") {
     }
 }
 
-project(":exts:devins-lang") {
+project(":mpp-idea-exts:devins-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")
         plugin("org.jetbrains.kotlin.plugin.serialization")
@@ -695,7 +696,7 @@ project(":exts:devins-lang") {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
         implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
         implementation(project(":mpp-core"))
-        implementation(project(":core"))
+        implementation(project(":mpp-idea-core"))
     }
 
     tasks {
