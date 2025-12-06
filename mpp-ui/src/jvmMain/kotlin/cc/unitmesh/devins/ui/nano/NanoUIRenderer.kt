@@ -37,6 +37,8 @@ object NanoUIRenderer {
             "Input" -> RenderInput(ir, modifier)
             "Checkbox" -> RenderCheckbox(ir, modifier)
             "Divider" -> HorizontalDivider(modifier.padding(vertical = 8.dp))
+            "Conditional" -> RenderConditional(ir, modifier)
+            "ForLoop" -> RenderForLoop(ir, modifier)
             else -> RenderUnknown(ir, modifier)
         }
     }
@@ -201,6 +203,28 @@ object NanoUIRenderer {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(checked = false, onCheckedChange = { })
+        }
+    }
+
+    @Composable
+    private fun RenderConditional(ir: NanoIR, modifier: Modifier) {
+        // Render the then branch (conditional evaluation happens at runtime)
+        // In static preview, we just render children directly
+        Column(modifier = modifier) {
+            ir.children?.forEach { child ->
+                Render(child)
+            }
+        }
+    }
+
+    @Composable
+    private fun RenderForLoop(ir: NanoIR, modifier: Modifier) {
+        // Render the loop body once as a preview
+        // In static preview, show a single iteration of the loop
+        Column(modifier = modifier) {
+            ir.children?.forEach { child ->
+                Render(child)
+            }
         }
     }
 
