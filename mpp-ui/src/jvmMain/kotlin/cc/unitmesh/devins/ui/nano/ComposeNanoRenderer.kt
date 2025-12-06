@@ -21,7 +21,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * Renders NanoIR components to Compose UI.
  * Uses Material 3 components for consistent theming.
  */
-object NanoUIRenderer {
+object ComposeNanoRenderer {
 
     @Composable
     fun Render(ir: NanoIR, modifier: Modifier = Modifier) {
