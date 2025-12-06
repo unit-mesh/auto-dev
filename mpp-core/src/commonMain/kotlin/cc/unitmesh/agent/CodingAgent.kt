@@ -20,6 +20,7 @@ import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.AnalysisAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
+import cc.unitmesh.agent.subagent.NanoDSLAgent
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
@@ -95,6 +96,7 @@ class CodingAgent(
 
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val analysisAgent = AnalysisAgent(llmService, contentThreshold = 15000)
+    private val nanoDSLAgent = NanoDSLAgent(llmService)
     private val mcpToolsInitializer = McpToolsInitializer()
 
     // 执行器
@@ -116,10 +118,15 @@ class CodingAgent(
         registerTool(errorRecoveryAgent)
         toolRegistry.registerTool(errorRecoveryAgent)
         subAgentManager.registerSubAgent(errorRecoveryAgent)
-        
+
         registerTool(analysisAgent)
         toolRegistry.registerTool(analysisAgent)
         subAgentManager.registerSubAgent(analysisAgent)
+
+        registerTool(nanoDSLAgent)
+        toolRegistry.registerTool(nanoDSLAgent)
+        subAgentManager.registerSubAgent(nanoDSLAgent)
+
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             initializeWorkspace(projectPath)
         }

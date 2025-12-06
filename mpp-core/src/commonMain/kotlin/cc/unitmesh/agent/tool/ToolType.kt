@@ -4,6 +4,7 @@ import cc.unitmesh.agent.subagent.CodebaseInvestigatorSchema
 import cc.unitmesh.agent.subagent.ContentHandlerSchema
 import cc.unitmesh.agent.subagent.DomainDictAgentSchema
 import cc.unitmesh.agent.subagent.ErrorRecoverySchema
+import cc.unitmesh.agent.subagent.NanoDSLAgentSchema
 import cc.unitmesh.agent.tool.impl.*
 import cc.unitmesh.agent.tool.impl.AskSubAgentSchema
 import cc.unitmesh.agent.tool.schema.ToolCategory
@@ -145,6 +146,15 @@ sealed class ToolType(
         schema = DomainDictAgentSchema
     )
 
+    data object NanoDSLAgent : ToolType(
+        name = "nanodsl-agent",
+        displayName = "NanoDSL Agent",
+        tuiEmoji = "🎨",
+        composeIcon = "palette",
+        category = ToolCategory.SubAgent,
+        schema = NanoDSLAgentSchema
+    )
+
     data object AskAgent : ToolType(
         name = "ask-agent",
         displayName = "Ask Agent",
@@ -171,7 +181,7 @@ sealed class ToolType(
             listOf(
                 ReadFile, WriteFile, EditFile, Grep, Glob,
                 Shell,
-                ErrorAgent, AnalysisAgent, CodeAgent, DomainDictAgent,
+                ErrorAgent, AnalysisAgent, CodeAgent, DomainDictAgent, NanoDSLAgent,
                 AskAgent,
                 WebFetch
             )

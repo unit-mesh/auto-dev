@@ -26,10 +26,6 @@ fun main() = application {
         MaterialTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 NanoDSLDemo(
-                    onGenerateWithLLM = { prompt ->
-                        // TODO: 接入 LLM 生成 DSL
-                        println("LLM Prompt: $prompt")
-                    },
                     modifier = Modifier.padding(8.dp)
                 )
             }

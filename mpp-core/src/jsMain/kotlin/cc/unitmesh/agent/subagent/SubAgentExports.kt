@@ -104,3 +104,68 @@ class JsAnalysisAgent(
         return agent.needsHandling(content)
     }
 }
+
+/**
+ * JS-friendly NanoDSLContext
+ */
+@JsExport
+data class JsNanoDSLContext(
+    val description: String,
+    val componentType: String? = null,
+    val includeState: Boolean = true,
+    val includeHttp: Boolean = false
+) {
+    fun toCommon(): NanoDSLContext = NanoDSLContext(
+        description = description,
+        componentType = componentType,
+        includeState = includeState,
+        includeHttp = includeHttp
+    )
+}
+
+/**
+ * JS-friendly NanoDSLAgent
+ * Generates NanoDSL UI code from natural language descriptions
+ */
+@JsExport
+class JsNanoDSLAgent(
+    private val llmService: KoogLLMService,
+    private val promptTemplate: String? = null
+) {
+    private val agent = NanoDSLAgent(
+        llmService = llmService,
+        promptTemplate = promptTemplate ?: NanoDSLAgent.DEFAULT_PROMPT
+    )
+
+    /**
+     * Generate NanoDSL code from description
+     * Returns a ToolResult with generated code and metadata
+     */
+    fun execute(context: JsNanoDSLContext): Promise<ToolResult.AgentResult> {
+        return GlobalScope.promise {
+            val commonContext = context.toCommon()
+            agent.execute(commonContext) { /* ignore progress */ }
+        }
+    }
+
+    /**
+     * Generate NanoDSL code from simple description string
+     * Convenience method for simple use cases
+     */
+    fun generate(description: String, includeHttp: Boolean = false): Promise<ToolResult.AgentResult> {
+        return GlobalScope.promise {
+            val context = NanoDSLContext(
+                description = description,
+                includeHttp = includeHttp
+            )
+            agent.execute(context) { /* ignore progress */ }
+        }
+    }
+
+    /**
+     * Check if content suggests UI generation is needed
+     */
+    fun shouldTrigger(content: String): Boolean {
+        return agent.shouldTrigger(mapOf("content" to content))
+    }
+}
