@@ -13,8 +13,8 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.CanvasBasedWindow
 import androidx.compose.ui.window.ComposeViewport
-import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
-import autodev_intellij.mpp_ui.generated.resources.Res
+import cc.unitmesh.mpp_ui.generated.resources.NotoSansSC_Regular
+import cc.unitmesh.mpp_ui.generated.resources.Res
 import cc.unitmesh.devins.ui.compose.AutoDevApp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.configureWebResources

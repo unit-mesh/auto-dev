@@ -2,8 +2,8 @@ package cc.unitmesh.devins.ui.compose.sketch
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
-import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
-import autodev_intellij.mpp_ui.generated.resources.Res
+import cc.unitmesh.mpp_ui.generated.resources.NotoSansSC_Regular
+import cc.unitmesh.mpp_ui.generated.resources.Res
 import org.jetbrains.compose.resources.Font
 
 /**
