@@ -95,3 +95,27 @@ tasks.register<JavaExec>("runDslEval") {
     environment("DEEPSEEK_API_KEY", System.getenv("DEEPSEEK_API_KEY") ?: "")
 }
 
+// Task to validate DSL files
+tasks.register<JavaExec>("validateDsl") {
+    group = "verification"
+    description = "Validate NanoDSL files in a directory"
+    mainClass.set("cc.unitmesh.xuiper.eval.DslValidatorKt")
+    classpath = sourceSets["main"].runtimeClasspath
+
+    val dslDir = project.findProperty("dslDir") as? String ?: "testcases/actual/integration"
+    val verbose = if (project.hasProperty("verbose")) "verbose" else ""
+    args = listOf(dslDir, verbose)
+}
+
+// Task to render DSL files to HTML
+tasks.register<JavaExec>("renderHtml") {
+    group = "verification"
+    description = "Render NanoDSL files to HTML"
+    mainClass.set("cc.unitmesh.xuiper.eval.DslToHtmlRendererKt")
+    classpath = sourceSets["main"].runtimeClasspath
+
+    val inputDir = project.findProperty("dslDir") as? String ?: "testcases/actual/integration"
+    val outputDir = project.findProperty("outputDir") as? String ?: "testcases/html/integration"
+    args = listOf(inputDir, outputDir)
+}
+
