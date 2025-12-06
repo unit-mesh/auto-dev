@@ -39,9 +39,20 @@ component ComponentName(param: Type):
 | Component | Props | Description |
 |-----------|-------|-------------|
 | Button | label, intent, icon, on_click | Clickable button |
-| Input | value, placeholder | Text input |
+| Input | value, placeholder, type | Text input |
+| TextArea | value, placeholder, rows | Multi-line input |
+| Select | value, options, placeholder | Dropdown select |
+| Checkbox | checked | Checkbox input |
 
-### 5. State Management
+### 5. Form Components
+```nanodsl
+Form(onSubmit=request.login):
+    Input(name="email", value := state.email)
+    Input(name="password", type="password", value := state.password)
+    Button("Submit", type="submit")
+```
+
+### 6. State Management
 ```nanodsl
 component Counter:
     state:
@@ -57,13 +68,48 @@ component Counter:
                     on_click: state.count += 1
 ```
 
-### 6. Conditional Rendering
+### 7. Conditional Rendering
 ```nanodsl
 if condition:
     Component()
 ```
 
-### 7. Size/Style Tokens
+### 8. HTTP Request Actions
+```nanodsl
+# Simple GET request
+Button("Load"):
+    on_click: Fetch(url="/api/users")
+
+# POST with body from state
+Button("Submit"):
+    on_click:
+        Fetch(
+            url="/api/login",
+            method="POST",
+            body={"email": state.email, "password": state.password},
+            headers={"Content-Type": "application/json"},
+            on_success: Navigate(to="/dashboard"),
+            on_error: ShowToast("Login failed")
+        )
+
+# Declarative request block
+request login:
+    url: "/api/login"
+    method: "POST"
+    body:
+        email << state.email
+        password << state.password
+    on_success:
+        state.loading = False
+        Navigate(to="/dashboard")
+    on_error:
+        ShowToast("Login failed")
+```
+
+HTTP Methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`
+Content Types: `JSON`, `FORM_URLENCODED`, `FORM_DATA`
+
+### 9. Size/Style Tokens
 - Sizes: `"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`
 - Text styles: `"h1"`, `"h2"`, `"h3"`, `"body"`, `"caption"`
 - Intents: `"primary"`, `"secondary"`, `"danger"`, `"success"`

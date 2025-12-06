@@ -1,5 +1,7 @@
 package cc.unitmesh.xuiper.parser
 
+import cc.unitmesh.xuiper.action.BodyField
+import cc.unitmesh.xuiper.action.HttpMethod
 import cc.unitmesh.xuiper.action.MutationOp
 import cc.unitmesh.xuiper.action.NanoAction
 import cc.unitmesh.xuiper.ast.Binding
@@ -41,6 +43,7 @@ class IndentParser(
         private val IF_REGEX = Regex("""^if\s+(.+?):\s*$""")
         private val FOR_REGEX = Regex("""^for\s+(\w+)\s+in\s+(.+?):\s*$""")
         private val ON_CLICK_REGEX = Regex("""^on_click:\s*(.+)$""")
+        private val ON_CLICK_BLOCK_REGEX = Regex("""^on_click:\s*$""")
     }
 
     /**
@@ -266,7 +269,15 @@ class IndentParser(
 
             val trimmed = line.trim()
 
-            // Check for on_click action
+            // Check for on_click block (multi-line)
+            if (ON_CLICK_BLOCK_REGEX.matches(trimmed)) {
+                val (action, newIndex) = parseActionBlock(lines, index)
+                onClick = action
+                index = newIndex
+                continue
+            }
+
+            // Check for on_click action (single-line)
             ON_CLICK_REGEX.matchEntire(trimmed)?.let { match ->
                 onClick = parseAction(match.groupValues[1])
                 index++
@@ -348,6 +359,187 @@ class IndentParser(
         return NanoNode.ForLoop(variable, iterable, body) to index
     }
 
+    /**
+     * Parse a multi-line action block (on_click: with indented content)
+     * Supports:
+     * - State mutations
+     * - Multi-line Fetch with on_success/on_error callbacks
+     * - Sequence of actions
+     */
+    private fun parseActionBlock(lines: List<String>, startIndex: Int): Pair<NanoAction, Int> {
+        val baseIndent = getIndent(lines[startIndex])
+        var index = startIndex + 1
+        val actions = mutableListOf<NanoAction>()
+        val fetchBuilder = FetchActionBuilder()
+        var inFetchBlock = false
+
+        while (index < lines.size) {
+            val line = lines[index]
+            if (line.isBlank()) {
+                index++
+                continue
+            }
+
+            val currentIndent = getIndent(line)
+            if (currentIndent <= baseIndent) break
+
+            val trimmed = line.trim()
+
+            // Handle Fetch block start (multi-line)
+            if (trimmed.startsWith("Fetch(") && !trimmed.endsWith(")")) {
+                inFetchBlock = true
+                parseFetchStart(trimmed, fetchBuilder)
+                index++
+                continue
+            }
+
+            // Inside Fetch block
+            if (inFetchBlock) {
+                if (trimmed == ")") {
+                    // End of Fetch block
+                    actions.add(fetchBuilder.build())
+                    inFetchBlock = false
+                    fetchBuilder.reset()
+                } else {
+                    parseFetchLine(trimmed, fetchBuilder, lines, index)
+                }
+                index++
+                continue
+            }
+
+            // Single-line Fetch
+            if (trimmed.startsWith("Fetch(") && trimmed.endsWith(")")) {
+                actions.add(parseFetchAction(trimmed))
+                index++
+                continue
+            }
+
+            // Other actions (state mutation, Navigate, ShowToast)
+            actions.add(parseAction(trimmed))
+            index++
+        }
+
+        val resultAction = when (actions.size) {
+            0 -> NanoAction.StateMutation("unknown", MutationOp.SET, "")
+            1 -> actions[0]
+            else -> NanoAction.Sequence(actions)
+        }
+
+        return resultAction to index
+    }
+
+    /**
+     * Helper class to build Fetch action from multi-line input
+     */
+    private class FetchActionBuilder {
+        var url: String = ""
+        var method: HttpMethod = HttpMethod.GET
+        var body: MutableMap<String, BodyField>? = null
+        var headers: MutableMap<String, String>? = null
+        var params: MutableMap<String, String>? = null
+        var onSuccess: NanoAction? = null
+        var onError: NanoAction? = null
+        var loadingState: String? = null
+
+        fun build(): NanoAction.Fetch = NanoAction.Fetch(
+            url = url,
+            method = method,
+            body = body,
+            headers = headers,
+            params = params,
+            onSuccess = onSuccess,
+            onError = onError,
+            loadingState = loadingState
+        )
+
+        fun reset() {
+            url = ""
+            method = HttpMethod.GET
+            body = null
+            headers = null
+            params = null
+            onSuccess = null
+            onError = null
+            loadingState = null
+        }
+    }
+
+    private fun parseFetchStart(line: String, builder: FetchActionBuilder) {
+        val urlMatch = Regex("""url\s*=\s*"([^"]+)"""").find(line)
+        builder.url = urlMatch?.groupValues?.get(1) ?: ""
+
+        val methodMatch = Regex("""method\s*=\s*"([^"]+)"""").find(line)
+        methodMatch?.groupValues?.get(1)?.let {
+            builder.method = try { HttpMethod.valueOf(it.uppercase()) } catch (e: Exception) { HttpMethod.GET }
+        }
+    }
+
+    private fun parseFetchLine(line: String, builder: FetchActionBuilder, lines: List<String>, currentIndex: Int) {
+        val trimmed = line.trim().removeSuffix(",")
+
+        // Parse url
+        Regex("""url\s*=\s*"([^"]+)"""").find(trimmed)?.let {
+            builder.url = it.groupValues[1]
+        }
+
+        // Parse method
+        Regex("""method\s*=\s*"([^"]+)"""").find(trimmed)?.let {
+            builder.method = try { HttpMethod.valueOf(it.groupValues[1].uppercase()) } catch (e: Exception) { HttpMethod.GET }
+        }
+
+        // Parse body
+        if (trimmed.startsWith("body=") || trimmed.startsWith("body =")) {
+            val bodyContent = trimmed.substringAfter("body").removePrefix("=").trim()
+            if (bodyContent.startsWith("{") && bodyContent.endsWith("}")) {
+                builder.body = parseFetchBodyContent(bodyContent.removeSurrounding("{", "}"))
+            }
+        }
+
+        // Parse headers
+        if (trimmed.startsWith("headers=") || trimmed.startsWith("headers =")) {
+            val headersContent = trimmed.substringAfter("headers").removePrefix("=").trim()
+            if (headersContent.startsWith("{") && headersContent.endsWith("}")) {
+                builder.headers = parseFetchHeadersContent(headersContent.removeSurrounding("{", "}"))
+            }
+        }
+
+        // Parse on_success callback
+        if (trimmed.startsWith("on_success:")) {
+            val actionStr = trimmed.removePrefix("on_success:").trim()
+            if (actionStr.isNotEmpty()) {
+                builder.onSuccess = parseAction(actionStr)
+            }
+        }
+
+        // Parse on_error callback
+        if (trimmed.startsWith("on_error:")) {
+            val actionStr = trimmed.removePrefix("on_error:").trim()
+            if (actionStr.isNotEmpty()) {
+                builder.onError = parseAction(actionStr)
+            }
+        }
+    }
+
+    private fun parseFetchBodyContent(content: String): MutableMap<String, BodyField> {
+        val result = mutableMapOf<String, BodyField>()
+        val fieldRegex = Regex(""""(\w+)"\s*:\s*(state\.[\w.]+|"[^"]*")""")
+        fieldRegex.findAll(content).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            result[key] = BodyField.parse(value)
+        }
+        return result
+    }
+
+    private fun parseFetchHeadersContent(content: String): MutableMap<String, String> {
+        val result = mutableMapOf<String, String>()
+        val headerRegex = Regex(""""([^"]+)"\s*:\s*"([^"]+)"""")
+        headerRegex.findAll(content).forEach { match ->
+            result[match.groupValues[1]] = match.groupValues[2]
+        }
+        return result
+    }
+
     private fun parseAction(actionStr: String): NanoAction {
         val trimmed = actionStr.trim()
 
@@ -367,6 +559,11 @@ class IndentParser(
             }
         }
 
+        // Fetch action - simple pattern
+        if (trimmed.startsWith("Fetch(")) {
+            return parseFetchAction(trimmed)
+        }
+
         // State mutation
         val mutationMatch = Regex("""state\.(\w+)\s*([+\-]?)=\s*(.+)""").find(trimmed)
         if (mutationMatch != null) {
@@ -381,6 +578,76 @@ class IndentParser(
         }
 
         return NanoAction.StateMutation("unknown", MutationOp.SET, trimmed)
+    }
+
+    /**
+     * Parse Fetch action with parameters
+     * Examples:
+     * - `Fetch(url="/api/users")`
+     * - `Fetch(url="/api/login", method="POST")`
+     * - `Fetch(url="/api/login", method="POST", body={"email": state.email})`
+     */
+    private fun parseFetchAction(actionStr: String): NanoAction.Fetch {
+        // Extract parameters from Fetch(...)
+        val paramsStr = actionStr.removePrefix("Fetch(").removeSuffix(")")
+
+        // Parse URL
+        val urlMatch = Regex("""url\s*=\s*"([^"]+)"""").find(paramsStr)
+        val url = urlMatch?.groupValues?.get(1) ?: "/api/unknown"
+
+        // Parse method
+        val methodMatch = Regex("""method\s*=\s*"([^"]+)"""").find(paramsStr)
+        val method = methodMatch?.groupValues?.get(1)?.uppercase()?.let {
+            try { HttpMethod.valueOf(it) } catch (e: Exception) { HttpMethod.GET }
+        } ?: HttpMethod.GET
+
+        // Parse body (simplified: extract key-value pairs)
+        val body = parseFetchBody(paramsStr)
+
+        // Parse headers (simplified)
+        val headers = parseFetchHeaders(paramsStr)
+
+        return NanoAction.Fetch(
+            url = url,
+            method = method,
+            body = body,
+            headers = headers
+        )
+    }
+
+    /**
+     * Parse body from Fetch params: body={"key": value, ...}
+     */
+    private fun parseFetchBody(paramsStr: String): Map<String, BodyField>? {
+        val bodyMatch = Regex("""body\s*=\s*\{([^}]*)\}""").find(paramsStr) ?: return null
+        val bodyContent = bodyMatch.groupValues[1]
+
+        val result = mutableMapOf<String, BodyField>()
+        // Match patterns like "email": state.email or "name": "literal"
+        val fieldRegex = Regex(""""(\w+)"\s*:\s*(state\.[\w.]+|"[^"]*")""")
+        fieldRegex.findAll(bodyContent).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            result[key] = BodyField.parse(value)
+        }
+
+        return result.takeIf { it.isNotEmpty() }
+    }
+
+    /**
+     * Parse headers from Fetch params: headers={"Key": "value", ...}
+     */
+    private fun parseFetchHeaders(paramsStr: String): Map<String, String>? {
+        val headersMatch = Regex("""headers\s*=\s*\{([^}]*)\}""").find(paramsStr) ?: return null
+        val headersContent = headersMatch.groupValues[1]
+
+        val result = mutableMapOf<String, String>()
+        val headerRegex = Regex(""""([^"]+)"\s*:\s*"([^"]+)"""")
+        headerRegex.findAll(headersContent).forEach { match ->
+            result[match.groupValues[1]] = match.groupValues[2]
+        }
+
+        return result.takeIf { it.isNotEmpty() }
     }
 
     private fun createNode(
@@ -449,6 +716,28 @@ class IndentParser(
                     checked = checkedArg?.let { Binding.parse(it) }
                 )
             }
+            "TextArea" -> {
+                val valueArg = args["value"]
+                NanoNode.TextArea(
+                    value = valueArg?.let { Binding.parse(it) },
+                    placeholder = args["placeholder"],
+                    rows = args["rows"]?.toIntOrNull()
+                )
+            }
+            "Select" -> {
+                val valueArg = args["value"]
+                NanoNode.Select(
+                    value = valueArg?.let { Binding.parse(it) },
+                    options = args["options"],
+                    placeholder = args["placeholder"]
+                )
+            }
+            "Form" -> {
+                NanoNode.Form(
+                    onSubmit = args["onSubmit"],
+                    children = children
+                )
+            }
             else -> null
         }
     }
@@ -457,11 +746,18 @@ class IndentParser(
         if (argsStr.isBlank()) return emptyMap()
 
         val result = mutableMapOf<String, String>()
-        val argRegex = Regex("""(\w+)\s*[:=]\s*(?:"([^"]*)"|([\w.]+))""")
+        // Match patterns like: name="value", name=value, name := state.path, name: "value"
+        // Support both := (two-way binding) and = (assignment)
+        val argRegex = Regex("""(\w+)\s*(?::=|=|:)\s*(?:"([^"]*)"|([\w.]+))""")
         argRegex.findAll(argsStr).forEach { match ->
             val key = match.groupValues[1]
-            val value = match.groupValues[2].ifEmpty { match.groupValues[3] }
-            result[key] = value
+            val rawValue = match.groupValues[2].ifEmpty { match.groupValues[3] }
+
+            // Preserve the binding operator for value parsing
+            val operatorMatch = Regex("""(\w+)\s*(:=)""").find(argsStr)
+            val hasTwoWayBinding = operatorMatch?.groupValues?.get(1) == key
+
+            result[key] = if (hasTwoWayBinding) ":= $rawValue" else rawValue
         }
         return result
     }

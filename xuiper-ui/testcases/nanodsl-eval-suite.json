@@ -72,6 +72,16 @@
       "category": "COMPOSITE",
       "difficulty": "MEDIUM",
       "tags": ["profile", "image", "conditional", "stats"]
+    },
+    {
+      "id": "http-request-form",
+      "name": "HTTP Request Contact Form",
+      "description": "Generate a contact form with HTTP POST request submission",
+      "userPrompt": "Create a contact form component with name, email, and message fields. Include a Send button that submits a POST request to /api/contact with the form data as JSON. Show loading state while submitting, display success message on success, and show error message on failure. Use proper HTTP headers for JSON content type.",
+      "expectedDslFile": "expect/07-http-request-form.nanodsl",
+      "category": "HTTP",
+      "difficulty": "HARD",
+      "tags": ["form", "http", "fetch", "state", "callbacks"]
     }
   ],
   "tags": ["nanodsl", "ai-eval", "ui-generation"]

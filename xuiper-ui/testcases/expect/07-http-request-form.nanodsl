@@ -1,0 +1,50 @@
+component ContactForm:
+    state:
+        name: str = ""
+        email: str = ""
+        message: str = ""
+        loading: bool = False
+        success: bool = False
+        error: str = ""
+    
+    Card:
+        padding: "lg"
+        shadow: "md"
+        content:
+            VStack(spacing="md"):
+                Text("Contact Us", style="h2")
+                
+                Input(value := state.name, placeholder="Your Name")
+                Input(value := state.email, placeholder="Email Address", type="email")
+                TextArea(value := state.message, placeholder="Your Message", rows=4)
+                
+                if state.error:
+                    Text(state.error, style="caption", color="red")
+                
+                if state.success:
+                    Text("Message sent successfully!", style="caption", color="green")
+                
+                HStack(justify="end"):
+                    Button("Send Message", intent="primary"):
+                        on_click:
+                            state.loading = True
+                            Fetch(
+                                url="/api/contact",
+                                method="POST",
+                                body={
+                                    "name": state.name,
+                                    "email": state.email,
+                                    "message": state.message
+                                },
+                                headers={
+                                    "Content-Type": "application/json"
+                                },
+                                on_success:
+                                    state.loading = False
+                                    state.success = True
+                                    ShowToast("Message sent!")
+                                on_error:
+                                    state.loading = False
+                                    state.error = "Failed to send message"
+                            )
+

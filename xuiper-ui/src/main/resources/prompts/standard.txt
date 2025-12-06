@@ -35,6 +35,21 @@ state:
 - `on_click: state.var += 1` - State mutation
 - `Navigate(to="/path")` - Navigation
 - `ShowToast("message")` - Show notification
+- `Fetch(url="/api/...", method="POST", body={...})` - HTTP request
+
+### HTTP Requests
+```
+# Inline fetch with callbacks
+Button("Submit"):
+    on_click:
+        Fetch(
+            url="/api/login",
+            method="POST",
+            body={"email": state.email, "password": state.password},
+            on_success: Navigate(to="/dashboard"),
+            on_error: ShowToast("Failed")
+        )
+```
 
 ## Output Rules
 1. Output ONLY NanoDSL code, no explanations

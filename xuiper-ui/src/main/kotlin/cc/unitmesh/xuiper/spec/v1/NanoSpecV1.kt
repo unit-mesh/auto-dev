@@ -119,14 +119,45 @@ object NanoSpecV1 : NanoSpec {
             category = ComponentCategory.INPUT,
             optionalProps = listOf(PropSpec("checked", PropType.BINDING)),
             description = "Checkbox input"
+        ),
+        "TextArea" to ComponentSpec(
+            name = "TextArea",
+            category = ComponentCategory.INPUT,
+            optionalProps = listOf(
+                PropSpec("value", PropType.BINDING),
+                PropSpec("placeholder", PropType.STRING),
+                PropSpec("rows", PropType.INT, "4")
+            ),
+            description = "Multi-line text input"
+        ),
+        "Select" to ComponentSpec(
+            name = "Select",
+            category = ComponentCategory.INPUT,
+            optionalProps = listOf(
+                PropSpec("value", PropType.BINDING),
+                PropSpec("options", PropType.STRING),
+                PropSpec("placeholder", PropType.STRING)
+            ),
+            description = "Dropdown select input"
+        ),
+        // Form
+        "Form" to ComponentSpec(
+            name = "Form",
+            category = ComponentCategory.CONTAINER,
+            optionalProps = listOf(
+                PropSpec("onSubmit", PropType.STRING)
+            ),
+            allowsChildren = true,
+            allowsActions = true,
+            description = "Form container with submit handling"
         )
     )
-    
+
     override val layoutComponents = setOf("VStack", "HStack")
-    override val containerComponents = setOf("Card")
+    override val containerComponents = setOf("Card", "Form")
     override val contentComponents = setOf("Text", "Image", "Badge", "Divider")
-    override val inputComponents = setOf("Button", "Input", "Checkbox")
-    override val controlFlowKeywords = setOf("if", "for", "state", "component")
+    override val inputComponents = setOf("Button", "Input", "Checkbox", "TextArea", "Select")
+    override val controlFlowKeywords = setOf("if", "for", "state", "component", "request")
     override val actionTypes = setOf("Navigate", "Fetch", "ShowToast", "StateMutation")
 
     override val bindingOperators = listOf(

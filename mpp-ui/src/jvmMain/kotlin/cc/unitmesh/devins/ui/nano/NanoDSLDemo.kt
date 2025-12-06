@@ -106,6 +106,14 @@ fun NanoDSLDemo(
                 FilledTonalButton(onClick = { dslSource = COUNTER_DSL }) {
                     Text("Counter")
                 }
+
+                FilledTonalButton(onClick = { dslSource = CONTACT_FORM_DSL }) {
+                    Text("Contact Form")
+                }
+
+                FilledTonalButton(onClick = { dslSource = LOGIN_FORM_DSL }) {
+                    Text("Login Form")
+                }
             }
 
             // Error message
@@ -207,5 +215,69 @@ component Counter:
                 Button("+", intent="primary")
             Divider
             Text("Click buttons to change value", style="caption")
+""".trimIndent()
+
+private val CONTACT_FORM_DSL = """
+component ContactForm:
+    state:
+        name: str = ""
+        email: str = ""
+        message: str = ""
+        is_submitting: bool = False
+
+    Card(padding="lg", shadow="md"):
+        VStack(spacing="md"):
+            Text("Contact Us", style="h2")
+            VStack(spacing="sm"):
+                Text("Name", style="caption")
+                Input(value:=state.name, placeholder="Enter your name")
+            VStack(spacing="sm"):
+                Text("Email", style="caption")
+                Input(value:=state.email, placeholder="Enter your email")
+            VStack(spacing="sm"):
+                Text("Message", style="caption")
+                Input(value:=state.message, placeholder="Enter your message")
+            Button("Send Message", intent="primary"):
+                on_click:
+                    state.is_submitting = True
+                    Fetch(
+                        url="/api/contact",
+                        method="POST",
+                        body={"name": state.name, "email": state.email, "message": state.message},
+                        headers={"Content-Type": "application/json"},
+                        on_success: ShowToast("Message sent!"),
+                        on_error: ShowToast("Failed to send")
+                    )
+""".trimIndent()
+
+private val LOGIN_FORM_DSL = """
+component LoginForm:
+    state:
+        email: str = ""
+        password: str = ""
+        loading: bool = False
+
+    Card(padding="lg", shadow="md"):
+        VStack(spacing="md"):
+            Text("Login", style="h2")
+            VStack(spacing="sm"):
+                Text("Email", style="caption")
+                Input(value:=state.email, placeholder="Enter your email")
+            VStack(spacing="sm"):
+                Text("Password", style="caption")
+                Input(value:=state.password, placeholder="Enter your password")
+            Button("Login", intent="primary"):
+                on_click:
+                    state.loading = True
+                    Fetch(
+                        url="/api/login",
+                        method="POST",
+                        body={"email": state.email, "password": state.password},
+                        on_success: Navigate(to="/dashboard"),
+                        on_error: ShowToast("Login failed")
+                    )
+            HStack(align="center", justify="center"):
+                Text("Don't have an account?", style="caption")
+                Button("Sign Up", intent="secondary")
 """.trimIndent()
 

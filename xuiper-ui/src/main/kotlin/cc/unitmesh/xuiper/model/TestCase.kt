@@ -71,6 +71,8 @@ enum class TestCategory {
     INTERACTION,
     /** Complex composite components */
     COMPOSITE,
+    /** HTTP requests (fetch, api calls) */
+    HTTP,
     /** Edge cases and error handling */
     EDGE_CASE
 }

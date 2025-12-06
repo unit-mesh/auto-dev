@@ -1,9 +1,11 @@
 package cc.unitmesh.xuiper.ir
 
+import cc.unitmesh.xuiper.action.BodyField
 import cc.unitmesh.xuiper.action.NanoAction
 import cc.unitmesh.xuiper.ast.Binding
 import cc.unitmesh.xuiper.ast.NanoNode
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 /**
@@ -28,6 +30,10 @@ object NanoIRConverter {
             is NanoNode.Checkbox -> convertCheckbox(node)
             is NanoNode.Conditional -> convertConditional(node)
             is NanoNode.ForLoop -> convertForLoop(node)
+            is NanoNode.HttpRequest -> convertHttpRequest(node)
+            is NanoNode.Form -> convertForm(node)
+            is NanoNode.Select -> convertSelect(node)
+            is NanoNode.TextArea -> convertTextArea(node)
             NanoNode.Divider -> NanoIR(type = "Divider")
         }
     }
@@ -182,6 +188,104 @@ object NanoIRConverter {
         )
     }
 
+    private fun convertHttpRequest(node: NanoNode.HttpRequest): NanoIR {
+        val props = mutableMapOf<String, JsonElement>(
+            "name" to JsonPrimitive(node.name),
+            "url" to JsonPrimitive(node.url),
+            "method" to JsonPrimitive(node.method.name),
+            "contentType" to JsonPrimitive(node.contentType.mimeType)
+        )
+
+        // Convert body fields
+        if (node.body.isNotEmpty()) {
+            val bodyFields = node.body.associate { field ->
+                field.name to convertBodyField(field.value)
+            }
+            props["body"] = JsonObject(bodyFields)
+        }
+
+        // Convert headers
+        if (node.headers.isNotEmpty()) {
+            props["headers"] = JsonObject(node.headers.mapValues { JsonPrimitive(it.value) })
+        }
+
+        // Convert params
+        if (node.params.isNotEmpty()) {
+            props["params"] = JsonObject(node.params.mapValues { JsonPrimitive(it.value) })
+        }
+
+        // Convert actions
+        val actions = mutableMapOf<String, NanoActionIR>()
+        node.onLoading?.let { actions["onLoading"] = convertAction(it) }
+        node.onSuccess?.let { actions["onSuccess"] = convertAction(it) }
+        node.onError?.let { actions["onError"] = convertAction(it) }
+
+        // Convert bindings
+        val bindings = mutableMapOf<String, NanoBindingIR>()
+        node.loadingBinding?.let { bindings["loading"] = convertBinding(it) }
+        node.responseBinding?.let { bindings["response"] = convertBinding(it) }
+        node.errorBinding?.let { bindings["error"] = convertBinding(it) }
+
+        return NanoIR(
+            type = "HttpRequest",
+            props = props,
+            actions = actions.takeIf { it.isNotEmpty() },
+            bindings = bindings.takeIf { it.isNotEmpty() }
+        )
+    }
+
+    private fun convertBodyField(field: BodyField): JsonElement {
+        return when (field) {
+            is BodyField.Literal -> JsonPrimitive(field.value)
+            is BodyField.StateBinding -> JsonObject(
+                mapOf(
+                    "type" to JsonPrimitive("binding"),
+                    "path" to JsonPrimitive(field.path)
+                )
+            )
+        }
+    }
+
+    private fun convertForm(node: NanoNode.Form): NanoIR {
+        val props = mutableMapOf<String, JsonElement>()
+        node.onSubmit?.let { props["onSubmit"] = JsonPrimitive(it) }
+
+        val actions = node.onSubmitAction?.let {
+            mapOf("onSubmit" to convertAction(it))
+        }
+
+        return NanoIR(
+            type = "Form",
+            props = props,
+            children = node.children.map { convert(it) },
+            actions = actions
+        )
+    }
+
+    private fun convertSelect(node: NanoNode.Select): NanoIR {
+        val props = mutableMapOf<String, JsonElement>()
+        node.options?.let { props["options"] = JsonPrimitive(it) }
+        node.placeholder?.let { props["placeholder"] = JsonPrimitive(it) }
+
+        val bindings = node.value?.let {
+            mapOf("value" to convertBinding(it))
+        }
+
+        return NanoIR(type = "Select", props = props, bindings = bindings)
+    }
+
+    private fun convertTextArea(node: NanoNode.TextArea): NanoIR {
+        val props = mutableMapOf<String, JsonElement>()
+        node.rows?.let { props["rows"] = JsonPrimitive(it) }
+        node.placeholder?.let { props["placeholder"] = JsonPrimitive(it) }
+
+        val bindings = node.value?.let {
+            mapOf("value" to convertBinding(it))
+        }
+
+        return NanoIR(type = "TextArea", props = props, bindings = bindings)
+    }
+
     private fun convertBinding(binding: Binding): NanoBindingIR {
         return when (binding) {
             is Binding.Subscribe -> NanoBindingIR(
@@ -213,13 +317,35 @@ object NanoIRConverter {
                 type = "navigate",
                 payload = mapOf("to" to JsonPrimitive(action.to))
             )
-            is NanoAction.Fetch -> NanoActionIR(
-                type = "fetch",
-                payload = mapOf(
+            is NanoAction.Fetch -> {
+                val payload = mutableMapOf<String, JsonElement>(
                     "url" to JsonPrimitive(action.url),
-                    "method" to JsonPrimitive(action.method)
+                    "method" to JsonPrimitive(action.method.name),
+                    "contentType" to JsonPrimitive(action.contentType.mimeType)
                 )
-            )
+
+                // Add body fields
+                action.body?.let { body ->
+                    payload["body"] = JsonObject(body.mapValues { convertBodyField(it.value) })
+                }
+
+                // Add headers
+                action.headers?.let { headers ->
+                    payload["headers"] = JsonObject(headers.mapValues { JsonPrimitive(it.value) })
+                }
+
+                // Add params
+                action.params?.let { params ->
+                    payload["params"] = JsonObject(params.mapValues { JsonPrimitive(it.value) })
+                }
+
+                // Add state bindings
+                action.loadingState?.let { payload["loadingState"] = JsonPrimitive(it) }
+                action.responseBinding?.let { payload["responseBinding"] = JsonPrimitive(it) }
+                action.errorBinding?.let { payload["errorBinding"] = JsonPrimitive(it) }
+
+                NanoActionIR(type = "fetch", payload = payload)
+            }
             is NanoAction.ShowToast -> NanoActionIR(
                 type = "showToast",
                 payload = mapOf("message" to JsonPrimitive(action.message))

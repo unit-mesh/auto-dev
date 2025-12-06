@@ -731,3 +731,12 @@ afterEvaluate {
         }
     }
 }
+
+// Task to run NanoDSL Demo preview
+tasks.register<JavaExec>("runNanoDSLDemo") {
+    group = "application"
+    description = "Run NanoDSL Demo preview window"
+    mainClass.set("cc.unitmesh.devins.ui.nano.NanoDSLDemoPreviewKt")
+    classpath = kotlin.jvm().compilations.getByName("main").runtimeDependencyFiles +
+            files(kotlin.jvm().compilations.getByName("main").output.classesDirs)
+}
