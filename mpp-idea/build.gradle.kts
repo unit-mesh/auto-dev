@@ -344,6 +344,8 @@ project(":") {
             exclude(group = "cc.unitmesh.viewer.web", module = "mpp-viewer-web")
             exclude(group = "cc.unitmesh", module = "mpp-viewer-web")
         }
+
+        testImplementation(kotlin("test"))
     }
 
     tasks {

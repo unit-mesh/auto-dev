@@ -32,10 +32,29 @@ state:
 - `:=` - Two-way binding
 
 ### Actions
-- `on_click: state.var += 1` - State mutation
+- `on_click: state.var += 1` - State mutation (increment)
+- `on_click: state.var -= 1` - State mutation (decrement)
+- `on_click: state.var = value` - State mutation (set)
 - `Navigate(to="/path")` - Navigation
 - `ShowToast("message")` - Show notification
 - `Fetch(url="/api/...", method="POST", body={...})` - HTTP request
+
+### Counter Example (Interactive)
+```
+component Counter:
+    state:
+        count: int = 0
+
+    Card(padding="lg"):
+        VStack(spacing="md"):
+            Text("Counter", style="h2")
+            HStack(spacing="md", align="center", justify="center"):
+                Button("-", intent="secondary"):
+                    on_click: state.count -= 1
+                Text(content << state.count, style="h1")
+                Button("+", intent="primary"):
+                    on_click: state.count += 1
+```
 
 ### HTTP Requests
 ```

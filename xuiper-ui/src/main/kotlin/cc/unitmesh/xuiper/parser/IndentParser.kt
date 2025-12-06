@@ -733,10 +733,22 @@ class IndentParser(
                 children = children
             )
             "Text" -> {
-                val content = extractFirstArg(argsStr) ?: ""
+                val contentArg = args["content"]
+                val content = if (contentArg != null) {
+                    // If content is a binding, extract the expression
+                    if (contentArg.startsWith("<<") || contentArg.startsWith(":=")) {
+                        "" // Content will come from binding
+                    } else {
+                        contentArg
+                    }
+                } else {
+                    extractFirstArg(argsStr) ?: ""
+                }
+                val binding = contentArg?.let { Binding.parse(it) }?.takeIf { it !is Binding.Static }
                 NanoNode.Text(
                     content = content,
-                    style = args["style"] ?: props["style"]
+                    style = args["style"] ?: props["style"],
+                    binding = binding
                 )
             }
             "Button" -> {
@@ -802,11 +814,23 @@ class IndentParser(
         if (argsStr.isBlank()) return emptyMap()
 
         val result = mutableMapOf<String, String>()
+
+        // First, handle << (subscribe binding) pattern: content << state.count
+        val subscribeRegex = Regex("""(\w+)\s*<<\s*([\w.]+)""")
+        subscribeRegex.findAll(argsStr).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            result[key] = "<< $value"
+        }
+
+        // Then handle := (two-way binding) and = (assignment) patterns
         // Match patterns like: name="value", name=value, name := state.path, name: "value"
-        // Support both := (two-way binding) and = (assignment)
         val argRegex = Regex("""(\w+)\s*(?::=|=|:)\s*(?:"([^"]*)"|([\w.]+))""")
         argRegex.findAll(argsStr).forEach { match ->
             val key = match.groupValues[1]
+            // Skip if already handled by subscribe binding
+            if (key in result) return@forEach
+
             val rawValue = match.groupValues[2].ifEmpty { match.groupValues[3] }
 
             // Preserve the binding operator for value parsing
