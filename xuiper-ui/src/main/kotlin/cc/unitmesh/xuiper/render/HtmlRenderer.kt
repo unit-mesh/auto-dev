@@ -146,8 +146,14 @@ class HtmlRenderer(
         val label = ir.props["label"]?.jsonPrimitive?.content ?: ""
         val intent = ir.props["intent"]?.jsonPrimitive?.content ?: "default"
         val icon = ir.props["icon"]?.jsonPrimitive?.content
+        val actionAttr = renderActionAttribute(ir)
+        val bindingAttr = renderBindingAttribute(ir)
+
         return buildString {
-            append("<button class=\"nano-button intent-$intent\">")
+            append("<button class=\"nano-button intent-$intent\"")
+            append(actionAttr)
+            append(bindingAttr)
+            append(">")
             if (icon != null) append("<span class=\"icon\">$icon</span> ")
             append(label)
             append("</button>\n")
@@ -157,29 +163,65 @@ class HtmlRenderer(
     override fun renderInput(ir: NanoIR): String {
         val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: ""
         val type = ir.props["type"]?.jsonPrimitive?.content ?: "text"
-        return "<input type=\"$type\" class=\"nano-input\" placeholder=\"$placeholder\">\n"
+        val bindingAttr = renderBindingAttribute(ir)
+        val actionAttr = renderActionAttribute(ir)
+
+        return buildString {
+            append("<input type=\"$type\" class=\"nano-input\" placeholder=\"$placeholder\"")
+            append(bindingAttr)
+            append(actionAttr)
+            append(">\n")
+        }
     }
 
     override fun renderCheckbox(ir: NanoIR): String {
         val label = ir.props["label"]?.jsonPrimitive?.content
+        val bindingAttr = renderBindingAttribute(ir)
+        val actionAttr = renderActionAttribute(ir)
+
         return if (label != null) {
-            "<label class=\"nano-checkbox-wrapper\"><input type=\"checkbox\" class=\"nano-checkbox\"><span>$label</span></label>\n"
+            buildString {
+                append("<label class=\"nano-checkbox-wrapper\">")
+                append("<input type=\"checkbox\" class=\"nano-checkbox\"")
+                append(bindingAttr)
+                append(actionAttr)
+                append("><span>$label</span></label>\n")
+            }
         } else {
-            "<input type=\"checkbox\" class=\"nano-checkbox\">\n"
+            buildString {
+                append("<input type=\"checkbox\" class=\"nano-checkbox\"")
+                append(bindingAttr)
+                append(actionAttr)
+                append(">\n")
+            }
         }
     }
 
     override fun renderTextArea(ir: NanoIR): String {
         val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: ""
         val rows = ir.props["rows"]?.jsonPrimitive?.content ?: "4"
-        return "<textarea class=\"nano-textarea\" placeholder=\"$placeholder\" rows=\"$rows\"></textarea>\n"
+        val bindingAttr = renderBindingAttribute(ir)
+        val actionAttr = renderActionAttribute(ir)
+
+        return buildString {
+            append("<textarea class=\"nano-textarea\" placeholder=\"$placeholder\" rows=\"$rows\"")
+            append(bindingAttr)
+            append(actionAttr)
+            append("></textarea>\n")
+        }
     }
 
     override fun renderSelect(ir: NanoIR): String {
         val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content
         val options = ir.props["options"]?.jsonPrimitive?.content
+        val bindingAttr = renderBindingAttribute(ir)
+        val actionAttr = renderActionAttribute(ir)
+
         return buildString {
-            append("<select class=\"nano-select\">\n")
+            append("<select class=\"nano-select\"")
+            append(bindingAttr)
+            append(actionAttr)
+            append(">\n")
             if (placeholder != null) {
                 append("  <option value=\"\" disabled selected>$placeholder</option>\n")
             }
@@ -229,6 +271,65 @@ class HtmlRenderer(
 
     override fun renderUnknown(ir: NanoIR): String {
         return "<!-- Unknown component: ${ir.type} -->\n"
+    }
+
+    // ============================================================================
+    // Action & Binding Helpers
+    // ============================================================================
+
+    /**
+     * Render data-action attribute for components with actions
+     *
+     * Example output: data-action='{"on_click":{"type":"StateMutation","payload":{...}}}'
+     */
+    private fun renderActionAttribute(ir: NanoIR): String {
+        val actions = ir.actions ?: return ""
+        if (actions.isEmpty()) return ""
+
+        val actionsJson = buildString {
+            append("{")
+            actions.entries.forEachIndexed { index, (event, action) ->
+                if (index > 0) append(",")
+                append("\"$event\":{")
+                append("\"type\":\"${action.type}\"")
+                action.payload?.let { payload ->
+                    append(",\"payload\":{")
+                    payload.entries.forEachIndexed { pIndex, (key, value) ->
+                        if (pIndex > 0) append(",")
+                        append("\"$key\":$value")
+                    }
+                    append("}")
+                }
+                append("}")
+            }
+            append("}")
+        }
+
+        return " data-actions='$actionsJson'"
+    }
+
+    /**
+     * Render data-binding attribute for bound components
+     *
+     * Example output: data-bindings='{"value":{"mode":"twoWay","expression":"state.new_task"}}'
+     */
+    private fun renderBindingAttribute(ir: NanoIR): String {
+        val bindings = ir.bindings ?: return ""
+        if (bindings.isEmpty()) return ""
+
+        val bindingsJson = buildString {
+            append("{")
+            bindings.entries.forEachIndexed { index, (prop, binding) ->
+                if (index > 0) append(",")
+                append("\"$prop\":{")
+                append("\"mode\":\"${binding.mode}\",")
+                append("\"expression\":\"${binding.expression}\"")
+                append("}")
+            }
+            append("}")
+        }
+
+        return " data-bindings='$bindingsJson'"
     }
 
     private fun generateCss(): String = """
