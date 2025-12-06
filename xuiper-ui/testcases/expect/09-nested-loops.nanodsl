@@ -1,0 +1,47 @@
+component CategoryProductList(categories: List[Category]):
+    state:
+        expanded_category: str = ""
+        selected_product: str = ""
+    
+    Card:
+        padding: "md"
+        content:
+            VStack(spacing="lg"):
+                Text("Product Catalog", style="h2")
+                
+                for category in categories:
+                    VStack(spacing="sm"):
+                        HStack(align="center", justify="between"):
+                            HStack(spacing="sm"):
+                                Text(category.name, style="h3")
+                                Badge(f"{category.product_count}", color="blue")
+                            Button("Toggle"):
+                                on_click: state.expanded_category = category.id
+                        
+                        if state.expanded_category == category.id:
+                            VStack(spacing="xs"):
+                                for product in category.products:
+                                    HStack(align="center", justify="between"):
+                                        HStack(spacing="sm"):
+                                            Image(src=product.thumbnail, width=40)
+                                            VStack(spacing="xs"):
+                                                Text(product.name, style="body")
+                                                if product.on_sale:
+                                                    HStack(spacing="xs"):
+                                                        Text(f"${product.sale_price}", style="caption", color="green")
+                                                        Text(f"${product.price}", style="caption", strike=True)
+                                                if not product.on_sale:
+                                                    Text(f"${product.price}", style="caption")
+                                        
+                                        HStack(spacing="sm"):
+                                            if product.in_stock:
+                                                Badge("In Stock", color="green")
+                                            if not product.in_stock:
+                                                Badge("Out of Stock", color="red")
+                                            Button("Add", intent="primary"):
+                                                on_click: AddToCart(product_id=product.id)
+                                
+                                if category.has_more:
+                                    Button("Load More", intent="secondary"):
+                                        on_click: LoadMoreProducts(category_id=category.id)
+

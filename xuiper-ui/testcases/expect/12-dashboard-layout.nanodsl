@@ -1,0 +1,102 @@
+component Dashboard(user: User, stats: Stats):
+    state:
+        active_tab: str = "overview"
+        date_range: str = "7d"
+    
+    VStack(spacing="lg"):
+        HStack(align="center", justify="between"):
+            VStack(spacing="xs"):
+                Text("Welcome back, " + user.name, style="h2")
+                Text("Here's what's happening with your store", style="caption")
+            HStack(spacing="sm"):
+                Select(value := state.date_range, options=["7d", "30d", "90d", "1y"], placeholder="Date Range")
+                Button("Export", intent="secondary", icon="download")
+        
+        HStack(spacing="md"):
+            Card:
+                padding: "md"
+                content:
+                    VStack(spacing="sm"):
+                        Text("Revenue", style="caption")
+                        Text(f"${stats.revenue}", style="h2")
+                        HStack(spacing="xs"):
+                            if stats.revenue_change > 0:
+                                Badge(f"+{stats.revenue_change}%", color="green")
+                            if stats.revenue_change <= 0:
+                                Badge(f"{stats.revenue_change}%", color="red")
+                            Text("vs last period", style="caption")
+            
+            Card:
+                padding: "md"
+                content:
+                    VStack(spacing="sm"):
+                        Text("Orders", style="caption")
+                        Text(f"{stats.orders}", style="h2")
+                        HStack(spacing="xs"):
+                            if stats.orders_change > 0:
+                                Badge(f"+{stats.orders_change}%", color="green")
+                            if stats.orders_change <= 0:
+                                Badge(f"{stats.orders_change}%", color="red")
+                            Text("vs last period", style="caption")
+            
+            Card:
+                padding: "md"
+                content:
+                    VStack(spacing="sm"):
+                        Text("Customers", style="caption")
+                        Text(f"{stats.customers}", style="h2")
+                        HStack(spacing="xs"):
+                            if stats.customers_change > 0:
+                                Badge(f"+{stats.customers_change}%", color="green")
+                            if stats.customers_change <= 0:
+                                Badge(f"{stats.customers_change}%", color="red")
+                            Text("vs last period", style="caption")
+            
+            Card:
+                padding: "md"
+                content:
+                    VStack(spacing="sm"):
+                        Text("Conversion", style="caption")
+                        Text(f"{stats.conversion}%", style="h2")
+                        HStack(spacing="xs"):
+                            if stats.conversion_change > 0:
+                                Badge(f"+{stats.conversion_change}%", color="green")
+                            if stats.conversion_change <= 0:
+                                Badge(f"{stats.conversion_change}%", color="red")
+                            Text("vs last period", style="caption")
+        
+        HStack(spacing="sm"):
+            Button("Overview", intent="primary"):
+                on_click: state.active_tab = "overview"
+            Button("Orders", intent="secondary"):
+                on_click: state.active_tab = "orders"
+            Button("Products", intent="secondary"):
+                on_click: state.active_tab = "products"
+            Button("Customers", intent="secondary"):
+                on_click: state.active_tab = "customers"
+        
+        if state.active_tab == "overview":
+            HStack(spacing="md"):
+                Card:
+                    padding: "md"
+                    content:
+                        VStack(spacing="sm"):
+                            Text("Recent Orders", style="h3")
+                            for order in stats.recent_orders:
+                                HStack(justify="between"):
+                                    Text(order.id, style="body")
+                                    Text(f"${order.total}", style="body")
+                                    Badge(order.status, color="blue")
+                
+                Card:
+                    padding: "md"
+                    content:
+                        VStack(spacing="sm"):
+                            Text("Top Products", style="h3")
+                            for product in stats.top_products:
+                                HStack(justify="between"):
+                                    HStack(spacing="sm"):
+                                        Image(src=product.image, width=32)
+                                        Text(product.name, style="body")
+                                    Text(f"{product.sales} sold", style="caption")
+

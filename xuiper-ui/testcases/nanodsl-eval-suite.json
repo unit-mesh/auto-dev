@@ -82,6 +82,86 @@
       "category": "HTTP",
       "difficulty": "HARD",
       "tags": ["form", "http", "fetch", "state", "callbacks"]
+    },
+    {
+      "id": "nested-conditionals",
+      "name": "Order Status with Nested Conditionals",
+      "description": "Generate an order status card with multiple nested conditional renderings based on status",
+      "userPrompt": "Create an OrderStatusCard component that takes an Order object. Display the order ID with a status badge that changes color based on status (pending=yellow, processing=blue, shipped=green, cancelled=red). If the order is urgent, show an URGENT badge with priority message. Show total, item count, and discount if applicable. If shipped, show tracking number and ETA. Show Cancel button only for pending orders, and View Details button for non-cancelled orders.",
+      "expectedDslFile": "expect/08-nested-conditionals.nanodsl",
+      "category": "CONDITIONAL",
+      "difficulty": "HARD",
+      "tags": ["conditional", "nested-if", "badge", "status"]
+    },
+    {
+      "id": "nested-loops",
+      "name": "Category Product List with Nested Loops",
+      "description": "Generate a product catalog with nested loops for categories and products",
+      "userPrompt": "Create a CategoryProductList component that takes a list of Category objects. Each category has a name, product_count, and list of products. Show categories with expand/collapse functionality using state. When expanded, show products with thumbnail, name, price (with sale price if on_sale), stock status badge, and Add to Cart button. Include Load More button if category has more products.",
+      "expectedDslFile": "expect/09-nested-loops.nanodsl",
+      "category": "LIST",
+      "difficulty": "HARD",
+      "tags": ["for-loop", "nested-loop", "state", "expand-collapse"]
+    },
+    {
+      "id": "complex-state",
+      "name": "Invoice Calculator with Complex State",
+      "description": "Generate an invoice calculator with multiple computed state values",
+      "userPrompt": "Create an InvoiceCalculator component with state for items list, tax_rate, discount_percent, discount_code, and computed values (subtotal, tax_amount, discount_amount, total). Allow adding/removing items, adjusting quantities. Include a discount code input that validates via API call. Show breakdown of subtotal, discount (if applied), tax, and total with reactive bindings.",
+      "expectedDslFile": "expect/10-complex-state.nanodsl",
+      "category": "STATE",
+      "difficulty": "HARD",
+      "tags": ["state", "computed", "binding", "calculation", "http"]
+    },
+    {
+      "id": "multi-action-sequence",
+      "name": "Payment Form with Multi-Action Sequence",
+      "description": "Generate a payment form with complex multi-step action sequences",
+      "userPrompt": "Create a PaymentForm component with card details (number, expiry, cvv, name) and a save_card checkbox. On Pay button click, perform validation, then make POST to /api/payment/process with all data. On success: clear cart, show toast, track event, navigate to confirmation. On error: show error message. Show success state with View Order button after payment completes.",
+      "expectedDslFile": "expect/11-multi-action-sequence.nanodsl",
+      "category": "INTERACTION",
+      "difficulty": "HARD",
+      "tags": ["action-sequence", "validation", "http", "callbacks", "state-machine"]
+    },
+    {
+      "id": "dashboard-layout",
+      "name": "Dashboard with Complex Layout",
+      "description": "Generate a dashboard with multiple cards, stats, and tab navigation",
+      "userPrompt": "Create a Dashboard component that takes User and Stats objects. Show welcome message, date range selector, and export button. Display 4 stat cards (Revenue, Orders, Customers, Conversion) with values and percentage change badges (green if positive, red if negative). Add tab navigation (Overview, Orders, Products, Customers). In Overview tab, show Recent Orders list and Top Products list side by side.",
+      "expectedDslFile": "expect/12-dashboard-layout.nanodsl",
+      "category": "COMPOSITE",
+      "difficulty": "HARD",
+      "tags": ["layout", "tabs", "stats", "conditional", "for-loop"]
+    },
+    {
+      "id": "form-validation",
+      "name": "Registration Form with Validation",
+      "description": "Generate a registration form with inline validation and async username check",
+      "userPrompt": "Create a RegistrationForm component with fields: username (with async availability check on blur), email, password (with strength indicator showing 8+ chars), confirm_password (with match validation), phone (optional), country select, and terms checkbox. Show field-level error messages from state.errors. On submit, call /api/register and handle success (navigate to login) and error (show field errors).",
+      "expectedDslFile": "expect/13-form-validation.nanodsl",
+      "category": "INTERACTION",
+      "difficulty": "HARD",
+      "tags": ["form", "validation", "async", "http", "state"]
+    },
+    {
+      "id": "pagination-list",
+      "name": "Article List with Pagination",
+      "description": "Generate a paginated article list with search, filter, and sort",
+      "userPrompt": "Create an ArticleList component with state for articles, current_page, total_pages, search_query, filter_category, and sort_by. Show search input, category filter, and sort dropdown. Display articles with thumbnail, category badge, featured badge if applicable, title, excerpt, author, date, and read time. Include full pagination controls (First, Prev, numbered pages, Next, Last) and page indicator.",
+      "expectedDslFile": "expect/14-pagination-list.nanodsl",
+      "category": "LIST",
+      "difficulty": "HARD",
+      "tags": ["pagination", "search", "filter", "sort", "for-loop"]
+    },
+    {
+      "id": "shopping-cart",
+      "name": "Shopping Cart with Full Functionality",
+      "description": "Generate a complete shopping cart with items, coupons, shipping, and checkout",
+      "userPrompt": "Create a ShoppingCart component with items list, coupon functionality, and order summary. Show empty cart state with Continue Shopping button. For items: display image, name, variant, price, quantity controls (with API update), stock status, line total, and remove button. Include coupon input with apply functionality. Show shipping method select, then subtotal/shipping/tax/total breakdown. Include Proceed to Checkout button.",
+      "expectedDslFile": "expect/15-shopping-cart.nanodsl",
+      "category": "COMPOSITE",
+      "difficulty": "HARD",
+      "tags": ["cart", "state", "http", "calculation", "for-loop"]
     }
   ],
   "tags": ["nanodsl", "ai-eval", "ui-generation"]

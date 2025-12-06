@@ -1,0 +1,107 @@
+component RegistrationForm:
+    state:
+        username: str = ""
+        email: str = ""
+        password: str = ""
+        confirm_password: str = ""
+        phone: str = ""
+        country: str = ""
+        agree_terms: bool = False
+        is_submitting: bool = False
+        errors: Map = {}
+        username_available: bool = True
+        checking_username: bool = False
+    
+    Card:
+        padding: "lg"
+        shadow: "md"
+        content:
+            Form(onSubmit=request.register):
+                VStack(spacing="md"):
+                    Text("Create Account", style="h2")
+                    
+                    VStack(spacing="xs"):
+                        Input(value := state.username, placeholder="Username"):
+                            on_blur:
+                                state.checking_username = True
+                                Fetch(
+                                    url="/api/check-username",
+                                    method="POST",
+                                    body={"username": state.username},
+                                    on_success:
+                                        state.username_available = response.available
+                                        state.checking_username = False
+                                    on_error:
+                                        state.checking_username = False
+                                )
+                        if state.checking_username:
+                            Text("Checking availability...", style="caption", color="blue")
+                        if not state.username_available:
+                            Text("Username is already taken", style="caption", color="red")
+                        if state.errors.username:
+                            Text(state.errors.username, style="caption", color="red")
+                    
+                    VStack(spacing="xs"):
+                        Input(value := state.email, placeholder="Email Address", type="email")
+                        if state.errors.email:
+                            Text(state.errors.email, style="caption", color="red")
+                    
+                    VStack(spacing="xs"):
+                        Input(value := state.password, placeholder="Password", type="password")
+                        if state.errors.password:
+                            Text(state.errors.password, style="caption", color="red")
+                        if state.password:
+                            HStack(spacing="xs"):
+                                if len(state.password) >= 8:
+                                    Badge("8+ chars", color="green")
+                                if len(state.password) < 8:
+                                    Badge("8+ chars", color="gray")
+                    
+                    VStack(spacing="xs"):
+                        Input(value := state.confirm_password, placeholder="Confirm Password", type="password")
+                        if state.password != state.confirm_password:
+                            Text("Passwords do not match", style="caption", color="red")
+                    
+                    VStack(spacing="xs"):
+                        Input(value := state.phone, placeholder="Phone Number (optional)", type="tel")
+                    
+                    VStack(spacing="xs"):
+                        Select(value := state.country, options=countries, placeholder="Select Country")
+                        if state.errors.country:
+                            Text(state.errors.country, style="caption", color="red")
+                    
+                    HStack(spacing="sm"):
+                        Checkbox(checked := state.agree_terms)
+                        VStack(spacing="xs"):
+                            Text("I agree to the Terms of Service and Privacy Policy", style="caption")
+                    if state.errors.terms:
+                        Text(state.errors.terms, style="caption", color="red")
+                    
+                    Button("Create Account", intent="primary"):
+                        on_click:
+                            state.errors = {}
+                            state.is_submitting = True
+                            Fetch(
+                                url="/api/register",
+                                method="POST",
+                                body={
+                                    "username": state.username,
+                                    "email": state.email,
+                                    "password": state.password,
+                                    "phone": state.phone,
+                                    "country": state.country
+                                },
+                                on_success:
+                                    state.is_submitting = False
+                                    ShowToast("Account created successfully!")
+                                    Navigate(to="/login")
+                                on_error:
+                                    state.is_submitting = False
+                                    state.errors = error.fields
+                            )
+                    
+                    HStack(justify="center", spacing="xs"):
+                        Text("Already have an account?", style="caption")
+                        Button("Sign In", intent="secondary"):
+                            on_click: Navigate(to="/login")
+

@@ -1,0 +1,76 @@
+component InvoiceCalculator:
+    state:
+        items: List = []
+        tax_rate: float = 0.08
+        discount_percent: float = 0
+        discount_code: str = ""
+        is_applying_discount: bool = False
+        subtotal: float = 0.0
+        tax_amount: float = 0.0
+        discount_amount: float = 0.0
+        total: float = 0.0
+    
+    Card:
+        padding: "lg"
+        shadow: "md"
+        content:
+            VStack(spacing="lg"):
+                Text("Invoice Calculator", style="h2")
+                
+                VStack(spacing="md"):
+                    for item in state.items:
+                        HStack(align="center", justify="between"):
+                            VStack(spacing="xs"):
+                                Text(item.name, style="body")
+                                Text(f"${item.price} x {item.quantity}", style="caption")
+                            HStack(spacing="sm"):
+                                Button("-"):
+                                    on_click: item.quantity -= 1
+                                Input(value := item.quantity, type="number")
+                                Button("+"):
+                                    on_click: item.quantity += 1
+                                Button("Remove", intent="danger"):
+                                    on_click: RemoveItem(id=item.id)
+                
+                Divider
+                
+                HStack(spacing="sm"):
+                    Input(value := state.discount_code, placeholder="Discount code")
+                    Button("Apply", intent="secondary"):
+                        on_click:
+                            state.is_applying_discount = True
+                            Fetch(
+                                url="/api/discount/validate",
+                                method="POST",
+                                body={"code": state.discount_code},
+                                on_success:
+                                    state.discount_percent = response.discount
+                                    state.is_applying_discount = False
+                                on_error:
+                                    state.is_applying_discount = False
+                                    ShowToast("Invalid discount code")
+                            )
+                
+                VStack(spacing="sm"):
+                    HStack(justify="between"):
+                        Text("Subtotal:", style="body")
+                        Text(content << f"${state.subtotal}", style="body")
+                    
+                    if state.discount_percent > 0:
+                        HStack(justify="between"):
+                            Text(f"Discount ({state.discount_percent}%):", style="body")
+                            Text(content << f"-${state.discount_amount}", style="body", color="green")
+                    
+                    HStack(justify="between"):
+                        Text(f"Tax ({state.tax_rate * 100}%):", style="body")
+                        Text(content << f"${state.tax_amount}", style="body")
+                    
+                    Divider
+                    
+                    HStack(justify="between"):
+                        Text("Total:", style="h3")
+                        Text(content << f"${state.total}", style="h3")
+                
+                Button("Checkout", intent="primary"):
+                    on_click: Navigate(to="/checkout")
+

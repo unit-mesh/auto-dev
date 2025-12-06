@@ -1,0 +1,73 @@
+component PaymentForm:
+    state:
+        card_number: str = ""
+        expiry: str = ""
+        cvv: str = ""
+        name: str = ""
+        save_card: bool = False
+        is_processing: bool = False
+        payment_success: bool = False
+        error_message: str = ""
+    
+    Card:
+        padding: "lg"
+        shadow: "md"
+        content:
+            VStack(spacing="md"):
+                Text("Payment Details", style="h2")
+                
+                if state.payment_success:
+                    VStack(spacing="md", align="center"):
+                        Badge("Payment Successful", color="green")
+                        Text("Your order has been confirmed!", style="body")
+                        Button("View Order", intent="primary"):
+                            on_click: Navigate(to="/orders")
+                
+                if not state.payment_success:
+                    VStack(spacing="sm"):
+                        Input(value := state.name, placeholder="Cardholder Name")
+                        Input(value := state.card_number, placeholder="Card Number", type="text")
+                        HStack(spacing="sm"):
+                            Input(value := state.expiry, placeholder="MM/YY")
+                            Input(value := state.cvv, placeholder="CVV", type="password")
+                        
+                        HStack(spacing="sm"):
+                            Checkbox(checked := state.save_card)
+                            Text("Save card for future purchases", style="caption")
+                        
+                        if state.error_message:
+                            Text(state.error_message, style="caption", color="red")
+                        
+                        Button("Pay Now", intent="primary"):
+                            on_click:
+                                state.is_processing = True
+                                state.error_message = ""
+                                ValidateCardNumber(state.card_number)
+                                ValidateExpiry(state.expiry)
+                                ValidateCVV(state.cvv)
+                                Fetch(
+                                    url="/api/payment/process",
+                                    method="POST",
+                                    body={
+                                        "card_number": state.card_number,
+                                        "expiry": state.expiry,
+                                        "cvv": state.cvv,
+                                        "name": state.name,
+                                        "save_card": state.save_card
+                                    },
+                                    headers={
+                                        "Content-Type": "application/json",
+                                        "X-Payment-Token": GetPaymentToken()
+                                    },
+                                    on_success:
+                                        state.is_processing = False
+                                        state.payment_success = True
+                                        ClearCart()
+                                        ShowToast("Payment successful!")
+                                        TrackEvent("payment_complete", {"amount": cart.total})
+                                    on_error:
+                                        state.is_processing = False
+                                        state.error_message = error.message
+                                        ShowToast("Payment failed. Please try again.")
+                                )
+

@@ -1,0 +1,95 @@
+component ArticleList:
+    state:
+        articles: List = []
+        current_page: int = 1
+        total_pages: int = 1
+        per_page: int = 10
+        is_loading: bool = False
+        search_query: str = ""
+        filter_category: str = ""
+        sort_by: str = "newest"
+    
+    Card:
+        padding: "md"
+        content:
+            VStack(spacing="md"):
+                Text("Articles", style="h2")
+                
+                HStack(spacing="sm", justify="between"):
+                    HStack(spacing="sm"):
+                        Input(value := state.search_query, placeholder="Search articles...")
+                        Button("Search", intent="primary"):
+                            on_click:
+                                state.current_page = 1
+                                LoadArticles()
+                    HStack(spacing="sm"):
+                        Select(value := state.filter_category, options=categories, placeholder="Category")
+                        Select(value := state.sort_by, options=["newest", "oldest", "popular"], placeholder="Sort by")
+                
+                if state.is_loading:
+                    VStack(align="center"):
+                        Text("Loading...", style="body")
+                
+                if not state.is_loading:
+                    VStack(spacing="md"):
+                        for article in state.articles:
+                            Card:
+                                padding: "sm"
+                                content:
+                                    HStack(spacing="md"):
+                                        Image(src=article.thumbnail, width=120, aspect="16:9")
+                                        VStack(spacing="xs"):
+                                            HStack(spacing="xs"):
+                                                Badge(article.category, color="blue")
+                                                if article.is_featured:
+                                                    Badge("Featured", color="yellow")
+                                            Text(article.title, style="h4")
+                                            Text(article.excerpt, style="body", limit=2)
+                                            HStack(spacing="sm"):
+                                                Text(article.author, style="caption")
+                                                Text(article.date, style="caption")
+                                                Text(f"{article.read_time} min read", style="caption")
+                                        Button("Read", intent="secondary"):
+                                            on_click: Navigate(to="/articles/" + article.slug)
+                        
+                        if state.articles.length == 0:
+                            VStack(align="center", spacing="md"):
+                                Text("No articles found", style="h4")
+                                Text("Try adjusting your search or filters", style="caption")
+                
+                HStack(spacing="sm", justify="center"):
+                    Button("First", intent="secondary"):
+                        on_click:
+                            state.current_page = 1
+                            LoadArticles()
+                    
+                    Button("Prev", intent="secondary"):
+                        on_click:
+                            if state.current_page > 1:
+                                state.current_page -= 1
+                                LoadArticles()
+                    
+                    HStack(spacing="xs"):
+                        for page in range(1, state.total_pages + 1):
+                            if page == state.current_page:
+                                Button(f"{page}", intent="primary")
+                            if page != state.current_page:
+                                Button(f"{page}", intent="secondary"):
+                                    on_click:
+                                        state.current_page = page
+                                        LoadArticles()
+                    
+                    Button("Next", intent="secondary"):
+                        on_click:
+                            if state.current_page < state.total_pages:
+                                state.current_page += 1
+                                LoadArticles()
+                    
+                    Button("Last", intent="secondary"):
+                        on_click:
+                            state.current_page = state.total_pages
+                            LoadArticles()
+                
+                HStack(justify="center"):
+                    Text(f"Page {state.current_page} of {state.total_pages}", style="caption")
+

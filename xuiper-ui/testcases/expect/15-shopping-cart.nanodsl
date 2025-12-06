@@ -1,0 +1,132 @@
+component ShoppingCart:
+    state:
+        items: List = []
+        coupon_code: str = ""
+        coupon_applied: bool = False
+        coupon_discount: float = 0.0
+        is_applying_coupon: bool = False
+        shipping_method: str = "standard"
+        subtotal: float = 0.0
+        shipping_cost: float = 0.0
+        tax: float = 0.0
+        total: float = 0.0
+        is_updating: bool = False
+    
+    VStack(spacing="lg"):
+        HStack(align="center", justify="between"):
+            Text("Shopping Cart", style="h2")
+            Text(f"{state.items.length} items", style="caption")
+        
+        if state.items.length == 0:
+            Card:
+                padding: "lg"
+                content:
+                    VStack(align="center", spacing="md"):
+                        Text("Your cart is empty", style="h3")
+                        Text("Add some items to get started", style="body")
+                        Button("Continue Shopping", intent="primary"):
+                            on_click: Navigate(to="/products")
+        
+        if state.items.length > 0:
+            HStack(spacing="lg"):
+                VStack(spacing="md"):
+                    for item in state.items:
+                        Card:
+                            padding: "md"
+                            content:
+                                HStack(spacing="md"):
+                                    Image(src=item.image, width=100, aspect="1:1")
+                                    VStack(spacing="sm"):
+                                        Text(item.name, style="h4")
+                                        if item.variant:
+                                            Text(item.variant, style="caption")
+                                        Text(f"${item.price}", style="body")
+                                        
+                                        HStack(spacing="sm"):
+                                            Button("-"):
+                                                on_click:
+                                                    state.is_updating = True
+                                                    Fetch(
+                                                        url="/api/cart/update",
+                                                        method="POST",
+                                                        body={"item_id": item.id, "quantity": item.quantity - 1},
+                                                        on_success:
+                                                            state.is_updating = False
+                                                            RefreshCart()
+                                                        on_error:
+                                                            state.is_updating = False
+                                                            ShowToast("Failed to update cart")
+                                                    )
+                                            Input(value := item.quantity, type="number")
+                                            Button("+"):
+                                                on_click:
+                                                    state.is_updating = True
+                                                    UpdateCartItem(item.id, item.quantity + 1)
+                                        
+                                        if item.in_stock:
+                                            Badge("In Stock", color="green")
+                                        if not item.in_stock:
+                                            Badge("Out of Stock", color="red")
+                                    
+                                    VStack(spacing="sm", align="end"):
+                                        Text(f"${item.price * item.quantity}", style="h4")
+                                        Button("Remove", intent="danger"):
+                                            on_click: RemoveFromCart(item.id)
+                
+                Card:
+                    padding: "lg"
+                    content:
+                        VStack(spacing="md"):
+                            Text("Order Summary", style="h3")
+                            
+                            VStack(spacing="xs"):
+                                Input(value := state.coupon_code, placeholder="Coupon code")
+                                Button("Apply", intent="secondary"):
+                                    on_click:
+                                        state.is_applying_coupon = True
+                                        Fetch(
+                                            url="/api/coupon/apply",
+                                            method="POST",
+                                            body={"code": state.coupon_code, "cart_total": state.subtotal},
+                                            on_success:
+                                                state.coupon_applied = True
+                                                state.coupon_discount = response.discount
+                                                state.is_applying_coupon = False
+                                                ShowToast("Coupon applied!")
+                                            on_error:
+                                                state.is_applying_coupon = False
+                                                ShowToast("Invalid coupon code")
+                                        )
+                                if state.coupon_applied:
+                                    HStack(justify="between"):
+                                        Text("Coupon Discount:", style="body")
+                                        Text(f"-${state.coupon_discount}", style="body", color="green")
+                            
+                            VStack(spacing="xs"):
+                                Text("Shipping Method", style="body")
+                                Select(value := state.shipping_method, options=["standard", "express", "overnight"])
+                            
+                            Divider
+                            
+                            VStack(spacing="xs"):
+                                HStack(justify="between"):
+                                    Text("Subtotal:", style="body")
+                                    Text(content << f"${state.subtotal}", style="body")
+                                HStack(justify="between"):
+                                    Text("Shipping:", style="body")
+                                    Text(content << f"${state.shipping_cost}", style="body")
+                                HStack(justify="between"):
+                                    Text("Tax:", style="body")
+                                    Text(content << f"${state.tax}", style="body")
+                            
+                            Divider
+                            
+                            HStack(justify="between"):
+                                Text("Total:", style="h3")
+                                Text(content << f"${state.total}", style="h3")
+                            
+                            Button("Proceed to Checkout", intent="primary"):
+                                on_click:
+                                    SaveCart()
+                                    Navigate(to="/checkout")
+

@@ -1,0 +1,43 @@
+component OrderStatusCard(order: Order):
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                HStack(align="center", justify="between"):
+                    Text("Order #" + order.id, style="h3")
+                    if order.status == "pending":
+                        Badge("Pending", color="yellow")
+                    if order.status == "processing":
+                        Badge("Processing", color="blue")
+                    if order.status == "shipped":
+                        Badge("Shipped", color="green")
+                    if order.status == "cancelled":
+                        Badge("Cancelled", color="red")
+                
+                Divider
+                
+                if order.is_urgent:
+                    HStack(spacing="sm"):
+                        Badge("URGENT", color="red")
+                        Text("Priority shipping requested", style="caption")
+                
+                VStack(spacing="sm"):
+                    Text(f"Total: ${order.total}", style="h4")
+                    Text(f"Items: {order.item_count}", style="body")
+                    if order.has_discount:
+                        Text(f"Discount: -${order.discount}", style="caption", color="green")
+                
+                if order.status == "shipped":
+                    VStack(spacing="sm"):
+                        Text("Tracking: " + order.tracking_number, style="body")
+                        if order.estimated_delivery:
+                            Text("ETA: " + order.estimated_delivery, style="caption")
+                
+                HStack(spacing="sm", justify="end"):
+                    if order.status == "pending":
+                        Button("Cancel Order", intent="danger"):
+                            on_click: CancelOrder(id=order.id)
+                    if order.status != "cancelled":
+                        Button("View Details", intent="secondary"):
+                            on_click: Navigate(to="/orders/" + order.id)
+
