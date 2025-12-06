@@ -346,6 +346,10 @@ project(":") {
         }
 
         testImplementation(kotlin("test"))
+        testImplementation("cc.unitmesh:mpp-core:${prop("mppVersion")}") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        }
     }
 
     tasks {

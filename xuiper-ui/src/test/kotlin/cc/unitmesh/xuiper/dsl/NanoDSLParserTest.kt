@@ -3,6 +3,7 @@ package cc.unitmesh.xuiper.dsl
 import cc.unitmesh.xuiper.action.HttpMethod
 import cc.unitmesh.xuiper.action.NanoAction
 import cc.unitmesh.xuiper.ast.NanoNode
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -389,5 +390,75 @@ component ContactForm:
         assertNotNull(fetchAction)
         assertEquals("/api/contact", fetchAction!!.url)
         assertEquals(HttpMethod.POST, fetchAction.method)
+    }
+
+    @Test
+    fun `should parse state variables with empty string default values correctly`() {
+        val source = """
+component LoginForm:
+    state:
+        email: str = ""
+        password: str = ""
+        username: str = "default"
+        loading: bool = False
+        count: int = 0
+
+    VStack:
+        Text("Login")
+        """.trimIndent()
+
+        val result = NanoDSL.parse(source)
+
+        // Check state was parsed
+        assertNotNull(result.state)
+        val state = result.state!!
+
+        // Check that empty string default values are correctly stripped of quotes
+        val emailVar = state.variables.find { it.name == "email" }
+        assertNotNull(emailVar)
+        assertEquals("str", emailVar!!.type)
+        assertEquals("", emailVar.defaultValue, "Empty string should have quotes stripped")
+
+        val passwordVar = state.variables.find { it.name == "password" }
+        assertNotNull(passwordVar)
+        assertEquals("", passwordVar!!.defaultValue, "Empty string should have quotes stripped")
+
+        // Check that non-empty string values are also correctly stripped
+        val usernameVar = state.variables.find { it.name == "username" }
+        assertNotNull(usernameVar)
+        assertEquals("default", usernameVar!!.defaultValue, "String value should have quotes stripped")
+
+        // Check that non-string values are preserved as-is
+        val loadingVar = state.variables.find { it.name == "loading" }
+        assertNotNull(loadingVar)
+        assertEquals("False", loadingVar!!.defaultValue)
+
+        val countVar = state.variables.find { it.name == "count" }
+        assertNotNull(countVar)
+        assertEquals("0", countVar!!.defaultValue)
+    }
+
+    @Test
+    fun `should render state with empty string correctly in IR`() {
+        val source = """
+component LoginForm:
+    state:
+        email: str = ""
+        password: str = ""
+
+    Card:
+        Input(value:=state.email, placeholder="Email")
+        """.trimIndent()
+
+        val result = NanoDSL.parse(source)
+        val ir = NanoDSL.toIR(result)
+
+        // Check state in IR
+        assertNotNull(ir.state)
+        val emailState = ir.state!!.variables["email"]
+        assertNotNull(emailState)
+        assertEquals("str", emailState!!.type)
+        // The default value should be an empty string, not ""
+        assertEquals("", emailState.defaultValue?.jsonPrimitive?.content)
     }
 }

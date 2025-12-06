@@ -6,6 +6,8 @@ import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.agent.render.RendererUtils
 
+import cc.unitmesh.agent.render.TaskInfo
+import cc.unitmesh.agent.render.TaskStatus
 import cc.unitmesh.agent.render.TimelineItem
 import cc.unitmesh.agent.render.ToolCallDisplayInfo
 import cc.unitmesh.agent.render.ToolCallInfo
@@ -82,6 +84,10 @@ class JewelRenderer : BaseRenderer() {
     private val _currentPlan = MutableStateFlow<AgentPlan?>(null)
     val currentPlan: StateFlow<AgentPlan?> = _currentPlan.asStateFlow()
 
+    // Task tracking (from task-boundary tool)
+    private val _tasks = MutableStateFlow<List<TaskInfo>>(emptyList())
+    val tasks: StateFlow<List<TaskInfo>> = _tasks.asStateFlow()
+
     /**
      * Set the current plan directly.
      * Used to sync with PlanStateService from CodingAgent.
@@ -152,6 +158,11 @@ class JewelRenderer : BaseRenderer() {
 
         jewelRendererLogger.info("renderToolCall: parsed params keys=${params.keys}")
 
+        // Handle task-boundary tool - update task list
+        if (toolName == "task-boundary") {
+            updateTaskFromToolCall(params)
+        }
+
         // Handle plan management tool - update plan state
         if (toolName == "plan") {
             jewelRendererLogger.info("renderToolCall: detected plan tool, calling updatePlanFromToolCall")
@@ -177,6 +188,11 @@ class JewelRenderer : BaseRenderer() {
 
         // Convert Map<String, Any> to Map<String, String> for internal use
         val stringParams = params.mapValues { it.value.toString() }
+
+        // Handle task-boundary tool - update task list
+        if (toolName == "task-boundary") {
+            updateTaskFromToolCall(stringParams)
+        }
 
         // Handle plan management tool - update plan state with original params
         if (toolName == "plan") {
@@ -319,6 +335,37 @@ class JewelRenderer : BaseRenderer() {
                 }
             }
             // VIEW action doesn't modify state
+        }
+    }
+
+    /**
+     * Update task list from task-boundary tool call
+     */
+    private fun updateTaskFromToolCall(params: Map<String, String>) {
+        val taskName = params["taskName"] ?: return
+        val statusStr = params["status"] ?: "WORKING"
+        val summary = params["summary"] ?: ""
+        val status = TaskStatus.fromString(statusStr)
+
+        _tasks.update { currentTasks ->
+            val existingIndex = currentTasks.indexOfFirst { it.taskName == taskName }
+            if (existingIndex >= 0) {
+                // Update existing task
+                currentTasks.toMutableList().apply {
+                    this[existingIndex] = currentTasks[existingIndex].copy(
+                        status = status,
+                        summary = summary,
+                        timestamp = System.currentTimeMillis()
+                    )
+                }
+            } else {
+                // Add new task
+                currentTasks + TaskInfo(
+                    taskName = taskName,
+                    status = status,
+                    summary = summary
+                )
+            }
         }
     }
 

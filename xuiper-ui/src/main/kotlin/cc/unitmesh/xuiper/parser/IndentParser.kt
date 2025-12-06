@@ -194,11 +194,18 @@ class IndentParser(
 
             val match = STATE_VAR_REGEX.matchEntire(line)
             if (match != null) {
+                val rawValue = match.groupValues[3].trim()
+                // Strip quotes from string values (e.g., "" -> empty string, "hello" -> hello)
+                val defaultValue = if (rawValue.startsWith("\"") && rawValue.endsWith("\"")) {
+                    rawValue.substring(1, rawValue.length - 1)
+                } else {
+                    rawValue
+                }
                 variables.add(
                     NanoNode.StateVariable(
                         name = match.groupValues[1],
                         type = match.groupValues[2],
-                        defaultValue = match.groupValues[3].trim()
+                        defaultValue = defaultValue
                     )
                 )
             }
