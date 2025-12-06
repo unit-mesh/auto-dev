@@ -13,9 +13,9 @@ class HtmlRendererTest {
     @Test
     fun `should render simple text component`() {
         val ir = NanoIR.text("Hello World", "h2")
-        
-        val html = renderer.renderComponent(ir)
-        
+
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "<h2")
         assertContains(html, "Hello World")
         assertContains(html, "style-h2")
@@ -30,9 +30,9 @@ class HtmlRendererTest {
                 NanoIR.text("Second")
             )
         )
-        
-        val html = renderer.renderComponent(ir)
-        
+
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "nano-vstack")
         assertContains(html, "spacing-md")
         assertContains(html, "First")
@@ -50,9 +50,9 @@ class HtmlRendererTest {
                 NanoIR.text("Right")
             )
         )
-        
-        val html = renderer.renderComponent(ir)
-        
+
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "nano-hstack")
         assertContains(html, "align-center")
         assertContains(html, "justify-between")
@@ -65,9 +65,9 @@ class HtmlRendererTest {
             shadow = "md",
             children = listOf(NanoIR.text("Card Content"))
         )
-        
-        val html = renderer.renderComponent(ir)
-        
+
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "nano-card")
         assertContains(html, "padding-lg")
         assertContains(html, "shadow-md")
@@ -77,9 +77,9 @@ class HtmlRendererTest {
     @Test
     fun `should render Button with intent`() {
         val ir = NanoIR.button("Click me", "primary")
-        
-        val html = renderer.renderComponent(ir)
-        
+
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "<button")
         assertContains(html, "nano-button")
         assertContains(html, "intent-primary")
@@ -112,8 +112,8 @@ component GreetingCard:
         """.trimIndent()
 
         val ir = NanoDSL.toIR(source)
-        val html = renderer.renderComponent(ir)
-        
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "nano-card")
         assertContains(html, "nano-vstack")
         assertContains(html, "Hello!")
@@ -123,19 +123,21 @@ component GreetingCard:
     @Test
     fun `should render divider`() {
         val ir = NanoIR(type = "Divider")
-        
-        val html = renderer.renderComponent(ir)
-        
+
+        val html = renderer.renderNode(ir)
+
         assertContains(html, "<hr")
         assertContains(html, "nano-divider")
     }
 
     @Test
-    fun `should support all basic component types`() {
+    fun `should render all basic component types`() {
         val types = listOf("VStack", "HStack", "Card", "Text", "Button", "Image", "Badge", "Divider")
-        
+
         types.forEach { type ->
-            assertTrue(renderer.supports(type), "Should support $type")
+            val ir = NanoIR(type = type)
+            val html = renderer.renderNode(ir)
+            assertTrue(html.isNotEmpty(), "Should render $type")
         }
     }
 }

@@ -124,7 +124,8 @@ class HtmlRenderer(
         val aspect = ir.props["aspect"]?.jsonPrimitive?.content
         val radius = ir.props["radius"]?.jsonPrimitive?.content ?: "none"
         val aspectClass = aspect?.replace("/", "-") ?: "auto"
-        return "<img src=\"$src\" class=\"nano-image aspect-$aspectClass radius-$radius\" alt=\"\">\n"
+        val alt = ir.props["alt"]?.jsonPrimitive?.content ?: "Image"
+        return "<img src=\"$src\" class=\"nano-image aspect-$aspectClass radius-$radius\" alt=\"$alt\">\n"
     }
 
     override fun renderBadge(ir: NanoIR): String {
@@ -160,7 +161,12 @@ class HtmlRenderer(
     }
 
     override fun renderCheckbox(ir: NanoIR): String {
-        return "<input type=\"checkbox\" class=\"nano-checkbox\">\n"
+        val label = ir.props["label"]?.jsonPrimitive?.content
+        return if (label != null) {
+            "<label class=\"nano-checkbox-wrapper\"><input type=\"checkbox\" class=\"nano-checkbox\"><span>$label</span></label>\n"
+        } else {
+            "<input type=\"checkbox\" class=\"nano-checkbox\">\n"
+        }
     }
 
     override fun renderTextArea(ir: NanoIR): String {
@@ -334,6 +340,20 @@ class HtmlRenderer(
             display: flex;
             flex-direction: column;
             gap: 16px;
+        }
+
+        .nano-checkbox-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .nano-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #1976D2;
+            cursor: pointer;
         }
 
         .nano-divider { border: none; border-top: 1px solid #E0E0E0; margin: 16px 0; }

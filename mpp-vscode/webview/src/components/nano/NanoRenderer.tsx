@@ -166,8 +166,9 @@ function getTextTag(style: string): keyof JSX.IntrinsicElements {
 const RenderImage: React.FC<{ ir: NanoIR; context: NanoRenderContext }> = ({ ir }) => {
   const src = ir.props.src || '';
   const radius = ir.props.radius || 'none';
+  const alt = ir.props.alt ?? 'Image';
 
-  return <img src={src} className={`nano-image radius-${radius}`} alt="" />;
+  return <img src={src} className={`nano-image radius-${radius}`} alt={alt} />;
 };
 
 const RenderBadge: React.FC<{ ir: NanoIR; context: NanoRenderContext }> = ({ ir }) => {
@@ -251,9 +252,9 @@ const RenderSelect: React.FC<{ ir: NanoIR; context: NanoRenderContext }> = ({ ir
   const placeholder = ir.props.placeholder;
 
   return (
-    <select className="nano-select">
+    <select className="nano-select" defaultValue="">
       {placeholder && (
-        <option value="" disabled selected>{placeholder}</option>
+        <option value="" disabled>{placeholder}</option>
       )}
     </select>
   );

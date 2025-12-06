@@ -228,6 +228,13 @@
 }
 
 /* Checkbox */
+.nano-checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
 .nano-checkbox {
   width: 18px;
   height: 18px;
