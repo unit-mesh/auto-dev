@@ -1,22 +1,12 @@
 package cc.unitmesh.devins.idea.toolwindow
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.plan.AgentPlan
-import cc.unitmesh.devins.idea.compose.IdeaLaunchedEffect
 import cc.unitmesh.devins.idea.compose.rememberIdeaCoroutineScope
 import cc.unitmesh.devins.idea.editor.*
-import cc.unitmesh.devins.idea.toolwindow.plan.IdeaPlanSummaryBar
-import cc.unitmesh.devins.idea.toolwindow.changes.IdeaFileChangeSummary
 import cc.unitmesh.llm.NamedModelConfig
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -24,11 +14,13 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.util.ui.JBUI
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jetbrains.jewel.foundation.theme.JewelTheme
 import java.awt.BorderLayout
 import java.awt.Dimension
+import javax.swing.BoxLayout
 import javax.swing.JPanel
 
 /**
@@ -68,6 +60,12 @@ private fun buildAndSendMessage(
     clearFiles()
 }
 
+/**
+ * Composable wrapper for SwingDevInInputArea.
+ * Uses SwingPanel to embed the Swing-based input area in Compose.
+ * This approach avoids z-index issues by keeping EditorTextField as native Swing
+ * and using JewelComposePanel for Compose toolbars.
+ */
 @Composable
 fun IdeaDevInInputArea(
     project: Project,
@@ -84,187 +82,257 @@ fun IdeaDevInInputArea(
     onConfigureClick: () -> Unit = {},
     currentPlan: AgentPlan? = null
 ) {
-    var inputText by remember { mutableStateOf("") }
-    var devInInput by remember { mutableStateOf<IdeaDevInInput?>(null) }
-    var selectedFiles by remember { mutableStateOf<List<SelectedFileItem>>(emptyList()) }
-    var isEnhancing by remember { mutableStateOf(false) }
+    val scope = rememberIdeaCoroutineScope(project)
+    var swingInputArea by remember { mutableStateOf<SwingDevInInputArea?>(null) }
 
-    // Use a ref to track current processing state for the SwingPanel listener
-    val isProcessingRef = remember { mutableStateOf(isProcessing) }
-    // Use DisposableEffect instead of LaunchedEffect to avoid ClassLoader conflicts
+    // Update SwingDevInInputArea properties when they change
     DisposableEffect(isProcessing) {
-        isProcessingRef.value = isProcessing
+        swingInputArea?.setProcessing(isProcessing)
         onDispose { }
     }
 
-    val scope = rememberIdeaCoroutineScope(project)
-    val borderShape = RoundedCornerShape(8.dp)
+    DisposableEffect(totalTokens) {
+        swingInputArea?.setTotalTokens(totalTokens)
+        onDispose { }
+    }
 
-    // Outer container with unified border
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .clip(borderShape)
-            .border(
-                width = 1.dp,
-                color = JewelTheme.globalColors.borders.normal,
-                shape = borderShape
-            )
-    ) {
-        // Plan summary bar - shown above top toolbar when a plan is active
-        IdeaPlanSummaryBar(
-            plan = currentPlan,
-            modifier = Modifier.fillMaxWidth()
-        )
+    DisposableEffect(availableConfigs) {
+        swingInputArea?.setAvailableConfigs(availableConfigs)
+        onDispose { }
+    }
 
-        // File change summary - shown when there are file changes
-        IdeaFileChangeSummary(
-            project = project,
-            modifier = Modifier.fillMaxWidth()
-        )
+    DisposableEffect(currentConfigName) {
+        swingInputArea?.setCurrentConfigName(currentConfigName)
+        onDispose { }
+    }
 
-        // Top toolbar with file selection (no individual border)
-        IdeaTopToolbar(
-            project = project,
-            onAtClick = onAtClick,
-            selectedFiles = selectedFiles,
-            onRemoveFile = { file ->
-                selectedFiles = selectedFiles.filter { it.path != file.path }
-            },
-            onFilesSelected = { files ->
-                val newItems = files.map { vf ->
-                    SelectedFileItem(
-                        name = vf.name,
-                        path = vf.path,
-                        virtualFile = vf,
-                        isDirectory = vf.isDirectory
-                    )
-                }
-                selectedFiles = (selectedFiles + newItems).distinctBy { it.path }
+    DisposableEffect(onConfigSelect) {
+        swingInputArea?.setOnConfigSelect(onConfigSelect)
+        onDispose { }
+    }
+
+    DisposableEffect(onConfigureClick) {
+        swingInputArea?.setOnConfigureClick(onConfigureClick)
+        onDispose { }
+    }
+
+    DisposableEffect(currentPlan) {
+        swingInputArea?.setCurrentPlan(currentPlan)
+        onDispose { }
+    }
+
+    // Embed SwingDevInInputArea using SwingPanel
+    SwingPanel(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            SwingDevInInputArea(
+                project = project,
+                parentDisposable = parentDisposable,
+                onSend = onSend,
+                onAbort = onAbort,
+                scope = scope
+            ).also {
+                swingInputArea = it
+                // Apply initial values
+                it.setProcessing(isProcessing)
+                it.setTotalTokens(totalTokens)
+                it.setAvailableConfigs(availableConfigs)
+                it.setCurrentConfigName(currentConfigName)
+                it.setOnConfigSelect(onConfigSelect)
+                it.setOnConfigureClick(onConfigureClick)
+                it.setCurrentPlan(currentPlan)
             }
-        )
+        },
+        update = { panel ->
+            // Panel updates are handled via DisposableEffect above
+        }
+    )
+}
 
-        // DevIn Editor via SwingPanel - uses weight(1f) to fill available space
-        SwingPanel(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            factory = {
-                val input = IdeaDevInInput(
-                    project = project,
-                    disposable = parentDisposable,
-                    showAgent = true
-                ).apply {
-                    recreateDocument()
+/**
+ * Pure Swing-based input area.
+ * Uses native Swing toolbars to avoid z-index issues with Compose popups.
+ */
+class SwingDevInInputArea(
+    private val project: Project,
+    private val parentDisposable: Disposable,
+    private val onSend: (String) -> Unit,
+    private val onAbort: () -> Unit,
+    private val scope: CoroutineScope
+) : JPanel(BorderLayout()), Disposable {
 
-                    addInputListener(object : IdeaInputListener {
-                        override fun editorAdded(editor: EditorEx) {
-                            // Editor is ready
+    private val logger = Logger.getInstance(SwingDevInInputArea::class.java)
+
+    private var devInInput: IdeaDevInInput? = null
+    private var inputText: String = ""
+    private var isProcessing: Boolean = false
+    private var isEnhancing: Boolean = false
+
+    // Swing toolbars
+    private lateinit var topToolbar: SwingTopToolbar
+    private lateinit var bottomToolbar: SwingBottomToolbar
+
+    // Callbacks for config selection
+    private var currentPlan: AgentPlan? = null
+
+    init {
+        border = JBUI.Borders.empty(0)
+        setupUI()
+        Disposer.register(parentDisposable, this)
+    }
+
+    private fun setupUI() {
+        val contentPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = JBUI.Borders.empty()
+        }
+
+        // Top toolbar (pure Swing)
+        topToolbar = SwingTopToolbar(project) { files ->
+            // Files selected callback - already handled in SwingTopToolbar
+        }.apply {
+            maximumSize = Dimension(Int.MAX_VALUE, 40)
+        }
+        contentPanel.add(topToolbar)
+
+        // DevIn Editor (native Swing)
+        val editorPanel = JPanel(BorderLayout()).apply {
+            val input = IdeaDevInInput(
+                project = project,
+                disposable = parentDisposable,
+                showAgent = true
+            ).apply {
+                recreateDocument()
+
+                addInputListener(object : IdeaInputListener {
+                    override fun editorAdded(editor: EditorEx) {
+                        // Editor is ready
+                    }
+
+                    override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
+                        if (text.isNotBlank() && !isProcessing) {
+                            sendMessage(text)
                         }
+                    }
 
-                        override fun onSubmit(text: String, trigger: IdeaInputTrigger) {
-                            // Use ref to get current processing state
-                            if (text.isNotBlank() && !isProcessingRef.value) {
-                                buildAndSendMessage(
-                                    text = text,
-                                    selectedFiles = selectedFiles,
-                                    onSend = onSend,
-                                    clearInput = {
-                                        clearInput()
-                                        inputText = ""
-                                    },
-                                    clearFiles = { selectedFiles = emptyList() }
-                                )
-                            }
-                        }
+                    override fun onStop() {
+                        onAbort()
+                    }
 
-                        override fun onStop() {
-                            onAbort()
-                        }
-
-                        override fun onTextChanged(text: String) {
-                            inputText = text
-                        }
-                    })
-                }
-
-                // Register for disposal
-                Disposer.register(parentDisposable, input)
-                devInInput = input
-
-                // Wrap in a JPanel to handle dynamic sizing
-                JPanel(BorderLayout()).apply {
-                    add(input, BorderLayout.CENTER)
-                    // Don't set fixed preferredSize - let it fill available space
-                    minimumSize = Dimension(200, 60)
-                }
-            },
-            update = { panel ->
-                // Update panel if needed
+                    override fun onTextChanged(text: String) {
+                        inputText = text
+                        bottomToolbar.setSendEnabled(text.isNotBlank() && !isProcessing)
+                    }
+                })
             }
-        )
 
-        // Bottom toolbar with Compose (no individual border)
-        IdeaBottomToolbar(
+            Disposer.register(parentDisposable, input)
+            devInInput = input
+
+            add(input, BorderLayout.CENTER)
+            minimumSize = Dimension(200, 60)
+            preferredSize = Dimension(Int.MAX_VALUE, 100)
+        }
+        contentPanel.add(editorPanel)
+
+        // Bottom toolbar (pure Swing)
+        bottomToolbar = SwingBottomToolbar(
             project = project,
             onSendClick = {
                 val text = devInInput?.text?.trim() ?: inputText.trim()
                 if (text.isNotBlank() && !isProcessing) {
-                    buildAndSendMessage(
-                        text = text,
-                        selectedFiles = selectedFiles,
-                        onSend = onSend,
-                        clearInput = {
-                            devInInput?.clearInput()
-                            inputText = ""
-                        },
-                        clearFiles = { selectedFiles = emptyList() }
-                    )
+                    sendMessage(text)
                 }
             },
-            sendEnabled = inputText.isNotBlank() && !isProcessing,
-            isExecuting = isProcessing,
             onStopClick = onAbort,
-            onPromptOptimizationClick = {
-                val currentText = devInInput?.text?.trim() ?: inputText.trim()
-                inputAreaLogger.info("Prompt optimization clicked, text length: ${currentText.length}")
+            onPromptOptimizationClick = { handlePromptOptimization() }
+        ).apply {
+            maximumSize = Dimension(Int.MAX_VALUE, 40)
+        }
+        contentPanel.add(bottomToolbar)
 
-                if (currentText.isNotBlank() && !isEnhancing && !isProcessing) {
-                    isEnhancing = true
-                    scope.launch(Dispatchers.IO) {
-                        try {
-                            inputAreaLogger.info("Starting prompt enhancement...")
-                            val enhancer = IdeaPromptEnhancer.getInstance(project)
-                            val enhanced = enhancer.enhance(currentText)
-                            inputAreaLogger.info("Enhancement completed, result length: ${enhanced.length}")
+        add(contentPanel, BorderLayout.CENTER)
+    }
 
-                            if (enhanced != currentText && enhanced.isNotBlank()) {
-                                // Update UI on EDT using invokeLater
-                                ApplicationManager.getApplication().invokeLater {
-                                    devInInput?.replaceText(enhanced)
-                                    inputText = enhanced
-                                    inputAreaLogger.info("Text updated in input field")
-                                }
-                            } else {
-                                inputAreaLogger.info("No enhancement made (same text or empty result)")
-                            }
-                        } catch (e: Exception) {
-                            inputAreaLogger.error("Prompt enhancement failed: ${e.message}", e)
-                        } finally {
-                            ApplicationManager.getApplication().invokeLater {
-                                isEnhancing = false
-                            }
+    private fun sendMessage(text: String) {
+        val selectedFiles = topToolbar.getSelectedFiles()
+        val filesText = selectedFiles.joinToString("\n") { it.toDevInsCommand() }
+        val fullText = if (filesText.isNotEmpty()) "$text\n$filesText" else text
+        onSend(fullText)
+        devInInput?.clearInput()
+        inputText = ""
+        topToolbar.clearFiles()
+        bottomToolbar.setSendEnabled(false)
+    }
+
+    private fun handlePromptOptimization() {
+        val currentText = devInInput?.text?.trim() ?: inputText.trim()
+        logger.info("Prompt optimization clicked, text length: ${currentText.length}")
+
+        if (currentText.isNotBlank() && !isEnhancing && !isProcessing) {
+            isEnhancing = true
+            bottomToolbar.setEnhancing(true)
+
+            scope.launch(Dispatchers.IO) {
+                try {
+                    logger.info("Starting prompt enhancement...")
+                    val enhancer = IdeaPromptEnhancer.getInstance(project)
+                    val enhanced = enhancer.enhance(currentText)
+                    logger.info("Enhancement completed, result length: ${enhanced.length}")
+
+                    if (enhanced != currentText && enhanced.isNotBlank()) {
+                        ApplicationManager.getApplication().invokeLater {
+                            devInInput?.replaceText(enhanced)
+                            inputText = enhanced
+                            logger.info("Text updated in input field")
                         }
+                    } else {
+                        logger.info("No enhancement made (same text or empty result)")
+                    }
+                } catch (e: Exception) {
+                    logger.error("Prompt enhancement failed: ${e.message}", e)
+                } finally {
+                    ApplicationManager.getApplication().invokeLater {
+                        isEnhancing = false
+                        bottomToolbar.setEnhancing(false)
                     }
                 }
-            },
-            isEnhancing = isEnhancing,
-            totalTokens = totalTokens,
-            availableConfigs = availableConfigs,
-            currentConfigName = currentConfigName,
-            onConfigSelect = onConfigSelect,
-            onConfigureClick = onConfigureClick
-        )
+            }
+        }
+    }
+
+    fun setProcessing(processing: Boolean) {
+        isProcessing = processing
+        bottomToolbar.setProcessing(processing)
+        bottomToolbar.setSendEnabled(inputText.isNotBlank() && !processing)
+    }
+
+    fun setTotalTokens(tokens: Int?) {
+        bottomToolbar.setTotalTokens(tokens)
+    }
+
+    fun setAvailableConfigs(configs: List<NamedModelConfig>) {
+        bottomToolbar.setAvailableConfigs(configs)
+    }
+
+    fun setCurrentConfigName(name: String?) {
+        bottomToolbar.setCurrentConfigName(name)
+    }
+
+    fun setOnConfigSelect(callback: (NamedModelConfig) -> Unit) {
+        bottomToolbar.setOnConfigSelect(callback)
+    }
+
+    fun setOnConfigureClick(callback: () -> Unit) {
+        bottomToolbar.setOnConfigureClick(callback)
+    }
+
+    fun setCurrentPlan(plan: AgentPlan?) {
+        currentPlan = plan
+        // TODO: Add plan summary bar support
+    }
+
+    override fun dispose() {
+        devInInput = null
     }
 }

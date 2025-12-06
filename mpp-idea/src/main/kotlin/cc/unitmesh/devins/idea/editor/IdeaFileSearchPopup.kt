@@ -117,13 +117,28 @@ private fun FileSearchPopupContent(
         recentFiles
     }
 
+    // Calculate item count for dynamic height
+    val itemCount = when {
+        searchQuery.length >= 2 -> {
+            1 + // search field
+            (if (files.isNotEmpty()) 1 + minOf(files.size, 10) + (if (files.size > 10) 1 else 0) else 0) +
+            (if (folders.isNotEmpty()) 1 + minOf(folders.size, 5) else 0) +
+            (if (files.isEmpty() && folders.isEmpty()) 1 else 0)
+        }
+        else -> 1 + 1 + minOf(filteredRecentFiles.size, 15) + (if (filteredRecentFiles.isEmpty()) 1 else 0)
+    }
+    // Each item is approximately 32dp, plus some padding
+    val estimatedHeight = (itemCount * 32 + 24).coerceIn(150, 450)
+
     PopupMenu(
         onDismissRequest = {
             onDismiss()
             true
         },
         horizontalAlignment = Alignment.Start,
-        modifier = Modifier.widthIn(min = 300.dp, max = 480.dp)
+        modifier = Modifier
+            .widthIn(min = 300.dp, max = 480.dp)
+            .height(estimatedHeight.dp)
     ) {
         // Search field at top with improved styling
         passiveItem {
