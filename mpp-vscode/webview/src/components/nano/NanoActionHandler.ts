@@ -119,14 +119,26 @@ export class ReactActionHandler implements NanoActionHandler {
     _context: NanoActionContext
   ): ActionResult {
     try {
+      // Validate protocol before navigation
+      const allowedProtocols = ['http:', 'https:', 'mailto:'];
+      let url: URL;
+      try {
+        url = new URL(action.to, window.location.origin);
+      } catch (e) {
+        return { success: false, error: `Invalid URL: ${action.to}` };
+      }
+      if (!allowedProtocols.includes(url.protocol)) {
+        return { success: false, error: `Unsafe protocol: ${url.protocol}` };
+      }
+
       if (this.options.onNavigate) {
         this.options.onNavigate(action.to);
       } else {
         // Default: use window.location for external URLs
-        if (action.to.startsWith('http://') || action.to.startsWith('https://')) {
-          window.open(action.to, '_blank');
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+          window.open(url.href, '_blank');
         } else {
-          window.location.href = action.to;
+          window.location.href = url.href;
         }
       }
       return { success: true };
@@ -323,13 +335,20 @@ export class ReactStateContext implements NanoActionContext {
 
 export function parseNanoAction(actionIR: { type: string; payload?: Record<string, any> }): NanoAction | null {
   switch (actionIR.type) {
-    case 'StateMutation':
+    case 'StateMutation': {
+      const validOps: MutationOp[] = ['SET', 'ADD', 'SUBTRACT', 'APPEND', 'REMOVE'];
+      const op = actionIR.payload?.operation ?? 'SET';
+      const operation: MutationOp = validOps.includes(op) ? (op as MutationOp) : 'SET';
+      if (!validOps.includes(op)) {
+        console.warn(`Invalid mutation operation: ${op}, defaulting to SET`);
+      }
       return {
         type: 'StateMutation',
         path: actionIR.payload?.path ?? '',
-        operation: (actionIR.payload?.operation ?? 'SET') as MutationOp,
+        operation,
         value: actionIR.payload?.value,
       };
+    }
     case 'Navigate':
       return { type: 'Navigate', to: actionIR.payload?.to ?? '' };
     case 'Fetch':

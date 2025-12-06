@@ -162,6 +162,46 @@
       "category": "COMPOSITE",
       "difficulty": "HARD",
       "tags": ["cart", "state", "http", "calculation", "for-loop"]
+    },
+    {
+      "id": "multi-page-navigation",
+      "name": "Multi-Page Navigation",
+      "description": "Generate a multi-page app with simple navigation between pages",
+      "userPrompt": "Create a simple multi-page app with: a HomePage component with a welcome message and a button to navigate to /about, an AboutPage component with company info and a Back button to navigate to /, and a NavBar component at the top with links to both pages",
+      "expectedDslFile": "expect/16-multi-page-navigation.nanodsl",
+      "category": "NAVIGATION",
+      "difficulty": "EASY",
+      "tags": ["navigation", "multi-page", "button"]
+    },
+    {
+      "id": "parameterized-route",
+      "name": "Parameterized Route Navigation",
+      "description": "Generate components that navigate with dynamic route parameters",
+      "userPrompt": "Create a UserListItem component that displays user avatar, name, email, and a View Profile button that navigates to /user/{id} with the user's id as a param. Also create a UserProfile component that shows the user ID from state and has a Back to List button",
+      "expectedDslFile": "expect/17-parameterized-route.nanodsl",
+      "category": "NAVIGATION",
+      "difficulty": "MEDIUM",
+      "tags": ["navigation", "params", "route-params"]
+    },
+    {
+      "id": "search-with-query",
+      "name": "Search Page with Query Navigation",
+      "description": "Generate a search page that uses query parameters for filtering and pagination",
+      "userPrompt": "Create a SearchPage component with search input, category filter, and results list. The Search button should navigate to /search with query parameters for search term, category, and page number. Include Previous/Next pagination buttons that update the page query param",
+      "expectedDslFile": "expect/18-search-with-query.nanodsl",
+      "category": "NAVIGATION",
+      "difficulty": "MEDIUM",
+      "tags": ["navigation", "query", "search", "pagination"]
+    },
+    {
+      "id": "conditional-navigation",
+      "name": "Login with Conditional Navigation",
+      "description": "Generate a login form that navigates on success with replace history",
+      "userPrompt": "Create a LoginForm with email/password inputs. On login button click, call /api/login. On success, navigate to /dashboard with replace=true (so user can't go back to login). On error, show error message. Include Sign Up link to /signup and Forgot Password link to /forgot-password with email as query param",
+      "expectedDslFile": "expect/19-conditional-navigation.nanodsl",
+      "category": "NAVIGATION",
+      "difficulty": "MEDIUM",
+      "tags": ["navigation", "replace", "conditional", "http"]
     }
   ],
   "tags": ["nanodsl", "ai-eval", "ui-generation"]

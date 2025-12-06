@@ -291,6 +291,17 @@ class IndentParser(
                 continue
             }
 
+            // Check if this is a component call (e.g., "VStack:" or "Button(...):") BEFORE checking property
+            // This prevents "VStack:" from being matched as an empty property
+            if (COMPONENT_CALL_REGEX.matches(trimmed) || COMPONENT_INLINE_REGEX.matches(trimmed)) {
+                val (node, newIndex) = parseNode(lines, index, currentIndent)
+                if (node != null) {
+                    children.add(node)
+                }
+                index = newIndex
+                continue
+            }
+
             // Check for property
             PROP_REGEX.matchEntire(trimmed)?.let { match ->
                 val propName = match.groupValues[1]
@@ -606,12 +617,9 @@ class IndentParser(
     private fun parseAction(actionStr: String): NanoAction {
         val trimmed = actionStr.trim()
 
-        // Navigate action
+        // Navigate action (enhanced with params, query, replace)
         if (trimmed.startsWith("Navigate(")) {
-            val toMatch = Regex("""Navigate\(to="(.+?)"\)""").find(trimmed)
-            if (toMatch != null) {
-                return NanoAction.Navigate(toMatch.groupValues[1])
-            }
+            return parseNavigateAction(trimmed)
         }
 
         // ShowToast action
@@ -641,6 +649,64 @@ class IndentParser(
         }
 
         return NanoAction.StateMutation("unknown", MutationOp.SET, trimmed)
+    }
+
+    /**
+     * Parse Navigate action with enhanced routing support
+     * Examples:
+     * - `Navigate(to="/home")`
+     * - `Navigate(to="/user/{id}", params={"id": state.userId})`
+     * - `Navigate(to="/search", query={"q": state.query})`
+     * - `Navigate(to="/login", replace=true)`
+     */
+    private fun parseNavigateAction(actionStr: String): NanoAction.Navigate {
+        val paramsStr = actionStr.removePrefix("Navigate(").removeSuffix(")")
+
+        // Parse 'to' (required)
+        val toMatch = Regex("""to\s*=\s*"([^"]+)"""").find(paramsStr)
+        val to = toMatch?.groupValues?.get(1) ?: "/"
+
+        // Parse 'replace' boolean
+        val replaceMatch = Regex("""replace\s*=\s*(true|false)""").find(paramsStr)
+        val replace = replaceMatch?.groupValues?.get(1)?.toBoolean() ?: false
+
+        // Parse 'params' map: params={"id": state.userId} or params={"id": "123"}
+        val routeParams = parseNavigateMap(paramsStr, "params")
+
+        // Parse 'query' map: query={"q": state.query}
+        val queryParams = parseNavigateMap(paramsStr, "query")
+
+        return NanoAction.Navigate(
+            to = to,
+            params = routeParams,
+            query = queryParams,
+            replace = replace
+        )
+    }
+
+    /**
+     * Parse a map parameter from Navigate action
+     * Supports: {"key": "value"} or {"key": state.path}
+     */
+    private fun parseNavigateMap(paramsStr: String, mapName: String): Map<String, String>? {
+        val mapMatch = Regex("""$mapName\s*=\s*\{([^}]*)\}""").find(paramsStr) ?: return null
+        val mapContent = mapMatch.groupValues[1]
+
+        val result = mutableMapOf<String, String>()
+        // Match patterns like "id": "123" or "id": state.userId
+        val fieldRegex = Regex(""""(\w+)"\s*:\s*("([^"]*)"|state\.[\w.]+)""")
+        fieldRegex.findAll(mapContent).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            // Remove quotes if it's a literal string
+            result[key] = if (value.startsWith("\"")) {
+                value.trim('"')
+            } else {
+                value // Keep state.xxx as-is for runtime binding
+            }
+        }
+
+        return result.takeIf { it.isNotEmpty() }
     }
 
     /**

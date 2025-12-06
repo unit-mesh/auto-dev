@@ -20,12 +20,72 @@ sealed class NanoAction {
     ) : NanoAction()
 
     /**
-     * Navigation action
-     * Example: `on_click: Navigate(to="/cart")`
+     * Navigation action with enhanced routing support
+     *
+     * Examples:
+     * ```nanodsl
+     * # Simple navigation
+     * Navigate(to="/cart")
+     *
+     * # Navigation with route params
+     * Navigate(to="/user/{id}", params={"id": state.userId})
+     *
+     * # Navigation with query string
+     * Navigate(to="/search", query={"q": state.query, "page": "1"})
+     *
+     * # Replace current history entry (no back navigation)
+     * Navigate(to="/login", replace=true)
+     *
+     * # Full form
+     * Navigate(
+     *     to="/product/{id}",
+     *     params={"id": "123"},
+     *     query={"ref": "home"},
+     *     replace=false
+     * )
+     * ```
      */
     data class Navigate(
-        val to: String
-    ) : NanoAction()
+        /** Target path (required) - can include path params like /user/{id} */
+        val to: String,
+
+        /** Route parameters to substitute in path - e.g., {"id": "123"} for /user/{id} */
+        val params: Map<String, String>? = null,
+
+        /** Query parameters to append to URL - e.g., {"q": "search"} -> ?q=search */
+        val query: Map<String, String>? = null,
+
+        /** Replace current history entry instead of pushing new one */
+        val replace: Boolean = false
+    ) : NanoAction() {
+        /**
+         * Build the final URL with params and query string substituted
+         */
+        fun buildUrl(): String {
+            var url = to
+
+            // Substitute path params
+            params?.forEach { (key, value) ->
+                url = url.replace("{$key}", value)
+                url = url.replace(":$key", value)
+            }
+
+            // Append query string
+            if (!query.isNullOrEmpty()) {
+                val queryString = query.entries.joinToString("&") { (k, v) ->
+                    "${encodeURIComponent(k)}=${encodeURIComponent(v)}"
+                }
+                url = if (url.contains("?")) "$url&$queryString" else "$url?$queryString"
+            }
+
+            return url
+        }
+
+        private fun encodeURIComponent(value: String): String {
+            return java.net.URLEncoder.encode(value, "UTF-8")
+                .replace("+", "%20")
+        }
+    }
 
     /**
      * Network fetch action with comprehensive HTTP request support

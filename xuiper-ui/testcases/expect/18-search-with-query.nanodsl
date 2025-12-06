@@ -1,0 +1,49 @@
+component SearchPage:
+    state:
+        query: str = ""
+        category: str = "all"
+        page: int = 1
+        results: list = []
+    
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                Text("Search Products", style="h1")
+                
+                HStack(spacing="sm"):
+                    Input(value := state.query, placeholder="Search...")
+                    Select(value := state.category, options=["all", "electronics", "clothing"])
+                    Button("Search", intent="primary"):
+                        on_click:
+                            Navigate(
+                                to="/search",
+                                query={"q": state.query, "category": state.category, "page": "1"}
+                            )
+                
+                VStack(spacing="sm"):
+                    for item in state.results:
+                        Card:
+                            padding: "sm"
+                            content:
+                                HStack(spacing="md"):
+                                    Image(src=item.image)
+                                    VStack:
+                                        Text(item.name, style="body")
+                                        Text(item.price, style="caption")
+                
+                HStack(spacing="sm", justify="center"):
+                    Button("Previous"):
+                        on_click:
+                            Navigate(
+                                to="/search",
+                                query={"q": state.query, "category": state.category, "page": state.page - 1}
+                            )
+                    Text(content << f"Page {state.page}", style="body")
+                    Button("Next"):
+                        on_click:
+                            Navigate(
+                                to="/search",
+                                query={"q": state.query, "category": state.category, "page": state.page + 1}
+                            )
+

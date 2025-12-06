@@ -109,7 +109,42 @@ request login:
 HTTP Methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`
 Content Types: `JSON`, `FORM_URLENCODED`, `FORM_DATA`
 
-### 9. Size/Style Tokens
+### 9. Routing & Navigation
+```nanodsl
+# Simple navigation
+Button("Go Home"):
+    on_click: Navigate(to="/home")
+
+# Navigation with route params (substitutes {id} in path)
+Button("View Profile"):
+    on_click: Navigate(to="/user/{id}", params={"id": state.userId})
+
+# Navigation with query string (?q=search&page=1)
+Button("Search"):
+    on_click: Navigate(to="/search", query={"q": state.query, "page": "1"})
+
+# Replace history (no back button to previous page)
+Button("Login"):
+    on_click: Navigate(to="/dashboard", replace=true)
+
+# Full navigation with all options
+Button("Go to Product"):
+    on_click:
+        Navigate(
+            to="/product/{id}",
+            params={"id": state.productId},
+            query={"ref": "home"},
+            replace=false
+        )
+```
+
+Navigation Parameters:
+- `to`: Target path (required) - supports path params like `/user/{id}` or `/user/:id`
+- `params`: Route parameters to substitute in path
+- `query`: Query string parameters to append
+- `replace`: If true, replaces current history entry (user cannot go back)
+
+### 10. Size/Style Tokens
 - Sizes: `"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`
 - Text styles: `"h1"`, `"h2"`, `"h3"`, `"body"`, `"caption"`
 - Intents: `"primary"`, `"secondary"`, `"danger"`, `"success"`

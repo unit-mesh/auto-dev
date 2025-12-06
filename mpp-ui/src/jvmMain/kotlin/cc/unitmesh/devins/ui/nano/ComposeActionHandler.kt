@@ -13,10 +13,10 @@ import javax.swing.JOptionPane
 
 /**
  * Compose/Desktop implementation of NanoActionHandler
- * 
+ *
  * Handles NanoUI actions in a Compose Desktop environment.
  * Provides platform-specific implementations for navigation, toast, and fetch.
- * 
+ *
  * Example:
  * ```kotlin
  * val handler = ComposeActionHandler(
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane
  *     onNavigate = { route -> navController.navigate(route) },
  *     onToast = { message -> snackbarHostState.showSnackbar(message) }
  * )
- * 
+ *
  * handler.registerCustomAction("AddTask") { payload, context ->
  *     val title = payload["title"] as? String ?: ""
  *     taskRepository.add(Task(title))
@@ -33,14 +33,14 @@ import javax.swing.JOptionPane
  * ```
  */
 class ComposeActionHandler(
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
     private val onNavigate: ((String) -> Unit)? = null,
     private val onToast: ((String) -> Unit)? = null,
     private val onFetchComplete: ((String, Boolean, String?) -> Unit)? = null
 ) : BaseNanoActionHandler() {
-    
+
     private val httpClient = HttpClient.newBuilder().build()
-    
+
     override fun handleNavigate(
         navigate: NanoAction.Navigate,
         context: NanoActionContext
@@ -59,7 +59,7 @@ class ComposeActionHandler(
             ActionResult.Error("Navigation failed: ${e.message}", e)
         }
     }
-    
+
     override fun handleFetch(
         fetch: NanoAction.Fetch,
         context: NanoActionContext
@@ -68,12 +68,12 @@ class ComposeActionHandler(
         fetch.loadingState?.let { path ->
             context.set(path, true)
         }
-        
+
         scope.launch {
             try {
                 val requestBuilder = HttpRequest.newBuilder()
                     .uri(URI(fetch.url))
-                
+
                 // Set method
                 when (fetch.method) {
                     HttpMethod.GET -> requestBuilder.GET()
@@ -90,32 +90,32 @@ class ComposeActionHandler(
                     HttpMethod.DELETE -> requestBuilder.DELETE()
                     else -> requestBuilder.GET()
                 }
-                
+
                 // Add headers
                 fetch.headers?.forEach { (key, value) ->
                     requestBuilder.header(key, value)
                 }
-                
+
                 val response = httpClient.send(
                     requestBuilder.build(),
                     HttpResponse.BodyHandlers.ofString()
                 )
-                
+
                 // Update loading state
                 fetch.loadingState?.let { path ->
                     context.set(path, false)
                 }
-                
+
                 if (response.statusCode() in 200..299) {
                     // Success
                     fetch.responseBinding?.let { path ->
                         context.set(path, response.body())
                     }
-                    
+
                     fetch.onSuccess?.let { successAction ->
                         handleAction(successAction, context)
                     }
-                    
+
                     onFetchComplete?.invoke(fetch.url, true, response.body())
                 } else {
                     // Error
@@ -123,14 +123,14 @@ class ComposeActionHandler(
                     fetch.errorBinding?.let { path ->
                         context.set(path, errorMsg)
                     }
-                    
+
                     fetch.onError?.let { errorAction ->
                         handleAction(errorAction, context)
                     }
-                    
+
                     onFetchComplete?.invoke(fetch.url, false, errorMsg)
                 }
-                
+
             } catch (e: Exception) {
                 fetch.loadingState?.let { path ->
                     context.set(path, false)
@@ -144,10 +144,10 @@ class ComposeActionHandler(
                 onFetchComplete?.invoke(fetch.url, false, e.message)
             }
         }
-        
+
         return ActionResult.Pending { /* async operation */ }
     }
-    
+
     override fun handleShowToast(
         toast: NanoAction.ShowToast,
         context: NanoActionContext
@@ -157,33 +157,41 @@ class ComposeActionHandler(
                 onToast.invoke(toast.message)
             } else {
                 // Default: use Swing dialog (for desktop)
-                JOptionPane.showMessageDialog(null, toast.message)
+                javax.swing.SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(null, toast.message)
+                }
             }
             ActionResult.Success
         } catch (e: Exception) {
             ActionResult.Error("Toast failed: ${e.message}", e)
         }
     }
-    
+
     private fun buildRequestBody(
         body: Map<String, BodyField>?,
         context: NanoActionContext
     ): String {
         if (body == null) return ""
-        
+
         val resolvedBody = body.mapValues { (_, field) ->
             when (field) {
                 is BodyField.Literal -> field.value
                 is BodyField.StateBinding -> context.get(field.path)?.toString() ?: ""
             }
         }
-        
-        // Simple JSON serialization
+
+        // Simple JSON serialization with proper escaping
         return buildString {
             append("{")
             resolvedBody.entries.forEachIndexed { index, (key, value) ->
                 if (index > 0) append(",")
-                append("\"$key\":\"$value\"")
+                append("\"$key\":")
+                when (value) {
+                    is String -> append("\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+                    is Number, is Boolean -> append(value)
+                    null -> append("null")
+                    else -> append("\"${value.toString().replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+                }
             }
             append("}")
         }

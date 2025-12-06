@@ -369,6 +369,18 @@ class JewelRenderer : BaseRenderer() {
         }
     }
 
+    /**
+     * Handle task-boundary tool call to update task progress display.
+     * Overrides the interface method to provide UI-specific task tracking.
+     */
+    override fun handleTaskBoundary(taskName: String, status: String, summary: String) {
+        updateTaskFromToolCall(mapOf(
+            "taskName" to taskName,
+            "status" to status,
+            "summary" to summary
+        ))
+    }
+
     override fun renderToolResult(
         toolName: String,
         success: Boolean,

@@ -35,7 +35,10 @@ state:
 - `on_click: state.var += 1` - State mutation (increment)
 - `on_click: state.var -= 1` - State mutation (decrement)
 - `on_click: state.var = value` - State mutation (set)
-- `Navigate(to="/path")` - Navigation
+- `Navigate(to="/path")` - Simple navigation
+- `Navigate(to="/user/{id}", params={"id": state.userId})` - Navigation with route params
+- `Navigate(to="/search", query={"q": state.query})` - Navigation with query string
+- `Navigate(to="/login", replace=true)` - Replace history (no back)
 - `ShowToast("message")` - Show notification
 - `Fetch(url="/api/...", method="POST", body={...})` - HTTP request
 

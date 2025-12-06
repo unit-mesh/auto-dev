@@ -1,0 +1,29 @@
+component HomePage:
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                Text("Welcome Home", style="h1")
+                Text("This is the home page of our application.", style="body")
+                Button("Learn About Us", intent="primary"):
+                    on_click: Navigate(to="/about")
+
+component AboutPage:
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                Text("About Us", style="h1")
+                Text("We are a company dedicated to building great products.", style="body")
+                Button("Back to Home", intent="secondary"):
+                    on_click: Navigate(to="/")
+
+component NavBar:
+    HStack(justify="between", align="center"):
+        Text("MyApp", style="h3")
+        HStack(spacing="md"):
+            Button("Home"):
+                on_click: Navigate(to="/")
+            Button("About"):
+                on_click: Navigate(to="/about")
+

@@ -1,0 +1,44 @@
+component LoginForm:
+    state:
+        email: str = ""
+        password: str = ""
+        is_loading: bool = False
+        error: str = ""
+    
+    Card:
+        padding: "lg"
+        shadow: "md"
+        content:
+            VStack(spacing="md"):
+                Text("Sign In", style="h2")
+                
+                if state.error:
+                    Badge(state.error, color="red")
+                
+                Input(value := state.email, placeholder="Email")
+                Input(value := state.password, placeholder="Password", type="password")
+                
+                Button("Login", intent="primary"):
+                    on_click:
+                        state.is_loading = True
+                        state.error = ""
+                        Fetch(
+                            url="/api/login",
+                            method="POST",
+                            body={"email": state.email, "password": state.password},
+                            on_success:
+                                state.is_loading = False
+                                Navigate(to="/dashboard", replace=true)
+                            on_error:
+                                state.is_loading = False
+                                state.error = "Invalid credentials"
+                        )
+                
+                HStack(justify="center", spacing="sm"):
+                    Text("Don't have an account?", style="caption")
+                    Button("Sign Up", intent="secondary"):
+                        on_click: Navigate(to="/signup")
+                
+                Button("Forgot Password?", intent="secondary"):
+                    on_click: Navigate(to="/forgot-password", query={"email": state.email})
+

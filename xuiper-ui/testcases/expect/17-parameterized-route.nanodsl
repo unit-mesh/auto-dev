@@ -1,0 +1,25 @@
+component UserListItem(user: User):
+    Card:
+        padding: "sm"
+        content:
+            HStack(spacing="md", align="center"):
+                Image(src=user.avatar, radius="full")
+                VStack(spacing="xs"):
+                    Text(user.name, style="body")
+                    Text(user.email, style="caption")
+                Button("View Profile", intent="primary"):
+                    on_click: Navigate(to="/user/{id}", params={"id": user.id})
+
+component UserProfile:
+    state:
+        user_id: str = ""
+    
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                Text("User Profile", style="h1")
+                Text(content << f"User ID: {state.user_id}", style="body")
+                Button("Back to List", intent="secondary"):
+                    on_click: Navigate(to="/users")
+

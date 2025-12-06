@@ -16,8 +16,10 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.xuiper.ir.NanoActionIR
 import cc.unitmesh.xuiper.ir.NanoIR
 import cc.unitmesh.xuiper.ir.NanoStateIR
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -293,19 +295,26 @@ object StatefulNanoRenderer {
         val intent = ir.props["intent"]?.jsonPrimitive?.content
         val onClick = ir.actions?.get("onClick")
 
-        val colors = when (intent) {
-            "primary" -> ButtonDefaults.buttonColors()
-            "secondary" -> ButtonDefaults.outlinedButtonColors()
-            "danger" -> ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            else -> ButtonDefaults.buttonColors()
-        }
-
-        Button(
-            onClick = { onClick?.let { onAction(it) } },
-            colors = colors,
-            modifier = modifier
-        ) {
-            Text(label)
+        when (intent) {
+            "secondary" -> OutlinedButton(
+                onClick = { onClick?.let { onAction(it) } },
+                modifier = modifier
+            ) {
+                Text(label)
+            }
+            else -> {
+                val colors = when (intent) {
+                    "danger" -> ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    else -> ButtonDefaults.buttonColors()
+                }
+                Button(
+                    onClick = { onClick?.let { onAction(it) } },
+                    colors = colors,
+                    modifier = modifier
+                ) {
+                    Text(label)
+                }
+            }
         }
     }
 
@@ -413,12 +422,20 @@ object StatefulNanoRenderer {
         val selectedValue = state[statePath]?.toString() ?: ""
         var expanded by remember { mutableStateOf(false) }
 
+        // Read options from IR props
+        val options: List<String> = ir.props["options"]?.let { optionsElement ->
+            try {
+                (optionsElement as? JsonArray)
+                    ?.mapNotNull { it.jsonPrimitive.contentOrNull }
+            } catch (e: Exception) { null }
+        } ?: emptyList()
+
         Box(modifier = modifier) {
             OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
                 Text(if (selectedValue.isNotEmpty()) selectedValue else placeholder)
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                listOf("Option 1", "Option 2", "Option 3").forEach { option ->
+                options.forEach { option ->
                     DropdownMenuItem(
                         text = { Text(option) },
                         onClick = {

@@ -51,6 +51,22 @@ interface CodingAgentRenderer {
     fun updateTokenInfo(tokenInfo: TokenInfo) {}
 
     /**
+     * Handle task-boundary tool call to update task progress display.
+     * Called when the agent uses the task-boundary tool to mark task status.
+     *
+     * This is an optional method primarily used by UI renderers that display
+     * task progress visually. Console and server renderers typically don't need
+     * to implement this.
+     *
+     * @param taskName The name of the task
+     * @param status The task status (e.g., "WORKING", "DONE", "FAILED")
+     * @param summary Optional summary of the task progress
+     */
+    fun handleTaskBoundary(taskName: String, status: String, summary: String = "") {
+        // Default: no-op for renderers that don't display task progress
+    }
+
+    /**
      * Render a compact plan summary bar.
      * Called when plan is created or updated to show progress in a compact format.
      *
