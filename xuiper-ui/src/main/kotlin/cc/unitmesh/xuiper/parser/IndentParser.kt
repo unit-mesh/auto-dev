@@ -39,7 +39,7 @@ class IndentParser(
         private val STATE_VAR_REGEX = Regex("""^\s*(\w+):\s*(\w+)\s*=\s*(.+)$""")
         private val COMPONENT_CALL_REGEX = Regex("""^(\w+)(?:\((.*?)\))?:\s*$""")
         private val COMPONENT_INLINE_REGEX = Regex("""^(\w+)(?:\((.*?)\))$""")
-        private val PROP_REGEX = Regex("""^(\w+):\s*(.+)$""")
+        private val PROP_REGEX = Regex("""^(\w+):\s*(.*)$""")
         private val IF_REGEX = Regex("""^if\s+(.+?):\s*$""")
         private val FOR_REGEX = Regex("""^for\s+(\w+)\s+in\s+(.+?):\s*$""")
         private val ON_CLICK_REGEX = Regex("""^on_click:\s*(.+)$""")
@@ -290,10 +290,28 @@ class IndentParser(
                 val propValue = match.groupValues[2].trim()
 
                 // "content:" is a special case for nested children
+                // This handles the pattern:
+                //   Card:
+                //       padding: "lg"
+                //       content:
+                //           VStack(...):
                 if (propName == "content") {
-                    val (contentChildren, newIndex) = parseChildren(lines, index)
-                    children.addAll(contentChildren)
-                    index = newIndex
+                    // If content is empty or just whitespace, parse children from content block
+                    if (propValue.isEmpty() || propValue.isBlank()) {
+                        val (contentChildren, newIndex) = parseContentBlock(lines, index)
+                        children.addAll(contentChildren)
+                        index = newIndex
+                    } else {
+                        // Content has an inline value, treat as property
+                        props[propName] = propValue.removeSurrounding("\"")
+                        index++
+                    }
+                    continue
+                }
+
+                // Skip empty property values
+                if (propValue.isEmpty()) {
+                    index++
                     continue
                 }
 
@@ -329,6 +347,44 @@ class IndentParser(
 
             val currentIndent = getIndent(line)
             if (currentIndent <= baseIndent) break
+
+            val (node, newIndex) = parseNode(lines, index, currentIndent)
+            if (node != null) {
+                children.add(node)
+            }
+            index = newIndex
+        }
+
+        return children to index
+    }
+
+    /**
+     * Parse content block specifically for the "content:" property.
+     * This handles the pattern:
+     * ```
+     * Card:
+     *     padding: "lg"
+     *     content:
+     *         VStack(...):
+     *             ...
+     * ```
+     * The baseIndent is the "content:" line, and children are indented below it.
+     */
+    private fun parseContentBlock(lines: List<String>, startIndex: Int): Pair<List<NanoNode>, Int> {
+        val contentLineIndent = getIndent(lines[startIndex])
+        var index = startIndex + 1
+        val children = mutableListOf<NanoNode>()
+
+        while (index < lines.size) {
+            val line = lines[index]
+            if (line.isBlank()) {
+                index++
+                continue
+            }
+
+            val currentIndent = getIndent(line)
+            // Content block ends when we encounter a line with same or less indent than "content:" line
+            if (currentIndent <= contentLineIndent) break
 
             val (node, newIndex) = parseNode(lines, index, currentIndent)
             if (node != null) {

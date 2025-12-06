@@ -256,7 +256,7 @@ fun NanoDSLDemo(
                         .verticalScroll(rememberScrollState())
                 ) {
                     parsedIR?.let { ir ->
-                        NanoUIRenderer.Render(ir)
+                        ComposeNanoRenderer.Render(ir)
                     } ?: run {
                         Box(
                             modifier = Modifier.fillMaxSize(),
