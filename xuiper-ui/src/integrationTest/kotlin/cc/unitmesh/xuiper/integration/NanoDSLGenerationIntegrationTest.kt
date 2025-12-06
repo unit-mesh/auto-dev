@@ -282,5 +282,72 @@ class NanoDSLGenerationIntegrationTest : NanoDSLIntegrationTestBase() {
         assertTrue(result is ParseResult.Success,
             "Generated DSL should be parseable. DSL:\n$generatedDsl")
     }
+
+    // ==================== NAVIGATION ====================
+
+    @Test
+    @DisplayName("16 - Multi-Page Navigation: Generate app with multiple pages and navigation")
+    fun `16 multi page navigation should generate compilable dsl`() = runTest(timeout = 2.minutes) {
+        assumeConfigured()
+
+        val userPrompt = """Create a simple multi-page app with:
+            a HomePage component with a welcome message and a button to navigate to /about,
+            an AboutPage component with company info and a Back button to navigate to /,
+            and a NavBar component at the top with links to both pages"""
+        val generatedDsl = generateDsl(userPrompt)
+        val result = verifyDslCompiles(generatedDsl, "16-multi-page-navigation")
+
+        assertTrue(result is ParseResult.Success,
+            "Generated DSL should be parseable. DSL:\n$generatedDsl")
+    }
+
+    @Test
+    @DisplayName("17 - Parameterized Route: Generate navigation with route parameters")
+    fun `17 parameterized route should generate compilable dsl`() = runTest(timeout = 2.minutes) {
+        assumeConfigured()
+
+        val userPrompt = """Create a UserListItem component that displays user avatar, name, email,
+            and a View Profile button that navigates to /user/{id} with the user's id as a param.
+            Also create a UserProfile component that shows the user ID from state and has a
+            Back to List button that navigates to /users"""
+        val generatedDsl = generateDsl(userPrompt)
+        val result = verifyDslCompiles(generatedDsl, "17-parameterized-route")
+
+        assertTrue(result is ParseResult.Success,
+            "Generated DSL should be parseable. DSL:\n$generatedDsl")
+    }
+
+    @Test
+    @DisplayName("18 - Search with Query: Generate search page with query parameter navigation")
+    fun `18 search with query should generate compilable dsl`() = runTest(timeout = 2.minutes) {
+        assumeConfigured()
+
+        val userPrompt = """Create a SearchPage component with search input, category filter dropdown,
+            and results list. The Search button should navigate to /search with query parameters
+            for search term (q), category, and page number. Include Previous/Next pagination buttons
+            that update the page query param"""
+        val generatedDsl = generateDsl(userPrompt)
+        val result = verifyDslCompiles(generatedDsl, "18-search-with-query")
+
+        assertTrue(result is ParseResult.Success,
+            "Generated DSL should be parseable. DSL:\n$generatedDsl")
+    }
+
+    @Test
+    @DisplayName("19 - Conditional Navigation: Generate login form with conditional navigation")
+    fun `19 conditional navigation should generate compilable dsl`() = runTest(timeout = 2.minutes) {
+        assumeConfigured()
+
+        val userPrompt = """Create a LoginForm with email/password inputs. On login button click,
+            call /api/login API. On success, navigate to /dashboard with replace=true
+            (so user can't go back to login page). On error, show error message in a badge.
+            Include a Sign Up link that navigates to /signup and a Forgot Password link
+            that navigates to /forgot-password with the email as a query param"""
+        val generatedDsl = generateDsl(userPrompt)
+        val result = verifyDslCompiles(generatedDsl, "19-conditional-navigation")
+
+        assertTrue(result is ParseResult.Success,
+            "Generated DSL should be parseable. DSL:\n$generatedDsl")
+    }
 }
 

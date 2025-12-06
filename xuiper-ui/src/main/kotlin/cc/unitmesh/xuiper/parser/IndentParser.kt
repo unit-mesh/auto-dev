@@ -194,11 +194,18 @@ class IndentParser(
 
             val match = STATE_VAR_REGEX.matchEntire(line)
             if (match != null) {
+                val rawValue = match.groupValues[3].trim()
+                // Strip quotes from string values (e.g., "" -> empty string, "hello" -> hello)
+                val defaultValue = if (rawValue.startsWith("\"") && rawValue.endsWith("\"")) {
+                    rawValue.substring(1, rawValue.length - 1)
+                } else {
+                    rawValue
+                }
                 variables.add(
                     NanoNode.StateVariable(
                         name = match.groupValues[1],
                         type = match.groupValues[2],
-                        defaultValue = match.groupValues[3].trim()
+                        defaultValue = defaultValue
                     )
                 )
             }
@@ -281,6 +288,17 @@ class IndentParser(
             ON_CLICK_REGEX.matchEntire(trimmed)?.let { match ->
                 onClick = parseAction(match.groupValues[1])
                 index++
+                continue
+            }
+
+            // Check if this is a component call (e.g., "VStack:" or "Button(...):") BEFORE checking property
+            // This prevents "VStack:" from being matched as an empty property
+            if (COMPONENT_CALL_REGEX.matches(trimmed) || COMPONENT_INLINE_REGEX.matches(trimmed)) {
+                val (node, newIndex) = parseNode(lines, index, currentIndent)
+                if (node != null) {
+                    children.add(node)
+                }
+                index = newIndex
                 continue
             }
 
@@ -599,12 +617,9 @@ class IndentParser(
     private fun parseAction(actionStr: String): NanoAction {
         val trimmed = actionStr.trim()
 
-        // Navigate action
+        // Navigate action (enhanced with params, query, replace)
         if (trimmed.startsWith("Navigate(")) {
-            val toMatch = Regex("""Navigate\(to="(.+?)"\)""").find(trimmed)
-            if (toMatch != null) {
-                return NanoAction.Navigate(toMatch.groupValues[1])
-            }
+            return parseNavigateAction(trimmed)
         }
 
         // ShowToast action
@@ -634,6 +649,64 @@ class IndentParser(
         }
 
         return NanoAction.StateMutation("unknown", MutationOp.SET, trimmed)
+    }
+
+    /**
+     * Parse Navigate action with enhanced routing support
+     * Examples:
+     * - `Navigate(to="/home")`
+     * - `Navigate(to="/user/{id}", params={"id": state.userId})`
+     * - `Navigate(to="/search", query={"q": state.query})`
+     * - `Navigate(to="/login", replace=true)`
+     */
+    private fun parseNavigateAction(actionStr: String): NanoAction.Navigate {
+        val paramsStr = actionStr.removePrefix("Navigate(").removeSuffix(")")
+
+        // Parse 'to' (required)
+        val toMatch = Regex("""to\s*=\s*"([^"]+)"""").find(paramsStr)
+        val to = toMatch?.groupValues?.get(1) ?: "/"
+
+        // Parse 'replace' boolean
+        val replaceMatch = Regex("""replace\s*=\s*(true|false)""").find(paramsStr)
+        val replace = replaceMatch?.groupValues?.get(1)?.toBoolean() ?: false
+
+        // Parse 'params' map: params={"id": state.userId} or params={"id": "123"}
+        val routeParams = parseNavigateMap(paramsStr, "params")
+
+        // Parse 'query' map: query={"q": state.query}
+        val queryParams = parseNavigateMap(paramsStr, "query")
+
+        return NanoAction.Navigate(
+            to = to,
+            params = routeParams,
+            query = queryParams,
+            replace = replace
+        )
+    }
+
+    /**
+     * Parse a map parameter from Navigate action
+     * Supports: {"key": "value"} or {"key": state.path}
+     */
+    private fun parseNavigateMap(paramsStr: String, mapName: String): Map<String, String>? {
+        val mapMatch = Regex("""$mapName\s*=\s*\{([^}]*)\}""").find(paramsStr) ?: return null
+        val mapContent = mapMatch.groupValues[1]
+
+        val result = mutableMapOf<String, String>()
+        // Match patterns like "id": "123" or "id": state.userId
+        val fieldRegex = Regex(""""(\w+)"\s*:\s*("([^"]*)"|state\.[\w.]+)""")
+        fieldRegex.findAll(mapContent).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            // Remove quotes if it's a literal string
+            result[key] = if (value.startsWith("\"")) {
+                value.trim('"')
+            } else {
+                value // Keep state.xxx as-is for runtime binding
+            }
+        }
+
+        return result.takeIf { it.isNotEmpty() }
     }
 
     /**
@@ -733,10 +806,22 @@ class IndentParser(
                 children = children
             )
             "Text" -> {
-                val content = extractFirstArg(argsStr) ?: ""
+                val contentArg = args["content"]
+                val content = if (contentArg != null) {
+                    // If content is a binding, extract the expression
+                    if (contentArg.startsWith("<<") || contentArg.startsWith(":=")) {
+                        "" // Content will come from binding
+                    } else {
+                        contentArg
+                    }
+                } else {
+                    extractFirstArg(argsStr) ?: ""
+                }
+                val binding = contentArg?.let { Binding.parse(it) }?.takeIf { it !is Binding.Static }
                 NanoNode.Text(
                     content = content,
-                    style = args["style"] ?: props["style"]
+                    style = args["style"] ?: props["style"],
+                    binding = binding
                 )
             }
             "Button" -> {
@@ -802,11 +887,23 @@ class IndentParser(
         if (argsStr.isBlank()) return emptyMap()
 
         val result = mutableMapOf<String, String>()
+
+        // First, handle << (subscribe binding) pattern: content << state.count
+        val subscribeRegex = Regex("""(\w+)\s*<<\s*([\w.]+)""")
+        subscribeRegex.findAll(argsStr).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            result[key] = "<< $value"
+        }
+
+        // Then handle := (two-way binding) and = (assignment) patterns
         // Match patterns like: name="value", name=value, name := state.path, name: "value"
-        // Support both := (two-way binding) and = (assignment)
         val argRegex = Regex("""(\w+)\s*(?::=|=|:)\s*(?:"([^"]*)"|([\w.]+))""")
         argRegex.findAll(argsStr).forEach { match ->
             val key = match.groupValues[1]
+            // Skip if already handled by subscribe binding
+            if (key in result) return@forEach
+
             val rawValue = match.groupValues[2].ifEmpty { match.groupValues[3] }
 
             // Preserve the binding operator for value parsing

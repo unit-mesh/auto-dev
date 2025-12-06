@@ -256,7 +256,7 @@ fun NanoDSLDemo(
                         .verticalScroll(rememberScrollState())
                 ) {
                     parsedIR?.let { ir ->
-                        ComposeNanoRenderer.Render(ir)
+                        StatefulNanoRenderer.Render(ir)
                     } ?: run {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -305,13 +305,18 @@ component ShoppingItem:
 
 private val COUNTER_DSL = """
 component Counter:
+    state:
+        count: int = 0
+
     Card(padding="lg", shadow="md"):
         VStack(spacing="md"):
             Text("Counter Example", style="h2")
             HStack(spacing="md", align="center", justify="center"):
-                Button("-", intent="secondary")
-                Text("0", style="h1")
-                Button("+", intent="primary")
+                Button("-", intent="secondary"):
+                    on_click: state.count -= 1
+                Text(content << state.count, style="h1")
+                Button("+", intent="primary"):
+                    on_click: state.count += 1
             Divider
             Text("Click buttons to change value", style="caption")
 """.trimIndent()
