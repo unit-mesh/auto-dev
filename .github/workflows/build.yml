@@ -30,16 +30,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    strategy:
-#      fail-fast: true
-      matrix:
-        platform-version: [
-          223,
-#          233,
-          241
-        ]
     env:
-      ORG_GRADLE_PROJECT_platformVersion: ${{ matrix.platform-version }}
+      ORG_GRADLE_PROJECT_platformVersion: 252
     outputs:
       version: ${{ steps.properties.outputs.version }}
       changelog: ${{ steps.properties.outputs.changelog }}
@@ -129,10 +121,10 @@ jobs:
 
       # Set up Java environment for the next steps
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: jetbrains
-          java-version: 17.0.14
+          java-version: 17
 
       # Setup Gradle
       - name: Setup Gradle

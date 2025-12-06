@@ -7,8 +7,8 @@
     "autodev": "./dist/jsMain/typescript/index.js"
   },
   "scripts": {
-    "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
-    "build:kotlin-deps": "cd ../mpp-core/build/packages/js && npm install --ignore-scripts",
+    "build:kotlin": "cd .. && ./gradlew :mpp-core:jsNodeProductionLibraryDistribution",
+    "build:kotlin-deps": "cd ../mpp-core/build/dist/js/productionLibrary && npm install --ignore-scripts",
     "build:ts": "cd .. && ./gradlew :mpp-ui:compileKotlinJs && cd mpp-ui && tsc && chmod +x dist/jsMain/typescript/index.js",
     "build": "npm run build:kotlin && npm run build:kotlin-deps && npm run build:ts",
     "dev": "tsc --watch",
@@ -49,7 +49,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
+    "@autodev/mpp-core": "file:../mpp-core/build/dist/js/productionLibrary",
     "@js-joda/core": "^5.6.5",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@unit-mesh/treesitter-artifacts": "^1.7.7",

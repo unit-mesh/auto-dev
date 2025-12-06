@@ -31,7 +31,7 @@ print_status "INFO" "Project root: $PROJECT_ROOT"
 # Step 1: Build mpp-core
 print_status "INFO" "Step 1: Building mpp-core..."
 cd ..
-if ./gradlew :mpp-core:assembleJsPackage :mpp-core:compileKotlinJvm; then
+if ./gradlew :mpp-core:jsNodeProductionLibraryDistribution :mpp-core:compileKotlinJvm; then
     print_status "SUCCESS" "mpp-core built successfully"
 else
     print_status "ERROR" "Failed to build mpp-core"
@@ -55,7 +55,7 @@ print_status "INFO" "Step 3: Running JavaScript Integration Tests..."
 JS_MODULE_PATH="build/js/packages/autodev-mpp-core"
 if [ -f "$JS_MODULE_PATH/package.json" ]; then
     print_status "SUCCESS" "JS module found at $JS_MODULE_PATH"
-    
+
     # Create a simple JS test runner
     cat > /tmp/run-js-integration-test.js << 'EOF'
 const path = require('path');
@@ -67,24 +67,24 @@ console.log('Loading mpp-core from:', mppCorePath);
 try {
     const mppCore = require(mppCorePath);
     console.log('✅ mpp-core module loaded successfully');
-    
+
     // Test basic functionality
     const JsToolRegistry = mppCore.cc.unitmesh.llm.JsToolRegistry;
     const JsCodingAgentContextBuilder = mppCore.cc.unitmesh.agent.JsCodingAgentContextBuilder;
     const JsCodingAgentPromptRenderer = mppCore.cc.unitmesh.agent.JsCodingAgentPromptRenderer;
-    
+
     console.log('✅ Key classes found:', {
         JsToolRegistry: !!JsToolRegistry,
         JsCodingAgentContextBuilder: !!JsCodingAgentContextBuilder,
         JsCodingAgentPromptRenderer: !!JsCodingAgentPromptRenderer
     });
-    
+
     // Test tool registry
     const toolRegistry = new JsToolRegistry('/test/project');
     const toolList = toolRegistry.formatToolListForAI();
-    
+
     console.log('✅ Tool list generated:', toolList.length, 'characters');
-    
+
     // Test JSON Schema format
     const checks = {
         'Markdown headers': toolList.includes('## '),
@@ -97,12 +97,12 @@ try {
         'No XML tags': !toolList.includes('<tool name='),
         'Examples': toolList.includes('**Example:**')
     };
-    
+
     console.log('✅ Format checks:', checks);
-    
+
     const passedChecks = Object.values(checks).filter(Boolean).length;
     const totalChecks = Object.keys(checks).length;
-    
+
     if (passedChecks === totalChecks) {
         console.log('🎉 All JS integration tests passed!');
         process.exit(0);
@@ -110,13 +110,13 @@ try {
         console.log(`⚠️  ${passedChecks}/${totalChecks} checks passed`);
         process.exit(1);
     }
-    
+
 } catch (error) {
     console.error('❌ JS integration test failed:', error.message);
     process.exit(1);
 }
 EOF
-    
+
     if node /tmp/run-js-integration-test.js; then
         print_status "SUCCESS" "JavaScript integration tests passed"
     else
@@ -133,7 +133,7 @@ print_status "INFO" "Step 4: Running JVM Integration Tests..."
 JVM_CLASSES_PATH="mpp-core/build/classes/kotlin/jvm/main"
 if [ -d "$JVM_CLASSES_PATH" ]; then
     print_status "SUCCESS" "JVM classes found at $JVM_CLASSES_PATH"
-    
+
     # Try to run JVM tests using Gradle
     if ./gradlew :mpp-ui:test --tests "*JvmToolTemplateIntegrationTest*" 2>/dev/null; then
         print_status "SUCCESS" "JVM integration tests passed"
@@ -195,7 +195,7 @@ print_status "SUCCESS" "Tool template JSON Schema format is working correctly"
 echo ""
 echo "📋 Summary:"
 echo "  - ✅ mpp-core built successfully"
-echo "  - ✅ mpp-ui built successfully"  
+echo "  - ✅ mpp-ui built successfully"
 echo "  - ✅ JavaScript integration tests verified"
 echo "  - ✅ JVM integration tests verified"
 echo "  - ✅ JSON Schema format working correctly"

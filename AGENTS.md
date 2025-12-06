@@ -33,7 +33,7 @@ When modifying `CodingAgentRenderer`, update ALL implementations:
 
 **CLI Test:**
 ```bash
-./gradlew :mpp-core:assembleJsPackage
+./gradlew :mpp-core:jsNodeProductionLibraryDistribution
 cd mpp-ui && npm run build && npm run start
 ```
 

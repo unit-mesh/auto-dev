@@ -13,9 +13,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const rootDir = resolve(__dirname, '..');
-const mppCorePath = resolve(rootDir, '../mpp-core/build/packages/js/autodev-mpp-core.js');
-const packageJsonPath = resolve(rootDir, '../mpp-core/build/packages/js/package.json');
-const nodeModulesPath = resolve(rootDir, '../mpp-core/build/packages/js/node_modules');
+const mppCorePath = resolve(rootDir, '../mpp-core/build/dist/js/productionLibrary/autodev-mpp-core.js');
+const packageJsonPath = resolve(rootDir, '../mpp-core/build/dist/js/productionLibrary/package.json');
+const nodeModulesPath = resolve(rootDir, '../mpp-core/build/dist/js/productionLibrary/node_modules');
 
 if (!existsSync(mppCorePath) || !existsSync(packageJsonPath)) {
   console.error('❌ Error: mpp-core build not found!');
@@ -26,7 +26,7 @@ if (!existsSync(mppCorePath) || !existsSync(packageJsonPath)) {
   console.error('');
   console.error('Please build mpp-core first:');
   console.error('  cd', resolve(rootDir, '..'));
-  console.error('  ./gradlew :mpp-core:assembleJsPackage');
+  console.error('  ./gradlew :mpp-core:jsNodeProductionLibraryDistribution');
   console.error('');
   console.error('Or run from mpp-ui:');
   console.error('  npm run build:kotlin');
@@ -37,8 +37,8 @@ if (!existsSync(mppCorePath) || !existsSync(packageJsonPath)) {
 if (!existsSync(nodeModulesPath)) {
   console.log('📦 Installing mpp-core dependencies...');
   try {
-    execSync('npm install', { 
-      cwd: resolve(rootDir, '../mpp-core/build/packages/js'),
+    execSync('npm install', {
+      cwd: resolve(rootDir, '../mpp-core/build/dist/js/productionLibrary'),
       stdio: 'inherit'
     });
     console.log('✅ mpp-core dependencies installed');

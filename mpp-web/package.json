@@ -4,14 +4,14 @@
   "description": "AutoDev Web UI - Browser-based AI development assistant",
   "type": "module",
   "scripts": {
-    "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
+    "build:kotlin": "cd .. && ./gradlew :mpp-core:jsNodeProductionLibraryDistribution",
     "build:ts": "tsc && vite build",
     "build": "npm run build:kotlin && npm run build:ts",
     "dev": "vite",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
+    "@autodev/mpp-core": "file:../mpp-core/build/dist/js/productionLibrary",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

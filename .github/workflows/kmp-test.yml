@@ -81,7 +81,7 @@ jobs:
 
       # Build JS package for CLI usage
       - name: Build mpp-core JS package
-        run: ./gradlew :mpp-core:assembleJsPackage
+        run: ./gradlew :mpp-core:jsNodeProductionLibraryDistribution
 
       # Upload build artifacts for debugging
       - name: Upload mpp-core build artifacts
@@ -154,7 +154,7 @@ jobs:
 
       # Build JS package for CLI usage
       - name: Build mpp-core JS package
-        run: ./gradlew :mpp-core:assembleJsPackage
+        run: ./gradlew :mpp-core:jsNodeProductionLibraryDistribution
 
       # Install pnpm for JS dependencies
       - name: Install pnpm
