@@ -4,31 +4,163 @@ import cc.unitmesh.xuiper.ir.NanoIR
 
 /**
  * Platform-agnostic NanoUI Renderer interface
- * 
+ *
  * This interface defines the contract for rendering NanoIR components.
  * Platform-specific implementations (Compose, React, Flutter) should implement this interface.
- * 
+ *
+ * Each component type has its own render method, ensuring compile-time
+ * checking when new components are added. This follows the pattern used
+ * in CodingAgentRenderer.
+ *
  * The render result type [T] varies by platform:
  * - Compose: @Composable functions (Unit)
  * - React: ReactElement
  * - Flutter: Widget
  * - HTML: String
+ *
+ * @see cc.unitmesh.agent.render.CodingAgentRenderer for the pattern reference
  */
 interface NanoRenderer<T> {
+    // ============================================================================
+    // Full Document Rendering
+    // ============================================================================
+
     /**
-     * Render a NanoIR tree to platform-specific output
+     * Render a complete NanoIR tree to platform-specific output.
+     * This is the entry point for rendering a full document.
      */
     fun render(ir: NanoIR): T
 
     /**
-     * Render a specific component type
+     * Dispatch rendering based on component type.
+     * This method routes to the appropriate component-specific render method.
+     */
+    fun renderNode(ir: NanoIR): T
+
+    // ============================================================================
+    // Layout Components
+    // ============================================================================
+
+    /**
+     * Render a vertical stack layout.
+     * Props: spacing (xs|sm|md|lg|xl), align (start|center|end|stretch)
+     */
+    fun renderVStack(ir: NanoIR): T
+
+    /**
+     * Render a horizontal stack layout.
+     * Props: spacing, align, justify (start|center|end|between|around)
+     */
+    fun renderHStack(ir: NanoIR): T
+
+    // ============================================================================
+    // Container Components
+    // ============================================================================
+
+    /**
+     * Render a card container with shadow.
+     * Props: padding (xs|sm|md|lg|xl), shadow (none|sm|md|lg)
+     */
+    fun renderCard(ir: NanoIR): T
+
+    /**
+     * Render a form container.
+     * Props: onSubmit (action reference)
+     */
+    fun renderForm(ir: NanoIR): T
+
+    // ============================================================================
+    // Content Components
+    // ============================================================================
+
+    /**
+     * Render text content.
+     * Props: content (string), style (h1|h2|h3|h4|body|caption)
+     */
+    fun renderText(ir: NanoIR): T
+
+    /**
+     * Render an image.
+     * Props: src (url), aspect (ratio), radius (none|sm|md|lg|full), width
+     */
+    fun renderImage(ir: NanoIR): T
+
+    /**
+     * Render a badge/tag.
+     * Props: text (string), color (string)
+     */
+    fun renderBadge(ir: NanoIR): T
+
+    /**
+     * Render a horizontal divider line.
+     */
+    fun renderDivider(ir: NanoIR): T
+
+    // ============================================================================
+    // Input Components
+    // ============================================================================
+
+    /**
+     * Render a clickable button.
+     * Props: label (string), intent (primary|secondary|default|danger), icon
+     */
+    fun renderButton(ir: NanoIR): T
+
+    /**
+     * Render a text input field.
+     * Props: placeholder, type, value (binding)
+     */
+    fun renderInput(ir: NanoIR): T
+
+    /**
+     * Render a checkbox input.
+     * Props: checked (binding)
+     */
+    fun renderCheckbox(ir: NanoIR): T
+
+    /**
+     * Render a multi-line text area.
+     * Props: placeholder, rows, value (binding)
+     */
+    fun renderTextArea(ir: NanoIR): T
+
+    /**
+     * Render a dropdown select.
+     * Props: options, placeholder, value (binding)
+     */
+    fun renderSelect(ir: NanoIR): T
+
+    // ============================================================================
+    // Control Flow Components
+    // ============================================================================
+
+    /**
+     * Render conditional content (if block).
+     * Uses ir.condition for the condition expression.
+     */
+    fun renderConditional(ir: NanoIR): T
+
+    /**
+     * Render a loop (for block).
+     * Uses ir.loop for variable and iterable.
+     */
+    fun renderForLoop(ir: NanoIR): T
+
+    // ============================================================================
+    // Meta Components
+    // ============================================================================
+
+    /**
+     * Render a component wrapper.
+     * Props: name (component name)
      */
     fun renderComponent(ir: NanoIR): T
 
     /**
-     * Check if this renderer supports the given component type
+     * Render an unknown/unsupported component.
+     * Called when ir.type doesn't match any known component.
      */
-    fun supports(type: String): Boolean
+    fun renderUnknown(ir: NanoIR): T
 }
 
 /**

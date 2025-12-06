@@ -5,19 +5,15 @@ import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * HTML Renderer for NanoIR
- * 
+ *
  * Renders NanoIR components to static HTML.
  * Useful for server-side rendering and testing.
+ *
+ * Implements NanoRenderer<String> with component-specific methods.
  */
 class HtmlRenderer(
     private val context: RenderContext = RenderContext()
 ) : NanoRenderer<String> {
-
-    private val supportedTypes = setOf(
-        "Component", "VStack", "HStack", "Card", "Text", "Button",
-        "Image", "Badge", "Input", "Checkbox", "Divider",
-        "Conditional", "ForLoop"
-    )
 
     override fun render(ir: NanoIR): String {
         return buildString {
@@ -28,73 +24,88 @@ class HtmlRenderer(
             append(generateCss())
             append("</style>\n")
             append("</head>\n<body>\n")
-            append(renderComponent(ir))
+            append(renderNode(ir))
             append("</body>\n</html>")
         }
     }
 
-    override fun renderComponent(ir: NanoIR): String {
+    override fun renderNode(ir: NanoIR): String {
         return when (ir.type) {
-            "Component" -> renderComponentNode(ir)
+            "Component" -> renderComponent(ir)
             "VStack" -> renderVStack(ir)
             "HStack" -> renderHStack(ir)
             "Card" -> renderCard(ir)
+            "Form" -> renderForm(ir)
             "Text" -> renderText(ir)
-            "Button" -> renderButton(ir)
             "Image" -> renderImage(ir)
             "Badge" -> renderBadge(ir)
+            "Divider" -> renderDivider(ir)
+            "Button" -> renderButton(ir)
             "Input" -> renderInput(ir)
             "Checkbox" -> renderCheckbox(ir)
-            "Divider" -> "<hr class=\"nano-divider\">"
+            "TextArea" -> renderTextArea(ir)
+            "Select" -> renderSelect(ir)
             "Conditional" -> renderConditional(ir)
             "ForLoop" -> renderForLoop(ir)
-            else -> "<!-- Unknown component: ${ir.type} -->"
+            else -> renderUnknown(ir)
         }
     }
 
-    override fun supports(type: String): Boolean = type in supportedTypes
+    // ============================================================================
+    // Layout Components
+    // ============================================================================
 
-    private fun renderComponentNode(ir: NanoIR): String {
-        val name = ir.props["name"]?.jsonPrimitive?.content ?: "Component"
-        return buildString {
-            append("<div class=\"nano-component\" data-name=\"$name\">\n")
-            ir.children?.forEach { append(renderComponent(it)) }
-            append("</div>\n")
-        }
-    }
-
-    private fun renderVStack(ir: NanoIR): String {
+    override fun renderVStack(ir: NanoIR): String {
         val spacing = ir.props["spacing"]?.jsonPrimitive?.content ?: "md"
         val align = ir.props["align"]?.jsonPrimitive?.content ?: "stretch"
         return buildString {
             append("<div class=\"nano-vstack spacing-$spacing align-$align\">\n")
-            ir.children?.forEach { append(renderComponent(it)) }
+            ir.children?.forEach { append(renderNode(it)) }
             append("</div>\n")
         }
     }
 
-    private fun renderHStack(ir: NanoIR): String {
+    override fun renderHStack(ir: NanoIR): String {
         val spacing = ir.props["spacing"]?.jsonPrimitive?.content ?: "md"
         val align = ir.props["align"]?.jsonPrimitive?.content ?: "center"
         val justify = ir.props["justify"]?.jsonPrimitive?.content ?: "start"
         return buildString {
             append("<div class=\"nano-hstack spacing-$spacing align-$align justify-$justify\">\n")
-            ir.children?.forEach { append(renderComponent(it)) }
+            ir.children?.forEach { append(renderNode(it)) }
             append("</div>\n")
         }
     }
 
-    private fun renderCard(ir: NanoIR): String {
+    // ============================================================================
+    // Container Components
+    // ============================================================================
+
+    override fun renderCard(ir: NanoIR): String {
         val padding = ir.props["padding"]?.jsonPrimitive?.content ?: "md"
         val shadow = ir.props["shadow"]?.jsonPrimitive?.content ?: "sm"
         return buildString {
             append("<div class=\"nano-card padding-$padding shadow-$shadow\">\n")
-            ir.children?.forEach { append(renderComponent(it)) }
+            ir.children?.forEach { append(renderNode(it)) }
             append("</div>\n")
         }
     }
 
-    private fun renderText(ir: NanoIR): String {
+    override fun renderForm(ir: NanoIR): String {
+        val onSubmit = ir.props["onSubmit"]?.jsonPrimitive?.content
+        return buildString {
+            append("<form class=\"nano-form\"")
+            if (onSubmit != null) append(" data-action=\"$onSubmit\"")
+            append(">\n")
+            ir.children?.forEach { append(renderNode(it)) }
+            append("</form>\n")
+        }
+    }
+
+    // ============================================================================
+    // Content Components
+    // ============================================================================
+
+    override fun renderText(ir: NanoIR): String {
         val content = ir.props["content"]?.jsonPrimitive?.content ?: ""
         val style = ir.props["style"]?.jsonPrimitive?.content ?: "body"
         val tag = when (style) {
@@ -108,7 +119,30 @@ class HtmlRenderer(
         return "<$tag class=\"nano-text style-$style\">$content</$tag>\n"
     }
 
-    private fun renderButton(ir: NanoIR): String {
+    override fun renderImage(ir: NanoIR): String {
+        val src = ir.props["src"]?.jsonPrimitive?.content ?: ""
+        val aspect = ir.props["aspect"]?.jsonPrimitive?.content
+        val radius = ir.props["radius"]?.jsonPrimitive?.content ?: "none"
+        val aspectClass = aspect?.replace("/", "-") ?: "auto"
+        val alt = ir.props["alt"]?.jsonPrimitive?.content ?: "Image"
+        return "<img src=\"$src\" class=\"nano-image aspect-$aspectClass radius-$radius\" alt=\"$alt\">\n"
+    }
+
+    override fun renderBadge(ir: NanoIR): String {
+        val text = ir.props["text"]?.jsonPrimitive?.content ?: ""
+        val color = ir.props["color"]?.jsonPrimitive?.content ?: "default"
+        return "<span class=\"nano-badge color-$color\">$text</span>\n"
+    }
+
+    override fun renderDivider(ir: NanoIR): String {
+        return "<hr class=\"nano-divider\">\n"
+    }
+
+    // ============================================================================
+    // Input Components
+    // ============================================================================
+
+    override fun renderButton(ir: NanoIR): String {
         val label = ir.props["label"]?.jsonPrimitive?.content ?: ""
         val intent = ir.props["intent"]?.jsonPrimitive?.content ?: "default"
         val icon = ir.props["icon"]?.jsonPrimitive?.content
@@ -120,47 +154,81 @@ class HtmlRenderer(
         }
     }
 
-    private fun renderImage(ir: NanoIR): String {
-        val src = ir.props["src"]?.jsonPrimitive?.content ?: ""
-        val aspect = ir.props["aspect"]?.jsonPrimitive?.content
-        val radius = ir.props["radius"]?.jsonPrimitive?.content ?: "none"
-        val aspectClass = aspect?.replace("/", "-") ?: "auto"
-        return "<img src=\"$src\" class=\"nano-image aspect-$aspectClass radius-$radius\" alt=\"\">\n"
-    }
-
-    private fun renderBadge(ir: NanoIR): String {
-        val text = ir.props["text"]?.jsonPrimitive?.content ?: ""
-        val color = ir.props["color"]?.jsonPrimitive?.content ?: "default"
-        return "<span class=\"nano-badge color-$color\">$text</span>\n"
-    }
-
-    private fun renderInput(ir: NanoIR): String {
+    override fun renderInput(ir: NanoIR): String {
         val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: ""
         val type = ir.props["type"]?.jsonPrimitive?.content ?: "text"
         return "<input type=\"$type\" class=\"nano-input\" placeholder=\"$placeholder\">\n"
     }
 
-    private fun renderCheckbox(ir: NanoIR): String {
-        return "<input type=\"checkbox\" class=\"nano-checkbox\">\n"
+    override fun renderCheckbox(ir: NanoIR): String {
+        val label = ir.props["label"]?.jsonPrimitive?.content
+        return if (label != null) {
+            "<label class=\"nano-checkbox-wrapper\"><input type=\"checkbox\" class=\"nano-checkbox\"><span>$label</span></label>\n"
+        } else {
+            "<input type=\"checkbox\" class=\"nano-checkbox\">\n"
+        }
     }
 
-    private fun renderConditional(ir: NanoIR): String {
+    override fun renderTextArea(ir: NanoIR): String {
+        val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: ""
+        val rows = ir.props["rows"]?.jsonPrimitive?.content ?: "4"
+        return "<textarea class=\"nano-textarea\" placeholder=\"$placeholder\" rows=\"$rows\"></textarea>\n"
+    }
+
+    override fun renderSelect(ir: NanoIR): String {
+        val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content
+        val options = ir.props["options"]?.jsonPrimitive?.content
+        return buildString {
+            append("<select class=\"nano-select\">\n")
+            if (placeholder != null) {
+                append("  <option value=\"\" disabled selected>$placeholder</option>\n")
+            }
+            // Options would be populated dynamically
+            if (options != null) {
+                append("  <!-- options: $options -->\n")
+            }
+            append("</select>\n")
+        }
+    }
+
+    // ============================================================================
+    // Control Flow Components
+    // ============================================================================
+
+    override fun renderConditional(ir: NanoIR): String {
         // In static HTML, we render the then branch
         // Dynamic evaluation would happen on client-side
         return buildString {
             append("<!-- if: ${ir.condition} -->\n")
-            ir.children?.forEach { append(renderComponent(it)) }
+            ir.children?.forEach { append(renderNode(it)) }
             append("<!-- endif -->\n")
         }
     }
 
-    private fun renderForLoop(ir: NanoIR): String {
+    override fun renderForLoop(ir: NanoIR): String {
         val loop = ir.loop
         return buildString {
             append("<!-- for ${loop?.variable} in ${loop?.iterable} -->\n")
-            ir.children?.forEach { append(renderComponent(it)) }
+            ir.children?.forEach { append(renderNode(it)) }
             append("<!-- endfor -->\n")
         }
+    }
+
+    // ============================================================================
+    // Meta Components
+    // ============================================================================
+
+    override fun renderComponent(ir: NanoIR): String {
+        val name = ir.props["name"]?.jsonPrimitive?.content ?: "Component"
+        return buildString {
+            append("<div class=\"nano-component\" data-name=\"$name\">\n")
+            ir.children?.forEach { append(renderNode(it)) }
+            append("</div>\n")
+        }
+    }
+
+    override fun renderUnknown(ir: NanoIR): String {
+        return "<!-- Unknown component: ${ir.type} -->\n"
     }
 
     private fun generateCss(): String = """
@@ -247,6 +315,45 @@ class HtmlRenderer(
             border-radius: 4px;
             font-size: 1rem;
             width: 100%;
+        }
+
+        .nano-textarea {
+            padding: 8px 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .nano-select {
+            padding: 8px 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+            background: white;
+        }
+
+        .nano-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .nano-checkbox-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .nano-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #1976D2;
+            cursor: pointer;
         }
 
         .nano-divider { border: none; border-top: 1px solid #E0E0E0; margin: 16px 0; }
