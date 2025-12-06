@@ -1,0 +1,26 @@
+component UserProfile(user: User):
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                HStack(align="center", spacing="md"):
+                    Image(src=user.avatar, radius="full", size="lg")
+                    VStack(spacing="xs"):
+                        Text(user.name, style="h3")
+                        Text(user.email, style="caption")
+                        if user.is_verified:
+                            Badge("Verified", color="blue")
+                
+                Text(user.bio, style="body")
+                
+                HStack(spacing="md", justify="around"):
+                    VStack(align="center"):
+                        Text(f"{user.followers}", style="h3")
+                        Text("Followers", style="caption")
+                    VStack(align="center"):
+                        Text(f"{user.following}", style="h3")
+                        Text("Following", style="caption")
+                
+                Button("Edit Profile", intent="secondary"):
+                    on_click: Navigate(to="/settings")
+

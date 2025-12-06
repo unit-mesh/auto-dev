@@ -1,0 +1,20 @@
+component CounterCard:
+    state:
+        count: int = 1
+        price: float = 99.0
+    
+    Card:
+        padding: "lg"
+        content:
+            VStack:
+                Text(content << f"Total: ${state.count * state.price}")
+                
+                HStack:
+                    Button("-"):
+                        on_click: state.count -= 1
+                    
+                    Input(value := state.count)
+                    
+                    Button("+"):
+                        on_click: state.count += 1
+

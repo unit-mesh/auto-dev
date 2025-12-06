@@ -1,0 +1,8 @@
+component GreetingCard:
+    Card:
+        padding: "md"
+        content:
+            VStack(spacing="sm"):
+                Text("Hello!", style="h2")
+                Text("Welcome to our app", style="body")
+

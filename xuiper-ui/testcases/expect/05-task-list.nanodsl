@@ -1,0 +1,25 @@
+component TaskList(tasks: List[Task]):
+    state:
+        new_task: str = ""
+    
+    Card:
+        padding: "md"
+        content:
+            VStack(spacing="sm"):
+                Text("My Tasks", style="h2")
+                
+                HStack(spacing="sm"):
+                    Input(value := state.new_task, placeholder="Add new task...")
+                    Button("+", intent="primary"):
+                        on_click:
+                            AddTask(title=state.new_task)
+                            state.new_task = ""
+                
+                for task in tasks:
+                    HStack(align="center", justify="between"):
+                        HStack(spacing="sm"):
+                            Checkbox(checked := task.done)
+                            Text(task.title, style="body")
+                        Button("Delete", intent="danger"):
+                            on_click: DeleteTask(id=task.id)
+

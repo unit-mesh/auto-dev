@@ -1,0 +1,79 @@
+{
+  "id": "nanodsl-basic-v1",
+  "name": "NanoDSL Basic Evaluation Suite",
+  "description": "Core test cases to evaluate AI model's ability to generate valid NanoDSL",
+  "defaultPromptTemplate": "default",
+  "models": [
+    {
+      "name": "deepseek-chat",
+      "provider": "deepseek",
+      "modelId": "deepseek-chat",
+      "temperature": 0.0,
+      "maxTokens": 2048
+    }
+  ],
+  "testCases": [
+    {
+      "id": "simple-card",
+      "name": "Simple Greeting Card",
+      "description": "Generate a basic greeting card with title and message",
+      "userPrompt": "Create a simple greeting card with a hello title and welcome message",
+      "expectedDslFile": "expect/01-simple-card.nanodsl",
+      "category": "BASIC",
+      "difficulty": "EASY",
+      "tags": ["card", "text", "layout"]
+    },
+    {
+      "id": "product-card",
+      "name": "Product Display Card",
+      "description": "Generate a product card with image, title, price, badge, and action button",
+      "userPrompt": "Create a product card component that takes a Product item and displays: product image, title, 'New' badge if item is new, description (limited to 2 lines), price, and an 'Add to Cart' button",
+      "expectedDslFile": "expect/02-product-card.nanodsl",
+      "category": "COMPOSITE",
+      "difficulty": "MEDIUM",
+      "tags": ["card", "image", "conditional", "button"]
+    },
+    {
+      "id": "counter-card",
+      "name": "Interactive Counter",
+      "description": "Generate a counter with state management and price calculation",
+      "userPrompt": "Create a counter card component with count and price state. Show the total (count * price), and include minus/plus buttons to modify count, with an input field for direct count entry",
+      "expectedDslFile": "expect/03-counter-card.nanodsl",
+      "category": "STATE",
+      "difficulty": "MEDIUM",
+      "tags": ["state", "binding", "interaction", "calculation"]
+    },
+    {
+      "id": "login-form",
+      "name": "Login Form",
+      "description": "Generate a login form with email, password inputs and navigation",
+      "userPrompt": "Create a login form component with email and password inputs, a Login button that calls /api/login, and a 'Sign Up' link that navigates to /signup",
+      "expectedDslFile": "expect/04-login-form.nanodsl",
+      "category": "INTERACTION",
+      "difficulty": "MEDIUM",
+      "tags": ["form", "input", "navigation", "fetch"]
+    },
+    {
+      "id": "task-list",
+      "name": "Todo Task List",
+      "description": "Generate a task list with add/delete functionality and list rendering",
+      "userPrompt": "Create a task list component that takes a list of Task items. Include an input to add new tasks, and render each task with a checkbox and delete button. Use a for loop to iterate over tasks",
+      "expectedDslFile": "expect/05-task-list.nanodsl",
+      "category": "LIST",
+      "difficulty": "HARD",
+      "tags": ["list", "for-loop", "input", "checkbox"]
+    },
+    {
+      "id": "user-profile",
+      "name": "User Profile Card",
+      "description": "Generate a user profile card with avatar, stats, and conditional badge",
+      "userPrompt": "Create a user profile card that displays: avatar image, name, email, verified badge (if verified), bio text, follower/following counts, and an Edit Profile button",
+      "expectedDslFile": "expect/06-user-profile.nanodsl",
+      "category": "COMPOSITE",
+      "difficulty": "MEDIUM",
+      "tags": ["profile", "image", "conditional", "stats"]
+    }
+  ],
+  "tags": ["nanodsl", "ai-eval", "ui-generation"]
+}
+

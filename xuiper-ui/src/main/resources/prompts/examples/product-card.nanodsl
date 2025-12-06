@@ -1,0 +1,19 @@
+component ProductCard(item: Product):
+    padding: "md"
+    shadow: "sm"
+
+    content:
+        VStack(spacing="sm"):
+            Image(src=item.image, aspect=16/9, radius="md")
+
+            HStack(align="center", justify="between"):
+                Text(item.title, style="h3")
+                if item.is_new:
+                    Badge("New", color="green")
+
+            Text(item.description, style="body", limit=2)
+
+            HStack(spacing="sm"):
+                Text(f"${item.price}", style="h3")
+                Button("Add to Cart", intent="primary", icon="cart")
+

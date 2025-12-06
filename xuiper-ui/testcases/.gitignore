@@ -1,0 +1,4 @@
+# Ignore AI-generated outputs
+actual/*.nanodsl
+actual/*.json
+

@@ -1,0 +1,2 @@
+Generate NanoDSL UI code. Syntax: Python-style indentation, components: VStack, HStack, Card, Text, Button, Image, Input, Badge. Output only code in ```nanodsl fence.
+
