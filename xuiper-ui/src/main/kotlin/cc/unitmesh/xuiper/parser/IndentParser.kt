@@ -1,13 +1,18 @@
-package cc.unitmesh.xuiper.dsl
+package cc.unitmesh.xuiper.parser
 
 import cc.unitmesh.xuiper.action.MutationOp
 import cc.unitmesh.xuiper.action.NanoAction
+import cc.unitmesh.xuiper.ast.Binding
+import cc.unitmesh.xuiper.ast.NanoNode
+import cc.unitmesh.xuiper.spec.NanoSpec
+import cc.unitmesh.xuiper.spec.v1.NanoSpecV1
 
 /**
- * NanoDSL Parser - Parses DSL text into NanoNode AST
- * 
- * Supports Python-style indentation-based syntax.
- * 
+ * IndentParser - Python-style indentation-based parser
+ *
+ * This is the default parser implementation for NanoDSL.
+ * Uses indentation to determine hierarchy (like Python).
+ *
  * Example input:
  * ```
  * component GreetingCard:
@@ -17,8 +22,14 @@ import cc.unitmesh.xuiper.action.NanoAction
  *             VStack(spacing="sm"):
  *                 Text("Hello!", style="h2")
  * ```
+ *
+ * To modify parsing behavior for new LLM capabilities:
+ * 1. Override methods in this class
+ * 2. Or create a new parser implementing NanoParser interface
  */
-class NanoDSLParser {
+class IndentParser(
+    override val spec: NanoSpec = NanoSpecV1
+) : NanoParser {
     
     companion object {
         private val COMPONENT_REGEX = Regex("""^component\s+(\w+)(?:\((.*?)\))?:\s*$""")
@@ -33,9 +44,74 @@ class NanoDSLParser {
     }
 
     /**
-     * Parse NanoDSL source code into AST
+     * Parse NanoDSL source code into AST (NanoParser interface)
      */
-    fun parse(source: String): NanoNode.Component {
+    override fun parse(source: String): ParseResult {
+        return try {
+            val lines = source.lines()
+            val (component, _) = parseComponent(lines, 0)
+            ParseResult.Success(component)
+        } catch (e: Exception) {
+            ParseResult.Failure(listOf(ParseError(e.message ?: "Unknown error", 0)))
+        }
+    }
+
+    /**
+     * Validate source without full parsing
+     */
+    override fun validate(source: String): ValidationResult {
+        val errors = mutableListOf<ParseError>()
+        val warnings = mutableListOf<ParseWarning>()
+
+        val lines = source.lines()
+
+        // Check basic structure
+        if (lines.isEmpty() || lines.all { it.isBlank() }) {
+            errors.add(ParseError("Empty source", 0))
+            return ValidationResult(false, errors, warnings)
+        }
+
+        // Check component definition
+        val firstNonBlank = lines.indexOfFirst { it.isNotBlank() }
+        if (firstNonBlank >= 0) {
+            val firstLine = lines[firstNonBlank].trim()
+            if (!COMPONENT_REGEX.matches(firstLine)) {
+                // Check if it's a bare component without 'component' keyword
+                if (COMPONENT_CALL_REGEX.matches(firstLine)) {
+                    warnings.add(ParseWarning(
+                        "Missing 'component' keyword",
+                        firstNonBlank + 1,
+                        "Add 'component ComponentName:' at the start"
+                    ))
+                } else {
+                    errors.add(ParseError("Invalid component definition", firstNonBlank + 1))
+                }
+            }
+        }
+
+        // Check indentation consistency
+        var prevIndent = 0
+        lines.forEachIndexed { index, line ->
+            if (line.isNotBlank()) {
+                val indent = line.takeWhile { it == ' ' }.length
+                if (indent % 4 != 0) {
+                    warnings.add(ParseWarning(
+                        "Inconsistent indentation (expected multiple of 4)",
+                        index + 1,
+                        "Use 4 spaces per indentation level"
+                    ))
+                }
+                prevIndent = indent
+            }
+        }
+
+        return ValidationResult(errors.isEmpty(), errors, warnings)
+    }
+
+    /**
+     * Legacy parse method for backward compatibility
+     */
+    fun parseToAst(source: String): NanoNode.Component {
         val lines = source.lines()
         val (component, _) = parseComponent(lines, 0)
         return component
@@ -400,5 +476,3 @@ class NanoDSLParser {
         return line.takeWhile { it == ' ' || it == '\t' }.length
     }
 }
-
-class ParseException(message: String) : Exception(message)

@@ -6,6 +6,7 @@ import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.xuiper.config.ConfigLoader
+import cc.unitmesh.xuiper.eval.evaluator.EvaluatorRegistry
 import cc.unitmesh.xuiper.model.*
 import cc.unitmesh.xuiper.prompt.PromptTemplateRegistry
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -281,111 +282,8 @@ class DslEvalRunner(
         testCase: TestCase,
         actualDsl: String
     ): Map<EvaluationCriterion, Float> {
-        val scores = mutableMapOf<EvaluationCriterion, Float>()
-
-        for (criterion in testCase.criteria) {
-            scores[criterion] = when (criterion) {
-                EvaluationCriterion.SYNTAX_VALID -> evaluateSyntax(actualDsl)
-                EvaluationCriterion.COMPONENT_MATCH -> evaluateComponentMatch(testCase.expectedDsl, actualDsl)
-                EvaluationCriterion.STRUCTURE_SIMILAR -> evaluateStructure(testCase.expectedDsl, actualDsl)
-                EvaluationCriterion.PROPS_CORRECT -> evaluateProps(testCase.expectedDsl, actualDsl)
-                EvaluationCriterion.STATE_BINDINGS -> evaluateStateBindings(testCase.expectedDsl, actualDsl)
-                EvaluationCriterion.ACTIONS_CORRECT -> evaluateActions(testCase.expectedDsl, actualDsl)
-                EvaluationCriterion.FORMATTING -> evaluateFormatting(actualDsl)
-                EvaluationCriterion.NO_REDUNDANCY -> evaluateRedundancy(testCase.expectedDsl, actualDsl)
-            }
-        }
-
-        return scores
-    }
-
-    // Simple evaluation functions - can be enhanced later
-    private fun evaluateSyntax(dsl: String): Float {
-        if (dsl.isBlank()) return 0f
-        // Check basic structure: component definition, proper indentation
-        val hasComponent = dsl.contains("component ") || dsl.contains("Card") || dsl.contains("VStack")
-        val hasIndentation = dsl.lines().any { it.startsWith("    ") || it.startsWith("\t") }
-        return when {
-            hasComponent && hasIndentation -> 1.0f
-            hasComponent || hasIndentation -> 0.5f
-            else -> 0.2f
-        }
-    }
-
-    private fun evaluateComponentMatch(expected: String, actual: String): Float {
-        val expectedComponents = extractComponents(expected)
-        val actualComponents = extractComponents(actual)
-        if (expectedComponents.isEmpty()) return 1.0f
-        val matched = actualComponents.intersect(expectedComponents).size
-        return matched.toFloat() / expectedComponents.size
-    }
-
-    private fun extractComponents(dsl: String): Set<String> {
-        val pattern = Regex("(VStack|HStack|Card|Text|Button|Image|Input|Badge|Checkbox)\\s*[(:.]")
-        return pattern.findAll(dsl).map { it.groupValues[1] }.toSet()
-    }
-
-    private fun evaluateStructure(expected: String, actual: String): Float {
-        val expectedDepth = maxIndentDepth(expected)
-        val actualDepth = maxIndentDepth(actual)
-        val depthDiff = kotlin.math.abs(expectedDepth - actualDepth)
-        return when {
-            depthDiff == 0 -> 1.0f
-            depthDiff <= 1 -> 0.8f
-            depthDiff <= 2 -> 0.5f
-            else -> 0.2f
-        }
-    }
-
-    private fun maxIndentDepth(dsl: String): Int {
-        return dsl.lines().maxOfOrNull { line ->
-            line.takeWhile { it == ' ' }.length / 4
-        } ?: 0
-    }
-
-    private fun evaluateProps(expected: String, actual: String): Float {
-        val expectedProps = extractProps(expected)
-        val actualProps = extractProps(actual)
-        if (expectedProps.isEmpty()) return 1.0f
-        val matched = actualProps.intersect(expectedProps).size
-        return matched.toFloat() / expectedProps.size
-    }
-
-    private fun extractProps(dsl: String): Set<String> {
-        val pattern = Regex("(padding|shadow|spacing|align|justify|style|intent|radius)\\s*[=:]")
-        return pattern.findAll(dsl).map { it.groupValues[1] }.toSet()
-    }
-
-    private fun evaluateStateBindings(expected: String, actual: String): Float {
-        val expectedHasState = expected.contains("state:") || expected.contains("<<") || expected.contains(":=")
-        val actualHasState = actual.contains("state:") || actual.contains("<<") || actual.contains(":=")
-        return if (expectedHasState == actualHasState) 1.0f else 0.0f
-    }
-
-    private fun evaluateActions(expected: String, actual: String): Float {
-        val expectedHasAction = expected.contains("on_click") || expected.contains("Navigate") || expected.contains("Fetch")
-        val actualHasAction = actual.contains("on_click") || actual.contains("Navigate") || actual.contains("Fetch")
-        return if (expectedHasAction == actualHasAction) 1.0f else 0.0f
-    }
-
-    private fun evaluateFormatting(dsl: String): Float {
-        val lines = dsl.lines()
-        val properlyIndented = lines.all { line ->
-            line.isBlank() || !line.startsWith(" ") || line.takeWhile { it == ' ' }.length % 4 == 0
-        }
-        return if (properlyIndented) 1.0f else 0.5f
-    }
-
-    private fun evaluateRedundancy(expected: String, actual: String): Float {
-        val expectedLines = expected.lines().filter { it.isNotBlank() }.size
-        val actualLines = actual.lines().filter { it.isNotBlank() }.size
-        if (expectedLines == 0) return 1.0f
-        val ratio = actualLines.toFloat() / expectedLines
-        return when {
-            ratio in 0.8f..1.2f -> 1.0f
-            ratio in 0.6f..1.5f -> 0.7f
-            else -> 0.4f
-        }
+        // Use pluggable evaluator system
+        return EvaluatorRegistry.evaluateAll(testCase, actualDsl)
     }
 
     private fun calculateSummary(results: List<TestResult>, suite: TestSuite): SuiteSummary {

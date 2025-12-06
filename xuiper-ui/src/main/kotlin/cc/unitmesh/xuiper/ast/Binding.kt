@@ -1,4 +1,4 @@
-package cc.unitmesh.xuiper.dsl
+package cc.unitmesh.xuiper.ast
 
 /**
  * Represents a data binding in NanoDSL

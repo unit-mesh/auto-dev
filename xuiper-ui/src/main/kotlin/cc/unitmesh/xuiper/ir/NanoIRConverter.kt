@@ -1,8 +1,8 @@
 package cc.unitmesh.xuiper.ir
 
 import cc.unitmesh.xuiper.action.NanoAction
-import cc.unitmesh.xuiper.dsl.Binding
-import cc.unitmesh.xuiper.dsl.NanoNode
+import cc.unitmesh.xuiper.ast.Binding
+import cc.unitmesh.xuiper.ast.NanoNode
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 
