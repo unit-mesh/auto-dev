@@ -1,0 +1,104 @@
+component RegistrationForm:
+    state:
+        username: str = ""
+        email: str = ""
+        password: str = ""
+        confirm_password: str = ""
+        phone: str = ""
+        country: str = "US"
+        terms_accepted: bool = False
+        errors: dict = {}
+        password_strength: str = "weak"
+    
+    VStack(spacing="md"):
+        Text("Create Account", style="h1")
+        
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="md"):
+                    # Username field
+                    VStack(spacing="xs"):
+                        Text("Username", style="caption")
+                        Input(value:=state.username, placeholder="Enter username"):
+                            on_blur:
+                                Fetch(
+                                    url="/api/check-username",
+                                    method="POST",
+                                    body={"username": state.username},
+                                    on_success: state.errors.pop("username", None),
+                                    on_error: state.errors["username"] = "Username already taken"
+                                )
+                        if "username" in state.errors:
+                            Text(state.errors["username"], style="caption", color="red")
+                    
+                    # Email field
+                    VStack(spacing="xs"):
+                        Text("Email", style="caption")
+                        Input(value:=state.email, placeholder="Enter email", type="email")
+                        if "email" in state.errors:
+                            Text(state.errors["email"], style="caption", color="red")
+                    
+                    # Password field with strength indicator
+                    VStack(spacing="xs"):
+                        Text("Password", style="caption")
+                        Input(value:=state.password, placeholder="Enter password", type="password"):
+                            on_change:
+                                if len(state.password) >= 8:
+                                    state.password_strength = "strong"
+                                else:
+                                    state.password_strength = "weak"
+                        HStack(align="center", justify="between"):
+                            Text("Strength:", style="caption")
+                            Badge(state.password_strength, color="green" if state.password_strength == "strong" else "red")
+                        if "password" in state.errors:
+                            Text(state.errors["password"], style="caption", color="red")
+                    
+                    # Confirm password
+                    VStack(spacing="xs"):
+                        Text("Confirm Password", style="caption")
+                        Input(value:=state.confirm_password, placeholder="Confirm password", type="password"):
+                            on_blur:
+                                if state.password != state.confirm_password:
+                                    state.errors["confirm_password"] = "Passwords do not match"
+                                else:
+                                    state.errors.pop("confirm_password", None)
+                        if "confirm_password" in state.errors:
+                            Text(state.errors["confirm_password"], style="caption", color="red")
+                    
+                    # Phone (optional)
+                    VStack(spacing="xs"):
+                        HStack(align="center"):
+                            Text("Phone", style="caption")
+                            Text("(optional)", style="caption", color="gray")
+                        Input(value:=state.phone, placeholder="Enter phone number")
+                    
+                    # Country select
+                    VStack(spacing="xs"):
+                        Text("Country", style="caption")
+                        Input(value:=state.country, placeholder="Select country")
+                    
+                    # Terms checkbox
+                    HStack(align="center", spacing="sm"):
+                        Input(value:=state.terms_accepted, type="checkbox")
+                        Text("I agree to the terms and conditions", style="caption")
+                    
+                    # Submit button
+                    Button("Register", intent="primary"):
+                        on_click:
+                            if not state.terms_accepted:
+                                ShowToast("Please accept the terms")
+                            else:
+                                Fetch(
+                                    url="/api/register",
+                                    method="POST",
+                                    body={
+                                        "username": state.username,
+                                        "email": state.email,
+                                        "password": state.password,
+                                        "phone": state.phone,
+                                        "country": state.country
+                                    },
+                                    on_success: Navigate(to="/login"),
+                                    on_error: state.errors = <<response.errors
+                                )

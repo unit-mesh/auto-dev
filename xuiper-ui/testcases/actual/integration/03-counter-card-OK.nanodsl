@@ -1,0 +1,30 @@
+component CounterCard:
+    state:
+        count: int = 0
+        price: float = 2.99
+    
+    Card:
+        padding: "md"
+        shadow: "sm"
+        content:
+            VStack(spacing="md"):
+                HStack(align="center", justify="between"):
+                    Text("Item Counter", style="h3")
+                    Badge(f"${state.price:.2f} each", color="blue")
+                
+                HStack(align="center", justify="center", spacing="lg"):
+                    Button("-", intent="secondary"):
+                        on_click: state.count = max(0, state.count - 1)
+                    
+                    VStack(align="center", spacing="xs"):
+                        Text("Count", style="caption")
+                        Input(value:=state.count, placeholder="Enter count", width="100px")
+                    
+                    Button("+", intent="secondary"):
+                        on_click: state.count += 1
+                
+                Divider
+                
+                HStack(align="center", justify="between"):
+                    Text("Total:", style="h3")
+                    Text(f"${state.count * state.price:.2f}", style="h2")

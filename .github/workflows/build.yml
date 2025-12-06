@@ -88,7 +88,7 @@ jobs:
         id: artifact
         shell: bash
         run: |
-          cd ${{ github.workspace }}/build/distributions
+          cd ${{ github.workspace }}/mpp-idea/build/distributions
           FILENAME=`ls *.zip`
           unzip "$FILENAME" -d content
 
@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact.outputs.filename }}
-          path: ./build/distributions/content/*/*
+          path: ./mpp-idea/build/distributions/content/*/*
 
   # Run tests and upload a code coverage report
   test:
@@ -134,7 +134,7 @@ jobs:
 
       # Run tests
       - name: Run Tests
-        run: ./gradlew check
+        run: ./gradlew :mpp-idea:check
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Result
@@ -142,13 +142,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tests-result
-          path: ${{ github.workspace }}/build/reports/tests
+          path: ${{ github.workspace }}/mpp-idea/build/reports/tests
 
       # Upload the Kover report to CodeCov
       - name: Upload Code Coverage Report
         uses: codecov/codecov-action@v4
         with:
-          files: ${{ github.workspace }}/build/reports/kover/report.xml
+          files: ${{ github.workspace }}/mpp-idea/build/reports/kover/report.xml
 
   # Run plugin structure verification along with IntelliJ Plugin Verifier
   verify:
@@ -198,7 +198,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pluginVerifier-result
-          path: ${{ github.workspace }}/build/reports/pluginVerifier
+          path: ${{ github.workspace }}/mpp-idea/build/reports/pluginVerifier
 
   # Prepare a draft release for GitHub Releases page for the manual verification
   # If accepted and published, release workflow would be triggered

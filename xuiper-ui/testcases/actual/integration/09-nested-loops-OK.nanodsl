@@ -1,0 +1,61 @@
+component CategoryProductList:
+    state:
+        expanded_categories: dict[str, bool] = {}
+        visible_counts: dict[str, int] = {}
+    
+    VStack(spacing="lg"):
+        ForEach(categories, "category"):
+            Card:
+                padding: "md"
+                shadow: "sm"
+                content:
+                    VStack(spacing="md"):
+                        HStack(align="center", justify="between"):
+                            VStack(spacing="xs"):
+                                Text(category.name, style="h3")
+                                Text(f"{category.product_count} products", style="caption")
+                            
+                            Button("Expand" if not state.expanded_categories.get(category.id) else "Collapse", intent="secondary"):
+                                on_click:
+                                    state.expanded_categories[category.id] = not state.expanded_categories.get(category.id, False)
+                                    if not state.expanded_categories[category.id]:
+                                        state.visible_counts[category.id] = 5
+                        
+                        If(state.expanded_categories.get(category.id, False)):
+                            VStack(spacing="md"):
+                                ForEach(category.products[:state.visible_counts.get(category.id, 5)], "product"):
+                                    Card:
+                                        padding: "sm"
+                                        content:
+                                            HStack(align="center", spacing="md"):
+                                                Image(src=product.thumbnail, aspect=1, radius="sm", width="64px")
+                                                
+                                                VStack(spacing="xs", align="start"):
+                                                    Text(product.name, style="body")
+                                                    HStack(spacing="sm"):
+                                                        If(product.on_sale):
+                                                            Text(f"${product.sale_price}", style="h3")
+                                                            Text(f"${product.price}", style="caption", color="gray", strikethrough=True)
+                                                        Else:
+                                                            Text(f"${product.price}", style="h3")
+                                                
+                                                VStack(spacing="xs", align="end"):
+                                                    If(product.stock > 0):
+                                                        Badge("In Stock", color="green")
+                                                    Else:
+                                                        Badge("Out of Stock", color="red")
+                                                    
+                                                    Button("Add to Cart", intent="primary"):
+                                                        on_click:
+                                                            Fetch(
+                                                                url="/api/cart/add",
+                                                                method="POST",
+                                                                body={"product_id": product.id, "quantity": 1},
+                                                                on_success: ShowToast("Added to cart"),
+                                                                on_error: ShowToast("Failed to add to cart")
+                                                            )
+                                
+                                If(len(category.products) > state.visible_counts.get(category.id, 5)):
+                                    Button("Load More", intent="secondary"):
+                                        on_click:
+                                            state.visible_counts[category.id] = state.visible_counts.get(category.id, 5) + 5

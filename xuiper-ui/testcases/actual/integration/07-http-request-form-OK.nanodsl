@@ -1,0 +1,58 @@
+component ContactForm:
+    state:
+        name: str = ""
+        email: str = ""
+        message: str = ""
+        is_loading: bool = False
+        success_message: str = ""
+        error_message: str = ""
+
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                Text("Contact Us", style="h2")
+                
+                if state.success_message:
+                    Badge(state.success_message, color="green")
+                elif state.error_message:
+                    Badge(state.error_message, color="red")
+                
+                VStack(spacing="sm"):
+                    Text("Name", style="caption")
+                    Input(value:=state.name, placeholder="Your name")
+                
+                VStack(spacing="sm"):
+                    Text("Email", style="caption")
+                    Input(value:=state.email, placeholder="your@email.com")
+                
+                VStack(spacing="sm"):
+                    Text("Message", style="caption")
+                    Input(value:=state.message, placeholder="Your message...", multiline=True)
+                
+                Button("Send Message", intent="primary"):
+                    disabled: state.is_loading
+                    on_click:
+                        state.is_loading = True
+                        state.success_message = ""
+                        state.error_message = ""
+                        
+                        Fetch(
+                            url="/api/contact",
+                            method="POST",
+                            headers={"Content-Type": "application/json"},
+                            body={
+                                "name": state.name,
+                                "email": state.email,
+                                "message": state.message
+                            },
+                            on_success:
+                                state.is_loading = False
+                                state.success_message = "Message sent successfully!"
+                                state.name = ""
+                                state.email = ""
+                                state.message = ""
+                            on_error:
+                                state.is_loading = False
+                                state.error_message = "Failed to send message. Please try again."
+                        )

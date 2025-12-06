@@ -1,0 +1,80 @@
+component PaymentForm:
+    state:
+        card_number: str = ""
+        card_expiry: str = ""
+        card_cvv: str = ""
+        card_name: str = ""
+        save_card: bool = False
+        payment_success: bool = False
+        error_message: str = ""
+
+    Card:
+        padding: "lg"
+        content:
+            VStack(spacing="md"):
+                if state.payment_success:
+                    VStack(spacing="md", align="center"):
+                        Text("Payment Successful!", style="h2")
+                        Text("Your order has been processed", style="body")
+                        Button("View Order", intent="primary"):
+                            on_click: Navigate(to="/order/confirmation")
+                else:
+                    VStack(spacing="md"):
+                        Text("Payment Details", style="h2")
+                        
+                        VStack(spacing="sm"):
+                            Text("Card Number", style="caption")
+                            Input(value:=state.card_number, placeholder="1234 5678 9012 3456")
+                        
+                        HStack(spacing="md"):
+                            VStack(spacing="sm"):
+                                Text("Expiry (MM/YY)", style="caption")
+                                Input(value:=state.card_expiry, placeholder="12/25")
+                            
+                            VStack(spacing="sm"):
+                                Text("CVV", style="caption")
+                                Input(value:=state.card_cvv, placeholder="123")
+                        
+                        VStack(spacing="sm"):
+                            Text("Name on Card", style="caption")
+                            Input(value:=state.card_name, placeholder="John Doe")
+                        
+                        HStack(align="center"):
+                            Input(value:=state.save_card, type="checkbox")
+                            Text("Save card for future payments", style="body")
+                        
+                        if state.error_message:
+                            Badge(state.error_message, color="red")
+                        
+                        Button("Pay Now", intent="primary"):
+                            on_click:
+                                if not state.card_number or not state.card_expiry or not state.card_cvv or not state.card_name:
+                                    state.error_message = "Please fill all card details"
+                                else:
+                                    state.error_message = ""
+                                    Fetch(
+                                        url="/api/payment/process",
+                                        method="POST",
+                                        body={
+                                            "card_number": state.card_number,
+                                            "card_expiry": state.card_expiry,
+                                            "card_cvv": state.card_cvv,
+                                            "card_name": state.card_name,
+                                            "save_card": state.save_card
+                                        },
+                                        on_success:
+                                            Fetch(
+                                                url="/api/cart/clear",
+                                                method="POST",
+                                                on_success:
+                                                    ShowToast("Payment processed successfully")
+                                                    Fetch(
+                                                        url="/api/analytics/track",
+                                                        method="POST",
+                                                        body={"event": "payment_completed"}
+                                                    )
+                                                    state.payment_success = True
+                                            ),
+                                        on_error:
+                                            state.error_message = "Payment failed. Please try again."
+                                    )

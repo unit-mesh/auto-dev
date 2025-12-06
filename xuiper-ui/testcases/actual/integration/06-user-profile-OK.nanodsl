@@ -1,0 +1,33 @@
+component UserProfileCard:
+    state:
+        is_verified: bool = True
+        follower_count: int = 1250
+        following_count: int = 342
+
+    Card:
+        padding: "lg"
+        shadow: "sm"
+        content:
+            VStack(spacing="md"):
+                HStack(align="center", spacing="md"):
+                    Image(src="/avatars/user.jpg", aspect=1, radius="full", width=80)
+                    VStack(spacing="xs", align="start"):
+                        HStack(align="center", spacing="sm"):
+                            Text("Alex Johnson", style="h2")
+                            if state.is_verified:
+                                Badge("Verified", color="blue")
+                        Text("alex@example.com", style="caption")
+                
+                Text("Software engineer passionate about building great user experiences. Love hiking and photography.", style="body")
+                
+                HStack(justify="between", spacing="lg"):
+                    VStack(align="center"):
+                        Text(str(state.follower_count), style="h3")
+                        Text("Followers", style="caption")
+                    VStack(align="center"):
+                        Text(str(state.following_count), style="h3")
+                        Text("Following", style="caption")
+                
+                Button("Edit Profile", intent="secondary"):
+                    on_click:
+                        Navigate(to="/profile/edit")

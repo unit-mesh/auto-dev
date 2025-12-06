@@ -1,0 +1,69 @@
+component OrderStatusCard:
+    state:
+        order: Order
+    
+    Card:
+        padding: "md"
+        shadow: "sm"
+        content:
+            VStack(spacing="md"):
+                HStack(align="center", justify="between"):
+                    Text(f"Order #{state.order.id}", style="h3")
+                    
+                    VStack(align="end", spacing="xs"):
+                        if state.order.urgent:
+                            Badge("URGENT", color="red")
+                            Text("Priority handling", style="caption")
+                
+                HStack(align="center", spacing="md"):
+                    if state.order.status == "pending":
+                        Badge("Pending", color="yellow")
+                    elif state.order.status == "processing":
+                        Badge("Processing", color="blue")
+                    elif state.order.status == "shipped":
+                        Badge("Shipped", color="green")
+                    elif state.order.status == "cancelled":
+                        Badge("Cancelled", color="red")
+                    
+                    Text(state.order.status.upper(), style="body")
+                
+                VStack(spacing="sm"):
+                    HStack(align="center", justify="between"):
+                        Text("Total:", style="body")
+                        Text(f"${state.order.total:.2f}", style="h3")
+                    
+                    HStack(align="center", justify="between"):
+                        Text("Items:", style="caption")
+                        Text(f"{state.order.item_count} items", style="body")
+                    
+                    if state.order.discount > 0:
+                        HStack(align="center", justify="between"):
+                            Text("Discount:", style="caption")
+                            Text(f"-${state.order.discount:.2f}", style="body", color="green")
+                
+                if state.order.status == "shipped":
+                    Card:
+                        padding: "sm"
+                        content:
+                            VStack(spacing="xs"):
+                                HStack(align="center", justify="between"):
+                                    Text("Tracking:", style="caption")
+                                    Text(state.order.tracking_number, style="body")
+                                HStack(align="center", justify="between"):
+                                    Text("Estimated Delivery:", style="caption")
+                                    Text(state.order.eta, style="body")
+                
+                HStack(spacing="md"):
+                    if state.order.status == "pending":
+                        Button("Cancel Order", intent="secondary"):
+                            on_click:
+                                Fetch(
+                                    url=f"/api/orders/{state.order.id}/cancel",
+                                    method="POST",
+                                    on_success: ShowToast("Order cancelled"),
+                                    on_error: ShowToast("Failed to cancel order")
+                                )
+                    
+                    if state.order.status != "cancelled":
+                        Button("View Details", intent="primary"):
+                            on_click: Navigate(to=f"/orders/{state.order.id}")

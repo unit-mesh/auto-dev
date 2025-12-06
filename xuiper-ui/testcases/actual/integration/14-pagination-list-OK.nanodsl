@@ -1,0 +1,182 @@
+component ArticleList:
+    state:
+        articles: list = []
+        current_page: int = 1
+        total_pages: int = 1
+        search_query: str = ""
+        filter_category: str = "all"
+        sort_by: str = "newest"
+
+    VStack(spacing="lg"):
+        # Filters and Search
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="md"):
+                    HStack(align="center", justify="between"):
+                        Input(value:=state.search_query, placeholder="Search articles...")
+                        Button("Search", intent="primary"):
+                            on_click:
+                                state.current_page = 1
+                                Fetch(
+                                    url="/api/articles",
+                                    method="GET",
+                                    params={
+                                        "page": state.current_page,
+                                        "search": state.search_query,
+                                        "category": state.filter_category,
+                                        "sort": state.sort_by
+                                    },
+                                    on_success: state.articles = response.data.articles,
+                                    on_success: state.total_pages = response.data.total_pages
+                                )
+                    
+                    HStack(spacing="md", align="center"):
+                        Text("Category:", style="body")
+                        HStack(spacing="sm"):
+                            Button("All"):
+                                on_click: state.filter_category = "all"
+                            Button("Tech"):
+                                on_click: state.filter_category = "tech"
+                            Button("Design"):
+                                on_click: state.filter_category = "design"
+                            Button("Business"):
+                                on_click: state.filter_category = "business"
+                        
+                        Text("Sort by:", style="body")
+                        HStack(spacing="sm"):
+                            Button("Newest"):
+                                on_click: state.sort_by = "newest"
+                            Button("Popular"):
+                                on_click: state.sort_by = "popular"
+                            Button("Title"):
+                                on_click: state.sort_by = "title"
+
+        # Articles List
+        VStack(spacing="md"):
+            For each article in state.articles:
+                Card:
+                    padding: "md"
+                    content:
+                        HStack(spacing="md", align="start"):
+                            Image(src=article.thumbnail, aspect=4/3, radius="md", width="120px")
+                            
+                            VStack(spacing="sm", align="start"):
+                                HStack(spacing="sm", align="center"):
+                                    Badge(article.category, color="blue")
+                                    If article.featured:
+                                        Badge("Featured", color="green")
+                                
+                                Text(article.title, style="h3")
+                                Text(article.excerpt, style="body")
+                                
+                                HStack(spacing="md", align="center"):
+                                    Text(article.author, style="caption")
+                                    Text(article.date, style="caption")
+                                    Text(f"{article.read_time} min read", style="caption")
+
+        # Pagination
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="md"):
+                    Text(f"Page {state.current_page} of {state.total_pages}", style="body", align="center")
+                    
+                    HStack(spacing="sm", justify="center"):
+                        Button("First"):
+                            on_click:
+                                state.current_page = 1
+                                Fetch(
+                                    url="/api/articles",
+                                    method="GET",
+                                    params={
+                                        "page": state.current_page,
+                                        "search": state.search_query,
+                                        "category": state.filter_category,
+                                        "sort": state.sort_by
+                                    },
+                                    on_success: state.articles = response.data.articles,
+                                    on_success: state.total_pages = response.data.total_pages
+                                )
+                        
+                        Button("Prev"):
+                            on_click:
+                                state.current_page = max(1, state.current_page - 1)
+                                Fetch(
+                                    url="/api/articles",
+                                    method="GET",
+                                    params={
+                                        "page": state.current_page,
+                                        "search": state.search_query,
+                                        "category": state.filter_category,
+                                        "sort": state.sort_by
+                                    },
+                                    on_success: state.articles = response.data.articles,
+                                    on_success: state.total_pages = response.data.total_pages
+                                )
+                        
+                        For page in range(max(1, state.current_page - 2), min(state.total_pages, state.current_page + 2) + 1):
+                            If page == state.current_page:
+                                Button(str(page), intent="primary"):
+                                    on_click:
+                                        state.current_page = page
+                                        Fetch(
+                                            url="/api/articles",
+                                            method="GET",
+                                            params={
+                                                "page": state.current_page,
+                                                "search": state.search_query,
+                                                "category": state.filter_category,
+                                                "sort": state.sort_by
+                                            },
+                                            on_success: state.articles = response.data.articles,
+                                            on_success: state.total_pages = response.data.total_pages
+                                        )
+                            Else:
+                                Button(str(page)):
+                                    on_click:
+                                        state.current_page = page
+                                        Fetch(
+                                            url="/api/articles",
+                                            method="GET",
+                                            params={
+                                                "page": state.current_page,
+                                                "search": state.search_query,
+                                                "category": state.filter_category,
+                                                "sort": state.sort_by
+                                            },
+                                            on_success: state.articles = response.data.articles,
+                                            on_success: state.total_pages = response.data.total_pages
+                                        )
+                        
+                        Button("Next"):
+                            on_click:
+                                state.current_page = min(state.total_pages, state.current_page + 1)
+                                Fetch(
+                                    url="/api/articles",
+                                    method="GET",
+                                    params={
+                                        "page": state.current_page,
+                                        "search": state.search_query,
+                                        "category": state.filter_category,
+                                        "sort": state.sort_by
+                                    },
+                                    on_success: state.articles = response.data.articles,
+                                    on_success: state.total_pages = response.data.total_pages
+                                )
+                        
+                        Button("Last"):
+                            on_click:
+                                state.current_page = state.total_pages
+                                Fetch(
+                                    url="/api/articles",
+                                    method="GET",
+                                    params={
+                                        "page": state.current_page,
+                                        "search": state.search_query,
+                                        "category": state.filter_category,
+                                        "sort": state.sort_by
+                                    },
+                                    on_success: state.articles = response.data.articles,
+                                    on_success: state.total_pages = response.data.total_pages
+                                )

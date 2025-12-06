@@ -1,0 +1,34 @@
+component LoginForm:
+    state:
+        email: str = ""
+        password: str = ""
+
+    Card:
+        padding: "lg"
+        shadow: "md"
+        content:
+            VStack(spacing="md"):
+                Text("Login", style="h2")
+                
+                VStack(spacing="sm"):
+                    Text("Email", style="caption")
+                    Input(value:=state.email, placeholder="Enter your email")
+                
+                VStack(spacing="sm"):
+                    Text("Password", style="caption")
+                    Input(value:=state.password, placeholder="Enter your password", type="password")
+                
+                Button("Login", intent="primary"):
+                    on_click:
+                        Fetch(
+                            url="/api/login",
+                            method="POST",
+                            body={"email": state.email, "password": state.password},
+                            on_success: Navigate(to="/dashboard"),
+                            on_error: ShowToast("Login failed")
+                        )
+                
+                HStack(align="center", justify="center"):
+                    Text("Don't have an account?", style="caption")
+                    Button("Sign Up", intent="secondary"):
+                        on_click: Navigate(to="/signup")

@@ -1,0 +1,131 @@
+component InvoiceCalculator:
+    state:
+        items: list = [
+            {"name": "Item 1", "price": 100, "quantity": 1},
+            {"name": "Item 2", "price": 50, "quantity": 2}
+        ]
+        tax_rate: float = 0.08
+        discount_percent: float = 0.0
+        discount_code: str = ""
+        subtotal: float = 200.0
+        tax_amount: float = 16.0
+        discount_amount: float = 0.0
+        total: float = 216.0
+
+    VStack(spacing="lg"):
+        Text("Invoice Calculator", style="h1")
+        
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="md"):
+                    Text("Items", style="h2")
+                    
+                    For item, index in state.items:
+                        HStack(align="center", justify="between"):
+                            VStack(spacing="xs"):
+                                Text(item["name"], style="body")
+                                Text(f"${item['price']} each", style="caption")
+                            
+                            HStack(spacing="sm"):
+                                Button("-"):
+                                    on_click:
+                                        if item["quantity"] > 1:
+                                            state.items[index]["quantity"] -= 1
+                                            state.subtotal = sum(i["price"] * i["quantity"] for i in state.items)
+                                            state.tax_amount = state.subtotal * state.tax_rate
+                                            state.discount_amount = state.subtotal * state.discount_percent
+                                            state.total = state.subtotal + state.tax_amount - state.discount_amount
+                                
+                                Text(str(item["quantity"]), style="body")
+                                
+                                Button("+"):
+                                    on_click:
+                                        state.items[index]["quantity"] += 1
+                                        state.subtotal = sum(i["price"] * i["quantity"] for i in state.items)
+                                        state.tax_amount = state.subtotal * state.tax_rate
+                                        state.discount_amount = state.subtotal * state.discount_percent
+                                        state.total = state.subtotal + state.tax_amount - state.discount_amount
+                            
+                            Button("Remove"):
+                                intent: "secondary"
+                                on_click:
+                                    state.items.pop(index)
+                                    state.subtotal = sum(i["price"] * i["quantity"] for i in state.items)
+                                    state.tax_amount = state.subtotal * state.tax_rate
+                                    state.discount_amount = state.subtotal * state.discount_percent
+                                    state.total = state.subtotal + state.tax_amount - state.discount_amount
+        
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="md"):
+                    Text("Add New Item", style="h2")
+                    
+                    HStack(spacing="md"):
+                        Input(value:=state.new_item_name, placeholder="Item name")
+                        Input(value:=state.new_item_price, placeholder="Price")
+                        Input(value:=state.new_item_quantity, placeholder="Quantity")
+                    
+                    Button("Add Item"):
+                        on_click:
+                            state.items.append({
+                                "name": state.new_item_name,
+                                "price": float(state.new_item_price),
+                                "quantity": int(state.new_item_quantity)
+                            })
+                            state.subtotal = sum(i["price"] * i["quantity"] for i in state.items)
+                            state.tax_amount = state.subtotal * state.tax_rate
+                            state.discount_amount = state.subtotal * state.discount_percent
+                            state.total = state.subtotal + state.tax_amount - state.discount_amount
+        
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="md"):
+                    Text("Discount Code", style="h2")
+                    
+                    HStack(spacing="md"):
+                        Input(value:=state.discount_code, placeholder="Enter discount code")
+                        
+                        Button("Apply"):
+                            on_click:
+                                Fetch(
+                                    url="/api/validate-discount",
+                                    method="POST",
+                                    body={"code": state.discount_code},
+                                    on_success:
+                                        state.discount_percent = response.discount_percent
+                                        state.discount_amount = state.subtotal * state.discount_percent
+                                        state.total = state.subtotal + state.tax_amount - state.discount_amount
+                                        ShowToast("Discount applied!"),
+                                    on_error:
+                                        state.discount_percent = 0.0
+                                        state.discount_amount = 0.0
+                                        state.total = state.subtotal + state.tax_amount
+                                        ShowToast("Invalid discount code")
+                                )
+        
+        Card:
+            padding: "md"
+            content:
+                VStack(spacing="sm"):
+                    Text("Invoice Summary", style="h2")
+                    
+                    HStack(justify="between"):
+                        Text("Subtotal:", style="body")
+                        Text(f"${state.subtotal:.2f}", style="body")
+                    
+                    HStack(justify="between"):
+                        Text(f"Tax ({state.tax_rate*100}%):", style="body")
+                        Text(f"${state.tax_amount:.2f}", style="body")
+                    
+                    HStack(justify="between"):
+                        Text("Discount:", style="body")
+                        Text(f"-${state.discount_amount:.2f}", style="body")
+                    
+                    Divider()
+                    
+                    HStack(justify="between"):
+                        Text("Total:", style="h3")
+                        Text(f"${state.total:.2f}", style="h3")
