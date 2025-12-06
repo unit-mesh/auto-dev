@@ -1,0 +1,251 @@
+/**
+ * NanoUI Renderer Styles for VSCode Webview
+ * 
+ * Matches the styling from HtmlRenderer in Kotlin.
+ * Uses CSS custom properties for theming integration with VSCode.
+ * 
+ * @see xuiper-ui/src/main/kotlin/cc/unitmesh/xuiper/render/HtmlRenderer.kt
+ */
+
+/* Base */
+.nano-renderer {
+  font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  color: var(--vscode-foreground);
+}
+
+.nano-component {
+  width: 100%;
+}
+
+/* Layout - VStack & HStack */
+.nano-vstack {
+  display: flex;
+  flex-direction: column;
+}
+
+.nano-hstack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Spacing */
+.spacing-xs { gap: 4px; }
+.spacing-sm { gap: 8px; }
+.spacing-md { gap: 16px; }
+.spacing-lg { gap: 24px; }
+.spacing-xl { gap: 32px; }
+
+/* Alignment */
+.align-start { align-items: flex-start; }
+.align-center { align-items: center; }
+.align-end { align-items: flex-end; }
+.align-stretch { align-items: stretch; }
+
+/* Justify */
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+
+/* Card */
+.nano-card {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.padding-xs { padding: 4px; }
+.padding-sm { padding: 8px; }
+.padding-md { padding: 16px; }
+.padding-lg { padding: 24px; }
+.padding-xl { padding: 32px; }
+
+.shadow-none { box-shadow: none; }
+.shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+.shadow-md { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+.shadow-lg { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
+
+/* Form */
+.nano-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Text */
+.nano-text {
+  margin: 0;
+}
+
+.style-h1 { font-size: 2rem; font-weight: bold; }
+.style-h2 { font-size: 1.5rem; font-weight: bold; }
+.style-h3 { font-size: 1.25rem; font-weight: bold; }
+.style-h4 { font-size: 1rem; font-weight: bold; }
+.style-body { font-size: 1rem; }
+.style-caption { 
+  font-size: 0.875rem; 
+  color: var(--vscode-descriptionForeground);
+}
+
+/* Image */
+.nano-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.radius-none { border-radius: 0; }
+.radius-sm { border-radius: 4px; }
+.radius-md { border-radius: 8px; }
+.radius-lg { border-radius: 16px; }
+.radius-full { border-radius: 9999px; }
+
+/* Badge */
+.nano-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.color-green { 
+  background: var(--vscode-testing-iconPassed, #4CAF50); 
+  color: white;
+}
+.color-red { 
+  background: var(--vscode-testing-iconFailed, #F44336); 
+  color: white;
+}
+.color-blue { 
+  background: var(--vscode-button-background, #2196F3); 
+  color: white;
+}
+.color-yellow { 
+  background: #FFEB3B; 
+  color: black;
+}
+.color-default { 
+  background: var(--vscode-badge-background); 
+  color: var(--vscode-badge-foreground);
+}
+
+/* Button */
+.nano-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.intent-primary {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.intent-primary:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.intent-secondary {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.intent-default {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.intent-danger {
+  background: var(--vscode-inputValidation-errorBackground, #B00020);
+  color: white;
+}
+
+/* Input */
+.nano-input {
+  padding: 8px 12px;
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+
+.nano-input:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+
+.nano-input::placeholder {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+/* TextArea */
+.nano-textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+
+.nano-textarea:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+
+.nano-textarea::placeholder {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+/* Select */
+.nano-select {
+  padding: 8px 12px;
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+
+.nano-select:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+
+/* Checkbox */
+.nano-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Divider */
+.nano-divider {
+  border: none;
+  border-top: 1px solid var(--vscode-panel-border);
+  margin: 16px 0;
+}
+
+/* Unknown */
+.nano-unknown {
+  padding: 8px;
+  color: var(--vscode-errorForeground);
+  background: var(--vscode-inputValidation-errorBackground);
+  border-radius: 4px;
+}
+

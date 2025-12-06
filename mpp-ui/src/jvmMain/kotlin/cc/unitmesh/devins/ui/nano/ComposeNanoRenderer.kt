@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.ui.nano
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -20,53 +21,80 @@ import kotlinx.serialization.json.jsonPrimitive
  *
  * Renders NanoIR components to Compose UI.
  * Uses Material 3 components for consistent theming.
+ *
+ * This renderer follows the component-specific method pattern from NanoRenderer interface.
+ * Each component type has its own Render* method, making it easy to identify
+ * missing implementations when new components are added.
+ *
+ * @see cc.unitmesh.xuiper.render.NanoRenderer for the interface pattern
  */
 object ComposeNanoRenderer {
 
+    // ============================================================================
+    // Main Entry Point
+    // ============================================================================
+
+    /**
+     * Render a NanoIR node to Compose UI.
+     * Dispatches to component-specific render methods.
+     */
     @Composable
     fun Render(ir: NanoIR, modifier: Modifier = Modifier) {
+        RenderNode(ir, modifier)
+    }
+
+    /**
+     * Dispatch rendering based on component type.
+     * Routes to the appropriate component-specific render method.
+     */
+    @Composable
+    fun RenderNode(ir: NanoIR, modifier: Modifier = Modifier) {
         when (ir.type) {
-            "Component" -> RenderComponent(ir, modifier)
+            // Layout
             "VStack" -> RenderVStack(ir, modifier)
             "HStack" -> RenderHStack(ir, modifier)
+            // Container
             "Card" -> RenderCard(ir, modifier)
+            "Form" -> RenderForm(ir, modifier)
+            // Content
             "Text" -> RenderText(ir, modifier)
-            "Button" -> RenderButton(ir, modifier)
             "Image" -> RenderImage(ir, modifier)
             "Badge" -> RenderBadge(ir, modifier)
+            "Divider" -> RenderDivider(ir, modifier)
+            // Input
+            "Button" -> RenderButton(ir, modifier)
             "Input" -> RenderInput(ir, modifier)
             "Checkbox" -> RenderCheckbox(ir, modifier)
-            "Divider" -> HorizontalDivider(modifier.padding(vertical = 8.dp))
+            "TextArea" -> RenderTextArea(ir, modifier)
+            "Select" -> RenderSelect(ir, modifier)
+            // Control Flow
             "Conditional" -> RenderConditional(ir, modifier)
             "ForLoop" -> RenderForLoop(ir, modifier)
+            // Meta
+            "Component" -> RenderComponent(ir, modifier)
             else -> RenderUnknown(ir, modifier)
         }
     }
 
-    @Composable
-    private fun RenderComponent(ir: NanoIR, modifier: Modifier) {
-        Column(modifier = modifier) {
-            ir.children?.forEach { child ->
-                Render(child)
-            }
-        }
-    }
+    // ============================================================================
+    // Layout Components
+    // ============================================================================
 
     @Composable
-    private fun RenderVStack(ir: NanoIR, modifier: Modifier) {
+    fun RenderVStack(ir: NanoIR, modifier: Modifier = Modifier) {
         val spacing = ir.props["spacing"]?.jsonPrimitive?.content?.toSpacing() ?: 8.dp
         Column(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
             ir.children?.forEach { child ->
-                Render(child)
+                RenderNode(child)
             }
         }
     }
 
     @Composable
-    private fun RenderHStack(ir: NanoIR, modifier: Modifier) {
+    fun RenderHStack(ir: NanoIR, modifier: Modifier = Modifier) {
         val spacing = ir.props["spacing"]?.jsonPrimitive?.content?.toSpacing() ?: 8.dp
         val align = ir.props["align"]?.jsonPrimitive?.content?.toVerticalAlignment() ?: Alignment.CenterVertically
         val justify = ir.props["justify"]?.jsonPrimitive?.content?.toHorizontalArrangement() ?: Arrangement.Start
@@ -77,13 +105,17 @@ object ComposeNanoRenderer {
             verticalAlignment = align
         ) {
             ir.children?.forEach { child ->
-                Render(child)
+                RenderNode(child)
             }
         }
     }
 
+    // ============================================================================
+    // Container Components
+    // ============================================================================
+
     @Composable
-    private fun RenderCard(ir: NanoIR, modifier: Modifier) {
+    fun RenderCard(ir: NanoIR, modifier: Modifier = Modifier) {
         val padding = ir.props["padding"]?.jsonPrimitive?.content?.toSpacing() ?: 16.dp
         val shadow = ir.props["shadow"]?.jsonPrimitive?.content?.toElevation() ?: 2.dp
 
@@ -94,14 +126,30 @@ object ComposeNanoRenderer {
         ) {
             Column(modifier = Modifier.padding(padding)) {
                 ir.children?.forEach { child ->
-                    Render(child)
+                    RenderNode(child)
                 }
             }
         }
     }
 
     @Composable
-    private fun RenderText(ir: NanoIR, modifier: Modifier) {
+    fun RenderForm(ir: NanoIR, modifier: Modifier = Modifier) {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            ir.children?.forEach { child ->
+                RenderNode(child)
+            }
+        }
+    }
+
+    // ============================================================================
+    // Content Components
+    // ============================================================================
+
+    @Composable
+    fun RenderText(ir: NanoIR, modifier: Modifier = Modifier) {
         val content = ir.props["content"]?.jsonPrimitive?.content ?: ""
         val style = ir.props["style"]?.jsonPrimitive?.content
 
@@ -119,24 +167,7 @@ object ComposeNanoRenderer {
     }
 
     @Composable
-    private fun RenderButton(ir: NanoIR, modifier: Modifier) {
-        val label = ir.props["label"]?.jsonPrimitive?.content ?: "Button"
-        val intent = ir.props["intent"]?.jsonPrimitive?.content
-
-        val colors = when (intent) {
-            "primary" -> ButtonDefaults.buttonColors()
-            "secondary" -> ButtonDefaults.outlinedButtonColors()
-            "danger" -> ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            else -> ButtonDefaults.buttonColors()
-        }
-
-        Button(onClick = { }, colors = colors, modifier = modifier) {
-            Text(label)
-        }
-    }
-
-    @Composable
-    private fun RenderImage(ir: NanoIR, modifier: Modifier) {
+    fun RenderImage(ir: NanoIR, modifier: Modifier = Modifier) {
         val src = ir.props["src"]?.jsonPrimitive?.content ?: ""
         // Placeholder for image - in real app would load from URL
         Box(
@@ -152,7 +183,7 @@ object ComposeNanoRenderer {
     }
 
     @Composable
-    private fun RenderBadge(ir: NanoIR, modifier: Modifier) {
+    fun RenderBadge(ir: NanoIR, modifier: Modifier = Modifier) {
         val text = ir.props["text"]?.jsonPrimitive?.content ?: ""
         val colorName = ir.props["color"]?.jsonPrimitive?.content
 
@@ -185,19 +216,46 @@ object ComposeNanoRenderer {
     }
 
     @Composable
-    private fun RenderInput(ir: NanoIR, modifier: Modifier) {
+    fun RenderDivider(ir: NanoIR, modifier: Modifier = Modifier) {
+        HorizontalDivider(modifier.padding(vertical = 8.dp))
+    }
+
+    // ============================================================================
+    // Input Components
+    // ============================================================================
+
+    @Composable
+    fun RenderButton(ir: NanoIR, modifier: Modifier = Modifier) {
+        val label = ir.props["label"]?.jsonPrimitive?.content ?: "Button"
+        val intent = ir.props["intent"]?.jsonPrimitive?.content
+
+        val colors = when (intent) {
+            "primary" -> ButtonDefaults.buttonColors()
+            "secondary" -> ButtonDefaults.outlinedButtonColors()
+            "danger" -> ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            else -> ButtonDefaults.buttonColors()
+        }
+
+        Button(onClick = { }, colors = colors, modifier = modifier) {
+            Text(label)
+        }
+    }
+
+    @Composable
+    fun RenderInput(ir: NanoIR, modifier: Modifier = Modifier) {
         val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: ""
 
         OutlinedTextField(
             value = "",
             onValueChange = { },
             placeholder = { Text(placeholder) },
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
+            singleLine = true
         )
     }
 
     @Composable
-    private fun RenderCheckbox(ir: NanoIR, modifier: Modifier) {
+    fun RenderCheckbox(ir: NanoIR, modifier: Modifier = Modifier) {
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
@@ -207,29 +265,81 @@ object ComposeNanoRenderer {
     }
 
     @Composable
-    private fun RenderConditional(ir: NanoIR, modifier: Modifier) {
+    fun RenderTextArea(ir: NanoIR, modifier: Modifier = Modifier) {
+        val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: ""
+        val rows = ir.props["rows"]?.jsonPrimitive?.content?.toIntOrNull() ?: 4
+
+        OutlinedTextField(
+            value = "",
+            onValueChange = { },
+            placeholder = { Text(placeholder) },
+            modifier = modifier
+                .fillMaxWidth()
+                .height((rows * 24 + 32).dp),
+            minLines = rows,
+            maxLines = rows
+        )
+    }
+
+    @Composable
+    fun RenderSelect(ir: NanoIR, modifier: Modifier = Modifier) {
+        val placeholder = ir.props["placeholder"]?.jsonPrimitive?.content ?: "Select..."
+
+        // Simple dropdown placeholder - in real app would use ExposedDropdownMenuBox
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                .padding(horizontal = 12.dp, vertical = 16.dp)
+        ) {
+            Text(
+                text = placeholder,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+
+    // ============================================================================
+    // Control Flow Components
+    // ============================================================================
+
+    @Composable
+    fun RenderConditional(ir: NanoIR, modifier: Modifier = Modifier) {
         // Render the then branch (conditional evaluation happens at runtime)
         // In static preview, we just render children directly
         Column(modifier = modifier) {
             ir.children?.forEach { child ->
-                Render(child)
+                RenderNode(child)
             }
         }
     }
 
     @Composable
-    private fun RenderForLoop(ir: NanoIR, modifier: Modifier) {
+    fun RenderForLoop(ir: NanoIR, modifier: Modifier = Modifier) {
         // Render the loop body once as a preview
         // In static preview, show a single iteration of the loop
         Column(modifier = modifier) {
             ir.children?.forEach { child ->
-                Render(child)
+                RenderNode(child)
+            }
+        }
+    }
+
+    // ============================================================================
+    // Meta Components
+    // ============================================================================
+
+    @Composable
+    fun RenderComponent(ir: NanoIR, modifier: Modifier = Modifier) {
+        Column(modifier = modifier) {
+            ir.children?.forEach { child ->
+                RenderNode(child)
             }
         }
     }
 
     @Composable
-    private fun RenderUnknown(ir: NanoIR, modifier: Modifier) {
+    fun RenderUnknown(ir: NanoIR, modifier: Modifier = Modifier) {
         Text(
             text = "Unknown: ${ir.type}",
             modifier = modifier,
@@ -237,7 +347,10 @@ object ComposeNanoRenderer {
         )
     }
 
-    // Extension functions for parsing spacing/alignment values
+    // ============================================================================
+    // Extension Functions
+    // ============================================================================
+
     private fun String.toSpacing() = when (this) {
         "xs" -> 4.dp
         "sm" -> 8.dp
