@@ -175,6 +175,7 @@ kotlin {
             dependencies {
                 implementation(project(":mpp-viewer"))
                 implementation(project(":mpp-viewer-web"))
+                implementation(project(":xuiper-ui"))
                 implementation(compose.desktop.currentOs)
 
                 // WebView support (KCEF) - needed for MermaidRenderer initialization
