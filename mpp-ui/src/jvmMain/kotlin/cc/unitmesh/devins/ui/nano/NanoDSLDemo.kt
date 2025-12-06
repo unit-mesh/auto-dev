@@ -1,6 +1,5 @@
 package cc.unitmesh.devins.ui.nano
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,15 +13,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.parser.CodeFence
+import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.xuiper.dsl.NanoDSL
 import cc.unitmesh.xuiper.ir.NanoIR
+import cc.unitmesh.xuiper.prompt.PromptTemplateRegistry
+import kotlinx.coroutines.launch
 
 /**
  * NanoDSL Demo Component
  *
  * Interactive demo that allows:
  * 1. Pasting NanoDSL code manually
- * 2. Generating UI from natural language via LLM (future)
+ * 2. Generating UI from natural language via LLM
  * 3. Real-time preview of rendered components
  */
 @Composable
@@ -34,6 +39,27 @@ fun NanoDSLDemo(
     var parsedIR by remember { mutableStateOf<NanoIR?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var promptText by remember { mutableStateOf("") }
+    var isGenerating by remember { mutableStateOf(false) }
+    var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
+    var modelConfig by remember { mutableStateOf<ModelConfig?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Load LLM config on startup
+    LaunchedEffect(Unit) {
+        try {
+            val wrapper = ConfigManager.load()
+            val config = wrapper.getActiveModelConfig()
+            if (config != null && config.isValid()) {
+                modelConfig = config
+                llmService = KoogLLMService.create(config)
+                println("✅ NanoDSL Demo: Loaded LLM config - ${config.provider.displayName}/${config.modelName}")
+            } else {
+                println("⚠️ NanoDSL Demo: No valid LLM config found")
+            }
+        } catch (e: Exception) {
+            println("❌ NanoDSL Demo: Failed to load config - ${e.message}")
+        }
+    }
 
     // Parse DSL when source changes
     LaunchedEffect(dslSource) {
@@ -47,6 +73,50 @@ fun NanoDSLDemo(
         }
     }
 
+    // Function to generate DSL with LLM
+    fun generateWithLLM(prompt: String) {
+        val service = llmService ?: run {
+            errorMessage = "LLM not configured. Please setup ~/.autodev/config.yaml"
+            return
+        }
+
+        isGenerating = true
+        errorMessage = null
+
+        coroutineScope.launch {
+            try {
+                val template = PromptTemplateRegistry.get("default")
+                val rendered = template.render(mapOf("user_prompt" to prompt))
+                val fullPrompt = "${rendered.systemPrompt}\n\nUser Request: ${rendered.userPrompt}"
+
+                val responseBuilder = StringBuilder()
+                service.streamPrompt(
+                    userPrompt = fullPrompt,
+                    compileDevIns = false
+                ).collect { chunk ->
+                    responseBuilder.append(chunk)
+                }
+
+                val llmResponse = responseBuilder.toString()
+
+                // Extract code from markdown code fence
+                val codeFence = CodeFence.parse(llmResponse)
+                val extractedCode = if (codeFence.text.isNotBlank()) {
+                    codeFence.text
+                } else {
+                    // If no code fence, use the raw response
+                    llmResponse.trim()
+                }
+
+                dslSource = extractedCode
+                isGenerating = false
+            } catch (e: Exception) {
+                errorMessage = "LLM Error: ${e.message}"
+                isGenerating = false
+            }
+        }
+    }
+
     Row(modifier = modifier.fillMaxSize().padding(16.dp)) {
         // Left Panel - Editor
         Column(
@@ -55,22 +125,51 @@ fun NanoDSLDemo(
                 .fillMaxHeight()
                 .padding(end = 8.dp)
         ) {
-            // Prompt input (for LLM generation)
-            if (onGenerateWithLLM != null) {
-                OutlinedTextField(
-                    value = promptText,
-                    onValueChange = { promptText = it },
-                    label = { Text("Describe the UI you want") },
-                    placeholder = { Text("e.g., A product card with image, title, price, and buy button") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { onGenerateWithLLM(promptText) }) {
+            // Prompt input for LLM generation
+            OutlinedTextField(
+                value = promptText,
+                onValueChange = { promptText = it },
+                label = { Text("Describe the UI you want") },
+                placeholder = { Text("e.g., A contact form with name, email, message and submit button with HTTP POST") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isGenerating,
+                trailingIcon = {
+                    if (isGenerating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        IconButton(
+                            onClick = {
+                                if (promptText.isNotBlank()) {
+                                    onGenerateWithLLM?.invoke(promptText) ?: generateWithLLM(promptText)
+                                }
+                            },
+                            enabled = llmService != null && promptText.isNotBlank()
+                        ) {
                             Icon(Icons.Default.PlayArrow, "Generate")
                         }
                     }
+                }
+            )
+
+            // LLM status indicator
+            modelConfig?.let { config ->
+                Text(
+                    text = "🤖 ${config.provider.displayName} / ${config.modelName}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
-                Spacer(Modifier.height(8.dp))
-            }
+            } ?: Text(
+                text = "⚠️ Configure LLM in ~/.autodev/config.yaml",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            Spacer(Modifier.height(8.dp))
 
             // DSL Editor
             Text(
