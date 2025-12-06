@@ -66,7 +66,7 @@ jobs:
 
       # Publish the plugin to JetBrains Marketplace
       - name: Build Plugin
-        run: ./gradlew buildPlugin
+        run: ./gradlew :mpp-idea:buildPlugin
 
       # Upload artifact as a release asset
       - name: Upload Release Asset
